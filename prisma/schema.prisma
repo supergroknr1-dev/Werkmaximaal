@@ -12,6 +12,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  wachtwoordHash String
+  naam           String
+  rol            String // "consument" of "vakman"
+  // Velden voor vakmannen (null voor consumenten)
+  bedrijfsnaam   String?
+  kvkNummer      String?
+  telefoon       String?
+  werkafstand    Int? // in km
+  regioPostcode  String? // postcode-4 als centrum van werkgebied
+  aangemaakt     DateTime  @default(now())
+  klussen        Klus[]
+  reacties       Reactie[]
+
+  @@index([rol])
+}
+
 model Klus {
   id           Int       @id @default(autoincrement())
   titel        String
@@ -21,6 +40,12 @@ model Klus {
   categorie    String?
   aangemaakt   DateTime  @default(now())
   reacties     Reactie[]
+  // Eigenaar van de klus (consument). Nullable voor bestaande klussen
+  // die zonder account zijn aangemaakt.
+  userId       Int?
+  user         User?     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 model Reactie {
@@ -30,8 +55,13 @@ model Reactie {
   naam       String
   bericht    String
   aangemaakt DateTime @default(now())
+  // Vakman die reageerde. Nullable zodat bestaande anonieme reacties
+  // niet kapot gaan.
+  userId     Int?
+  user       User?    @relation(fields: [userId], references: [id])
 
   @@index([klusId])
+  @@index([userId])
 }
 
 model Trefwoord {

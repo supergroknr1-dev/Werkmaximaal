@@ -2,6 +2,27 @@
 
 import { useState, useEffect } from "react";
 
+function tijdGeleden(datumString) {
+  const verschilSeconden = Math.floor((Date.now() - new Date(datumString).getTime()) / 1000);
+
+  if (verschilSeconden < 60) return "zojuist";
+
+  const minuten = Math.floor(verschilSeconden / 60);
+  if (minuten < 60) return minuten === 1 ? "1 minuut geleden" : `${minuten} minuten geleden`;
+
+  const uren = Math.floor(minuten / 60);
+  if (uren < 24) return uren === 1 ? "1 uur geleden" : `${uren} uur geleden`;
+
+  const dagen = Math.floor(uren / 24);
+  if (dagen < 7) return dagen === 1 ? "1 dag geleden" : `${dagen} dagen geleden`;
+
+  return new Date(datumString).toLocaleDateString("nl-NL", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
 export default function Home() {
   const [klussen, setKlussen] = useState([]);
   const [titel, setTitel] = useState("");
@@ -121,7 +142,9 @@ export default function Home() {
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
                     {klus.titel}
                   </h3>
-                  <p className="text-sm text-gray-500 mb-2">📍 {klus.plaats}</p>
+                  <p className="text-sm text-gray-500 mb-2">
+                    📍 {klus.plaats} <span className="mx-1">•</span> 🕒 {tijdGeleden(klus.aangemaakt)}
+                  </p>
                   <p className="text-gray-700">{klus.beschrijving}</p>
                 </div>
               ))}

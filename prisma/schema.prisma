@@ -15,7 +15,7 @@ datasource db {
 model Klus {
   id           Int      @id @default(autoincrement())
   titel        String
-  beschrijving String
+  beschrijving String?
   plaats       String
   categorie    String?
   aangemaakt   DateTime @default(now())

@@ -37,7 +37,6 @@ const CATEGORIEEN = [
 export default function Home() {
   const [klussen, setKlussen] = useState([]);
   const [titel, setTitel] = useState("");
-  const [beschrijving, setBeschrijving] = useState("");
   const [plaats, setPlaats] = useState("");
   const [categorie, setCategorie] = useState("");
   const [bezig, setBezig] = useState(false);
@@ -61,11 +60,10 @@ export default function Home() {
     await fetch("/api/klussen", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ titel, beschrijving, plaats, categorie }),
+      body: JSON.stringify({ titel, plaats, categorie }),
     });
 
     setTitel("");
-    setBeschrijving("");
     setPlaats("");
     setCategorie("");
     setBezig(false);
@@ -102,28 +100,14 @@ export default function Home() {
           <form onSubmit={plaatsKlus} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Titel van de klus
+                Wat is uw klus?
               </label>
-              <input
-                type="text"
+              <textarea
                 value={titel}
                 onChange={(e) => setTitel(e.target.value)}
                 required
-                placeholder="Bijvoorbeeld: Schilder gezocht voor woonkamer"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Beschrijving
-              </label>
-              <textarea
-                value={beschrijving}
-                onChange={(e) => setBeschrijving(e.target.value)}
-                required
                 rows="3"
-                placeholder="Vertel iets meer over de klus..."
+                placeholder="Bijvoorbeeld: Boom omhakken in mijn tuin"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
               />
             </div>
@@ -227,7 +211,6 @@ export default function Home() {
                       </>
                     )}
                   </p>
-                  <p className="text-gray-700">{klus.beschrijving}</p>
                 </div>
               ))}
             </div>

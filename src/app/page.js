@@ -62,7 +62,8 @@ export default function Home() {
   }
 
   async function verwijderKlus(id) {
-    if (!confirm("Weet je zeker dat je deze klus wilt verwijderen?")) return;
+    const bevestiging = prompt("Typ 'wis' om deze klus te verwijderen:");
+    if (bevestiging?.trim().toLowerCase() !== "wis") return;
     await fetch(`/api/klussen/${id}`, { method: "DELETE" });
     haalKlussenOp();
   }

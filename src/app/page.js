@@ -1,35 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
-  // Hier "onthouden" we de klussen
   const [klussen, setKlussen] = useState([]);
-
-  // Hier "onthouden" we wat er nu in het formulier staat
   const [titel, setTitel] = useState("");
   const [beschrijving, setBeschrijving] = useState("");
   const [plaats, setPlaats] = useState("");
+  const [bezig, setBezig] = useState(false);
 
-  // Wat er gebeurt als je op "Plaats klus" klikt
-  function plaatsKlus(e) {
-    e.preventDefault(); // niet de pagina opnieuw laden
+  // Haal alle klussen op zodra de pagina laadt
+  useEffect(() => {
+    haalKlussenOp();
+  }, []);
 
-    // Maak een nieuwe klus
-    const nieuweKlus = {
-      id: Date.now(),
-      titel: titel,
-      beschrijving: beschrijving,
-      plaats: plaats,
-    };
+  async function haalKlussenOp() {
+    const reactie = await fetch("/api/klussen");
+    const data = await reactie.json();
+    setKlussen(data);
+  }
 
-    // Voeg hem toe aan de lijst
-    setKlussen([nieuweKlus, ...klussen]);
+  async function plaatsKlus(e) {
+    e.preventDefault();
+    setBezig(true);
 
-    // Maak het formulier weer leeg
+    await fetch("/api/klussen", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ titel, beschrijving, plaats }),
+    });
+
     setTitel("");
     setBeschrijving("");
     setPlaats("");
+    setBezig(false);
+
+    // Haal de bijgewerkte lijst op
+    haalKlussenOp();
   }
 
   return (
@@ -42,11 +49,8 @@ export default function Home() {
           Vind een vakman voor jouw klus
         </p>
 
-        {/* Het formulier */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-2xl font-semibold mb-4">
-            Plaats een klus
-          </h2>
+          <h2 className="text-2xl font-semibold mb-4">Plaats een klus</h2>
 
           <form onSubmit={plaatsKlus} className="space-y-4">
             <div>
@@ -93,14 +97,14 @@ export default function Home() {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700"
+              disabled={bezig}
+              className="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400"
             >
-              Plaats klus
+              {bezig ? "Bezig met plaatsen..." : "Plaats klus"}
             </button>
           </form>
         </div>
 
-        {/* De lijst met klussen */}
         <div>
           <h2 className="text-2xl font-semibold mb-4">
             Geplaatste klussen ({klussen.length})
@@ -117,12 +121,8 @@ export default function Home() {
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
                     {klus.titel}
                   </h3>
-                  <p className="text-sm text-gray-500 mb-2">
-                    📍 {klus.plaats}
-                  </p>
-                  <p className="text-gray-700">
-                    {klus.beschrijving}
-                  </p>
+                  <p className="text-sm text-gray-500 mb-2">📍 {klus.plaats}</p>
+                  <p className="text-gray-700">{klus.beschrijving}</p>
                 </div>
               ))}
             </div>

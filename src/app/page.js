@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 function tijdGeleden(datumString) {
   const verschilSeconden = Math.floor((Date.now() - new Date(datumString).getTime()) / 1000);
@@ -401,7 +402,14 @@ export default function Home() {
                   className="bg-white border border-slate-200 rounded-md p-5 hover:border-slate-300 transition-colors"
                 >
                   <div className="flex justify-between items-start mb-2 gap-4">
-                    <h3 className="text-base font-medium text-slate-900">{klus.titel}</h3>
+                    <h3 className="text-base font-medium">
+                      <Link
+                        href={`/klussen/${klus.id}`}
+                        className="text-slate-900 hover:underline"
+                      >
+                        {klus.titel}
+                      </Link>
+                    </h3>
                     <button
                       onClick={() => verwijderKlus(klus.id)}
                       className="text-xs text-slate-400 hover:text-rose-600 hover:underline shrink-0 transition-colors"
@@ -421,6 +429,12 @@ export default function Home() {
                       </>
                     )}
                   </p>
+                  <Link
+                    href={`/klussen/${klus.id}`}
+                    className="text-xs text-slate-600 hover:text-slate-900 mt-3 inline-block transition-colors"
+                  >
+                    Details bekijken →
+                  </Link>
                 </div>
               ))}
             </div>

@@ -12,6 +12,7 @@ export async function POST(request) {
   const nieuweKlus = await prisma.klus.create({
     data: {
       titel: data.titel,
+      postcode: data.postcode || null,
       plaats: data.plaats,
       categorie: data.categorie || null,
     },

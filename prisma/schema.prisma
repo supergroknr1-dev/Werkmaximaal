@@ -16,6 +16,7 @@ model Klus {
   id           Int      @id @default(autoincrement())
   titel        String
   beschrijving String?
+  postcode     String?
   plaats       String
   categorie    String?
   aangemaakt   DateTime @default(now())

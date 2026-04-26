@@ -2,6 +2,27 @@
 
 import { useState, useEffect } from "react";
 
+const TREFWOORDEN = {
+  Tuinman: ["boom", "heg", "tuin", "gras", "snoeien", "plant", "haag"],
+  Schilder: ["verf", "muur", "schilderen", "kwast", "behang", "plafond"],
+  Loodgieter: ["leiding", "kraan", "lekkage", "wc", "douche", "buis", "verstopping"],
+  Elektricien: ["stopcontact", "kabel", "stroom", "lamp", "elektra", "schakelaar"],
+  Timmerman: ["hout", "deur", "kast", "vloer", "raam"],
+  Stratenmaker: ["tegel", "stoep", "oprit", "bestrating"],
+  Klusjesman: ["ophangen", "monteren", "schroef"],
+};
+
+function detectCategorie(tekst) {
+  if (!tekst) return null;
+  const lager = tekst.toLowerCase();
+  for (const [categorie, woorden] of Object.entries(TREFWOORDEN)) {
+    if (woorden.some((w) => lager.includes(w))) {
+      return categorie;
+    }
+  }
+  return null;
+}
+
 function tijdGeleden(datumString) {
   const verschilSeconden = Math.floor((Date.now() - new Date(datumString).getTime()) / 1000);
 
@@ -41,6 +62,14 @@ export default function Home() {
   const [categorie, setCategorie] = useState("");
   const [bezig, setBezig] = useState(false);
   const [gekozenPlaats, setGekozenPlaats] = useState("");
+  const [categorieAangeraakt, setCategorieAangeraakt] = useState(false);
+
+  // Auto-detect categorie uit de tekst van de klus, tenzij gebruiker zelf iets koos
+  useEffect(() => {
+    if (categorieAangeraakt) return;
+    const gevonden = detectCategorie(titel);
+    if (gevonden) setCategorie(gevonden);
+  }, [titel, categorieAangeraakt]);
 
   // Haal alle klussen op zodra de pagina laadt
   useEffect(() => {
@@ -66,6 +95,7 @@ export default function Home() {
     setTitel("");
     setPlaats("");
     setCategorie("");
+    setCategorieAangeraakt(false);
     setBezig(false);
 
     // Haal de bijgewerkte lijst op
@@ -133,9 +163,12 @@ export default function Home() {
               <input
                 type="text"
                 value={categorie}
-                onChange={(e) => setCategorie(e.target.value)}
+                onChange={(e) => {
+                  setCategorie(e.target.value);
+                  setCategorieAangeraakt(true);
+                }}
                 list="categorieen-lijst"
-                placeholder="Begin te typen voor suggesties..."
+                placeholder="Wordt automatisch ingevuld of typ zelf..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
               />
               <datalist id="categorieen-lijst">

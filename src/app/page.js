@@ -61,6 +61,12 @@ export default function Home() {
     haalKlussenOp();
   }
 
+  async function verwijderKlus(id) {
+    if (!confirm("Weet je zeker dat je deze klus wilt verwijderen?")) return;
+    await fetch(`/api/klussen/${id}`, { method: "DELETE" });
+    haalKlussenOp();
+  }
+
   const uniekePlaatsen = [...new Set(klussen.map((k) => k.plaats))].sort();
   const gefilterdeKlussen = gekozenPlaats
     ? klussen.filter((k) => k.plaats === gekozenPlaats)
@@ -169,9 +175,17 @@ export default function Home() {
             <div className="space-y-4">
               {gefilterdeKlussen.map((klus) => (
                 <div key={klus.id} className="bg-white rounded-lg shadow p-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {klus.titel}
-                  </h3>
+                  <div className="flex justify-between items-start mb-2 gap-4">
+                    <h3 className="text-xl font-semibold text-gray-900">
+                      {klus.titel}
+                    </h3>
+                    <button
+                      onClick={() => verwijderKlus(klus.id)}
+                      className="text-sm text-red-600 hover:text-red-800 hover:underline shrink-0"
+                    >
+                      Verwijderen
+                    </button>
+                  </div>
                   <p className="text-sm text-gray-500 mb-2">
                     📍 {klus.plaats} <span className="mx-1">•</span> 🕒 {tijdGeleden(klus.aangemaakt)}
                   </p>

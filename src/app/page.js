@@ -35,22 +35,12 @@ const CATEGORIEEN = [
   "Anders",
 ];
 
-const TREFWOORDEN = {
-  Tuinman: ["boom", "heg", "tuin", "gras", "snoeien", "plant", "haag"],
-  Schilder: ["verf", "muur", "schilderen", "kwast", "behang", "plafond"],
-  Loodgieter: ["leiding", "kraan", "lekkage", "wc", "douche", "buis", "verstopping"],
-  Elektricien: ["stopcontact", "kabel", "stroom", "lamp", "elektra", "schakelaar"],
-  Timmerman: ["hout", "deur", "kast", "vloer", "raam"],
-  Stratenmaker: ["tegel", "stoep", "oprit", "bestrating"],
-  Klusjesman: ["ophangen", "monteren", "schroef"],
-};
-
-function detectCategorie(tekst) {
-  if (!tekst) return null;
+function detectCategorie(tekst, trefwoorden) {
+  if (!tekst || !trefwoorden || trefwoorden.length === 0) return null;
   const lager = tekst.toLowerCase();
-  for (const [categorie, woorden] of Object.entries(TREFWOORDEN)) {
-    if (woorden.some((w) => lager.includes(w))) {
-      return categorie;
+  for (const t of trefwoorden) {
+    if (lager.includes(t.woord)) {
+      return t.categorie;
     }
   }
   return null;
@@ -82,16 +72,18 @@ export default function Home() {
   const [categorieAangeraakt, setCategorieAangeraakt] = useState(false);
   const [stap, setStap] = useState(1);
   const [postcodeStatus, setPostcodeStatus] = useState({ state: "leeg" });
+  const [trefwoorden, setTrefwoorden] = useState([]);
 
   useEffect(() => {
     haalKlussenOp();
+    haalTrefwoordenOp();
   }, []);
 
   useEffect(() => {
     if (categorieAangeraakt) return;
-    const gevonden = detectCategorie(titel);
+    const gevonden = detectCategorie(titel, trefwoorden);
     if (gevonden) setCategorie(gevonden);
-  }, [titel, categorieAangeraakt]);
+  }, [titel, categorieAangeraakt, trefwoorden]);
 
   useEffect(() => {
     const schoon = postcode.trim().toUpperCase();
@@ -128,6 +120,12 @@ export default function Home() {
     setKlussen(data);
   }
 
+  async function haalTrefwoordenOp() {
+    const reactie = await fetch("/api/trefwoorden");
+    const data = await reactie.json();
+    setTrefwoorden(data);
+  }
+
   async function plaatsKlus(e) {
     e.preventDefault();
     setBezig(true);
@@ -160,7 +158,7 @@ export default function Home() {
     haalKlussenOp();
   }
 
-  const huidigeCategorie = detectCategorie(titel);
+  const huidigeCategorie = detectCategorie(titel, trefwoorden);
   const stap1Geldig = postcodeStatus.state === "ok" && titel.trim().length > 0;
 
   const uniekePlaatsen = [...new Set(klussen.map((k) => k.plaats))].sort();
@@ -171,13 +169,21 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-2xl mx-auto px-4 py-12 md:py-16">
-        <header className="mb-10">
-          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
-            Werkmaximaal
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Vakmensen voor uw klus
-          </p>
+        <header className="mb-10 flex items-baseline justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+              Werkmaximaal
+            </h1>
+            <p className="text-sm text-slate-500 mt-1">
+              Vakmensen voor uw klus
+            </p>
+          </div>
+          <Link
+            href="/beheer"
+            className="text-xs text-slate-400 hover:text-slate-700 transition-colors shrink-0"
+          >
+            Beheer →
+          </Link>
         </header>
 
         <div className="flex items-center gap-3 mb-6">

@@ -29,6 +29,7 @@ export default function Home() {
   const [beschrijving, setBeschrijving] = useState("");
   const [plaats, setPlaats] = useState("");
   const [bezig, setBezig] = useState(false);
+  const [gekozenPlaats, setGekozenPlaats] = useState("");
 
   // Haal alle klussen op zodra de pagina laadt
   useEffect(() => {
@@ -59,6 +60,11 @@ export default function Home() {
     // Haal de bijgewerkte lijst op
     haalKlussenOp();
   }
+
+  const uniekePlaatsen = [...new Set(klussen.map((k) => k.plaats))].sort();
+  const gefilterdeKlussen = gekozenPlaats
+    ? klussen.filter((k) => k.plaats === gekozenPlaats)
+    : klussen;
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -128,16 +134,40 @@ export default function Home() {
 
         <div>
           <h2 className="text-2xl font-semibold mb-4">
-            Geplaatste klussen ({klussen.length})
+            Geplaatste klussen ({gefilterdeKlussen.length})
           </h2>
+
+          {klussen.length > 0 && (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Filter op plaats
+              </label>
+              <select
+                value={gekozenPlaats}
+                onChange={(e) => setGekozenPlaats(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+              >
+                <option value="">Alle plaatsen</option>
+                {uniekePlaatsen.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {klussen.length === 0 ? (
             <div className="bg-white rounded-lg shadow p-6 text-gray-500 text-center">
               Nog geen klussen geplaatst. Wees de eerste!
             </div>
+          ) : gefilterdeKlussen.length === 0 ? (
+            <div className="bg-white rounded-lg shadow p-6 text-gray-500 text-center">
+              Geen klussen gevonden in {gekozenPlaats}.
+            </div>
           ) : (
             <div className="space-y-4">
-              {klussen.map((klus) => (
+              {gefilterdeKlussen.map((klus) => (
                 <div key={klus.id} className="bg-white rounded-lg shadow p-6">
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
                     {klus.titel}

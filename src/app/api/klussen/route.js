@@ -14,6 +14,7 @@ export async function POST(request) {
       titel: data.titel,
       beschrijving: data.beschrijving,
       plaats: data.plaats,
+      categorie: data.categorie || null,
     },
   });
   return Response.json(nieuweKlus);

@@ -17,5 +17,6 @@ model Klus {
   titel        String
   beschrijving String
   plaats       String
+  categorie    String?
   aangemaakt   DateTime @default(now())
 }

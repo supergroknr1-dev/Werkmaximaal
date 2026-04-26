@@ -23,11 +23,23 @@ function tijdGeleden(datumString) {
   });
 }
 
+const CATEGORIEEN = [
+  "Schilder",
+  "Loodgieter",
+  "Klusjesman",
+  "Tuinman",
+  "Elektricien",
+  "Timmerman",
+  "Stratenmaker",
+  "Anders",
+];
+
 export default function Home() {
   const [klussen, setKlussen] = useState([]);
   const [titel, setTitel] = useState("");
   const [beschrijving, setBeschrijving] = useState("");
   const [plaats, setPlaats] = useState("");
+  const [categorie, setCategorie] = useState("");
   const [bezig, setBezig] = useState(false);
   const [gekozenPlaats, setGekozenPlaats] = useState("");
 
@@ -49,12 +61,13 @@ export default function Home() {
     await fetch("/api/klussen", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ titel, beschrijving, plaats }),
+      body: JSON.stringify({ titel, beschrijving, plaats, categorie }),
     });
 
     setTitel("");
     setBeschrijving("");
     setPlaats("");
+    setCategorie("");
     setBezig(false);
 
     // Haal de bijgewerkte lijst op
@@ -129,6 +142,25 @@ export default function Home() {
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Categorie
+              </label>
+              <input
+                type="text"
+                value={categorie}
+                onChange={(e) => setCategorie(e.target.value)}
+                list="categorieen-lijst"
+                placeholder="Begin te typen voor suggesties..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
+              />
+              <datalist id="categorieen-lijst">
+                {CATEGORIEEN.map((c) => (
+                  <option key={c} value={c} />
+                ))}
+              </datalist>
+            </div>
+
             <button
               type="submit"
               disabled={bezig}
@@ -189,6 +221,11 @@ export default function Home() {
                   </div>
                   <p className="text-sm text-gray-500 mb-2">
                     📍 {klus.plaats} <span className="mx-1">•</span> 🕒 {tijdGeleden(klus.aangemaakt)}
+                    {klus.categorie && (
+                      <>
+                        {" "}<span className="mx-1">•</span> 🏷️ {klus.categorie}
+                      </>
+                    )}
                   </p>
                   <p className="text-gray-700">{klus.beschrijving}</p>
                 </div>

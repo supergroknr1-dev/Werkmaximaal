@@ -55,47 +55,20 @@ function detectCategorie(tekst) {
   return null;
 }
 
-// Mock postcode-database — een selectie van bekende Nederlandse postcodes (postcode-4 → plaats).
-// Voor een complete dataset (~4.000 rijen) kunnen we later seeden; voor de UX is dit voldoende.
-const POSTCODES_NL = {
-  "1011": "Amsterdam", "1012": "Amsterdam", "1013": "Amsterdam", "1014": "Amsterdam",
-  "1015": "Amsterdam", "1016": "Amsterdam", "1017": "Amsterdam", "1018": "Amsterdam",
-  "1019": "Amsterdam", "1020": "Amsterdam", "1021": "Amsterdam", "1022": "Amsterdam",
-  "1311": "Almere", "1312": "Almere", "1313": "Almere", "1314": "Almere",
-  "1501": "Zaandam", "1502": "Zaandam",
-  "2011": "Haarlem", "2012": "Haarlem", "2013": "Haarlem",
-  "2311": "Leiden", "2312": "Leiden", "2313": "Leiden",
-  "2511": "Den Haag", "2512": "Den Haag", "2513": "Den Haag", "2514": "Den Haag",
-  "2515": "Den Haag", "2516": "Den Haag", "2517": "Den Haag", "2518": "Den Haag",
-  "3011": "Rotterdam", "3012": "Rotterdam", "3013": "Rotterdam", "3014": "Rotterdam",
-  "3015": "Rotterdam", "3016": "Rotterdam", "3021": "Rotterdam", "3022": "Rotterdam",
-  "3311": "Dordrecht", "3312": "Dordrecht",
-  "3511": "Utrecht", "3512": "Utrecht", "3513": "Utrecht", "3514": "Utrecht",
-  "3811": "Amersfoort", "3812": "Amersfoort",
-  "4811": "Breda", "4812": "Breda",
-  "5011": "Tilburg", "5012": "Tilburg",
-  "5211": "'s-Hertogenbosch", "5212": "'s-Hertogenbosch",
-  "5611": "Eindhoven", "5612": "Eindhoven", "5613": "Eindhoven",
-  "6211": "Maastricht", "6212": "Maastricht",
-  "6511": "Nijmegen", "6512": "Nijmegen",
-  "6811": "Arnhem", "6812": "Arnhem",
-  "7311": "Apeldoorn", "7312": "Apeldoorn",
-  "7511": "Enschede", "7512": "Enschede",
-  "8011": "Zwolle", "8012": "Zwolle",
-  "9711": "Groningen", "9712": "Groningen", "9713": "Groningen",
-};
+const POSTCODE_REGEX = /^\d{4}[A-Z]{2}$/;
 
-const POSTCODE_REGEX = /^(\d{4})([A-Z]{2})$/;
-
-function checkPostcode(input) {
-  if (!input) return { state: "leeg" };
-  const schoon = input.trim().toUpperCase();
-  if (schoon.length < 6) return { state: "typen" };
-  const match = schoon.match(POSTCODE_REGEX);
-  if (!match) return { state: "fout" };
-  const plaats = POSTCODES_NL[match[1]];
-  if (!plaats) return { state: "fout" };
-  return { state: "ok", plaats };
+// Vraagt de officiële PDOK Locatieserver (Nederlandse overheid, gratis)
+// om de woonplaats bij een postcode. Dekt alle ~460.000 NL postcodes.
+async function fetchPlaats(postcode) {
+  const url = `https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=postcode:${postcode}&fl=woonplaatsnaam&rows=1`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data?.response?.docs?.[0]?.woonplaatsnaam ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export default function Home() {
@@ -107,6 +80,7 @@ export default function Home() {
   const [gekozenPlaats, setGekozenPlaats] = useState("");
   const [categorieAangeraakt, setCategorieAangeraakt] = useState(false);
   const [stap, setStap] = useState(1);
+  const [postcodeStatus, setPostcodeStatus] = useState({ state: "leeg" });
 
   useEffect(() => {
     haalKlussenOp();
@@ -117,6 +91,35 @@ export default function Home() {
     const gevonden = detectCategorie(titel);
     if (gevonden) setCategorie(gevonden);
   }, [titel, categorieAangeraakt]);
+
+  useEffect(() => {
+    const schoon = postcode.trim().toUpperCase();
+    if (!schoon) {
+      setPostcodeStatus({ state: "leeg" });
+      return;
+    }
+    if (schoon.length < 6) {
+      setPostcodeStatus({ state: "typen" });
+      return;
+    }
+    if (!POSTCODE_REGEX.test(schoon)) {
+      setPostcodeStatus({ state: "fout" });
+      return;
+    }
+
+    setPostcodeStatus({ state: "bezig" });
+    let geannuleerd = false;
+    const timer = setTimeout(async () => {
+      const plaats = await fetchPlaats(schoon);
+      if (geannuleerd) return;
+      setPostcodeStatus(plaats ? { state: "ok", plaats } : { state: "fout" });
+    }, 250);
+
+    return () => {
+      geannuleerd = true;
+      clearTimeout(timer);
+    };
+  }, [postcode]);
 
   async function haalKlussenOp() {
     const reactie = await fetch("/api/klussen");
@@ -156,7 +159,6 @@ export default function Home() {
     haalKlussenOp();
   }
 
-  const postcodeStatus = checkPostcode(postcode);
   const huidigeCategorie = detectCategorie(titel);
   const stap1Geldig = postcodeStatus.state === "ok" && titel.trim().length > 0;
 
@@ -252,10 +254,16 @@ export default function Home() {
                         <span className="text-slate-500">{postcodeStatus.plaats}</span>
                       </>
                     )}
-                    {postcodeStatus.state !== "ok" && (
-                      <span className="text-slate-400 text-xs">
-                        {postcodeStatus.state === "fout" ? "—" : "Plaatsnaam verschijnt hier"}
+                    {postcodeStatus.state === "bezig" && (
+                      <span className="text-slate-400 text-xs animate-pulse">
+                        Bezig met opzoeken...
                       </span>
+                    )}
+                    {postcodeStatus.state === "fout" && (
+                      <span className="text-slate-400 text-xs">—</span>
+                    )}
+                    {(postcodeStatus.state === "leeg" || postcodeStatus.state === "typen") && (
+                      <span className="text-slate-400 text-xs">Plaatsnaam verschijnt hier</span>
                     )}
                   </div>
                 </div>

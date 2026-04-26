@@ -13,13 +13,25 @@ datasource db {
 }
 
 model Klus {
-  id           Int      @id @default(autoincrement())
+  id           Int       @id @default(autoincrement())
   titel        String
   beschrijving String?
   postcode     String?
   plaats       String
   categorie    String?
-  aangemaakt   DateTime @default(now())
+  aangemaakt   DateTime  @default(now())
+  reacties     Reactie[]
+}
+
+model Reactie {
+  id         Int      @id @default(autoincrement())
+  klusId     Int
+  klus       Klus     @relation(fields: [klusId], references: [id], onDelete: Cascade)
+  naam       String
+  bericht    String
+  aangemaakt DateTime @default(now())
+
+  @@index([klusId])
 }
 
 model Trefwoord {

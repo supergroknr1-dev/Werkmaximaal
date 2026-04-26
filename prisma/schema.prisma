@@ -21,3 +21,11 @@ model Klus {
   categorie    String?
   aangemaakt   DateTime @default(now())
 }
+
+model Trefwoord {
+  id        Int    @id @default(autoincrement())
+  categorie String
+  woord     String
+
+  @@unique([categorie, woord])
+}

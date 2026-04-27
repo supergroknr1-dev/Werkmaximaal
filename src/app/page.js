@@ -178,12 +178,20 @@ export default function Home() {
               Vakmensen voor uw klus
             </p>
           </div>
-          <Link
-            href="/beheer"
-            className="text-xs text-slate-400 hover:text-slate-700 transition-colors shrink-0"
-          >
-            Beheer →
-          </Link>
+          <div className="flex items-center gap-4 shrink-0 text-xs">
+            <Link
+              href="/registreren"
+              className="text-slate-700 hover:text-slate-900 font-medium transition-colors"
+            >
+              Registreren
+            </Link>
+            <Link
+              href="/beheer"
+              className="text-slate-400 hover:text-slate-700 transition-colors"
+            >
+              Beheer →
+            </Link>
+          </div>
         </header>
 
         <div className="flex items-center gap-3 mb-6">

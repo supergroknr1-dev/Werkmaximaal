@@ -1,0 +1,334 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+
+const POSTCODE_REGEX = /^\d{4}[A-Z]{2}$/;
+
+async function fetchPlaats(postcode) {
+  const url = `https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=postcode:${postcode}&fl=woonplaatsnaam&rows=1`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data?.response?.docs?.[0]?.woonplaatsnaam ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export default function RegistrerenVakmanPage() {
+  const [naam, setNaam] = useState("");
+  const [bedrijfsnaam, setBedrijfsnaam] = useState("");
+  const [kvkNummer, setKvkNummer] = useState("");
+  const [telefoon, setTelefoon] = useState("");
+  const [werkafstand, setWerkafstand] = useState("25");
+  const [regioPostcode, setRegioPostcode] = useState("");
+  const [email, setEmail] = useState("");
+  const [wachtwoord, setWachtwoord] = useState("");
+  const [postcodeStatus, setPostcodeStatus] = useState({ state: "leeg" });
+  const [bezig, setBezig] = useState(false);
+  const [foutmelding, setFoutmelding] = useState("");
+  const [succes, setSucces] = useState(false);
+
+  useEffect(() => {
+    const schoon = regioPostcode.trim().toUpperCase();
+    if (!schoon) {
+      setPostcodeStatus({ state: "leeg" });
+      return;
+    }
+    if (schoon.length < 6) {
+      setPostcodeStatus({ state: "typen" });
+      return;
+    }
+    if (!POSTCODE_REGEX.test(schoon)) {
+      setPostcodeStatus({ state: "fout" });
+      return;
+    }
+
+    setPostcodeStatus({ state: "bezig" });
+    let geannuleerd = false;
+    const timer = setTimeout(async () => {
+      const plaats = await fetchPlaats(schoon);
+      if (geannuleerd) return;
+      setPostcodeStatus(plaats ? { state: "ok", plaats } : { state: "fout" });
+    }, 250);
+    return () => {
+      geannuleerd = true;
+      clearTimeout(timer);
+    };
+  }, [regioPostcode]);
+
+  async function registreer(e) {
+    e.preventDefault();
+    setBezig(true);
+    setFoutmelding("");
+
+    const res = await fetch("/api/registreren", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        rol: "vakman",
+        naam,
+        bedrijfsnaam,
+        kvkNummer,
+        telefoon,
+        werkafstand: parseInt(werkafstand),
+        regioPostcode: regioPostcode.toUpperCase(),
+        email,
+        wachtwoord,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      setFoutmelding(data.error || "Er ging iets mis.");
+      setBezig(false);
+      return;
+    }
+
+    setSucces(true);
+    setBezig(false);
+  }
+
+  if (succes) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-md mx-auto px-4 py-12 md:py-16">
+          <div className="bg-white border border-slate-200 rounded-md shadow-sm p-6 md:p-8 text-center">
+            <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg
+                className="w-6 h-6 text-emerald-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={3}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h1 className="text-xl font-semibold text-slate-900 mb-2">
+              Account aangemaakt
+            </h1>
+            <p className="text-sm text-slate-500 mb-6">
+              U kunt zo straks inloggen zodra de inlogpagina is opgeleverd.
+            </p>
+            <Link
+              href="/"
+              className="inline-block bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
+            >
+              Terug naar overzicht
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const postcodeGeldig = postcodeStatus.state === "ok";
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-xl mx-auto px-4 py-12 md:py-16">
+        <Link
+          href="/registreren"
+          className="text-sm text-slate-600 hover:text-slate-900 inline-flex items-center gap-1 mb-6 transition-colors"
+        >
+          ← Terug
+        </Link>
+
+        <header className="mb-8">
+          <p className="text-xs uppercase tracking-wider text-slate-500 font-medium mb-2">
+            Zakelijk
+          </p>
+          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight mb-2">
+            Registreren als vakman
+          </h1>
+          <p className="text-sm text-slate-500">
+            Vul uw bedrijfs- en contactgegevens in om een account aan te maken.
+          </p>
+        </header>
+
+        <form
+          onSubmit={registreer}
+          className="bg-white border border-slate-200 rounded-md shadow-sm p-6 md:p-8 space-y-5"
+        >
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Volledige naam
+            </label>
+            <input
+              type="text"
+              value={naam}
+              onChange={(e) => setNaam(e.target.value)}
+              required
+              autoComplete="name"
+              className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Bedrijfsnaam
+            </label>
+            <input
+              type="text"
+              value={bedrijfsnaam}
+              onChange={(e) => setBedrijfsnaam(e.target.value)}
+              required
+              autoComplete="organization"
+              className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              KvK-nummer
+            </label>
+            <input
+              type="text"
+              value={kvkNummer}
+              onChange={(e) => setKvkNummer(e.target.value.replace(/\D/g, "").slice(0, 8))}
+              required
+              inputMode="numeric"
+              placeholder="12345678"
+              className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm font-mono"
+            />
+            <p className="text-xs text-slate-500 mt-1">8 cijfers.</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Telefoonnummer
+            </label>
+            <input
+              type="tel"
+              value={telefoon}
+              onChange={(e) => setTelefoon(e.target.value)}
+              required
+              autoComplete="tel"
+              placeholder="06 12345678"
+              className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+            />
+            <p className="text-xs text-slate-500 mt-1">Nederlands formaat (06… of +31…).</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Postcode (regio van uw werkgebied)
+            </label>
+            <div className="flex">
+              <input
+                type="text"
+                value={regioPostcode}
+                onChange={(e) => setRegioPostcode(e.target.value.toUpperCase().slice(0, 6))}
+                maxLength={6}
+                required
+                placeholder="1234AB"
+                className={`w-32 px-3 py-2.5 bg-white border rounded-l-md text-slate-900 placeholder:text-slate-400 focus:outline-none transition-colors uppercase tracking-wider font-mono text-sm ${
+                  postcodeStatus.state === "fout"
+                    ? "border-rose-300 focus:border-rose-400"
+                    : "border-slate-300 focus:border-slate-900"
+                }`}
+              />
+              <div
+                className={`flex-1 px-3 py-2.5 bg-slate-50 border border-l-0 rounded-r-md flex items-center gap-2 text-sm ${
+                  postcodeStatus.state === "fout" ? "border-rose-300" : "border-slate-300"
+                }`}
+              >
+                {postcodeStatus.state === "ok" && (
+                  <>
+                    <svg
+                      className="w-4 h-4 text-emerald-600 shrink-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={3}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-slate-500">{postcodeStatus.plaats}</span>
+                  </>
+                )}
+                {postcodeStatus.state === "bezig" && (
+                  <span className="text-slate-400 text-xs animate-pulse">
+                    Bezig met opzoeken...
+                  </span>
+                )}
+                {postcodeStatus.state === "fout" && (
+                  <span className="text-slate-400 text-xs">—</span>
+                )}
+                {(postcodeStatus.state === "leeg" || postcodeStatus.state === "typen") && (
+                  <span className="text-slate-400 text-xs">Plaatsnaam verschijnt hier</span>
+                )}
+              </div>
+            </div>
+            {postcodeStatus.state === "fout" && (
+              <p className="text-sm text-rose-600 mt-2">Ongeldige postcode</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Werkafstand (in km)
+            </label>
+            <input
+              type="number"
+              value={werkafstand}
+              onChange={(e) => setWerkafstand(e.target.value)}
+              required
+              min={1}
+              max={500}
+              className="w-32 px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+            />
+            <p className="text-xs text-slate-500 mt-1">
+              Hoe ver bent u bereid te reizen voor een opdracht?
+            </p>
+          </div>
+
+          <div className="border-t border-slate-100 pt-5">
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              E-mailadres
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Wachtwoord
+            </label>
+            <input
+              type="password"
+              value={wachtwoord}
+              onChange={(e) => setWachtwoord(e.target.value)}
+              required
+              minLength={8}
+              autoComplete="new-password"
+              className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+            />
+            <p className="text-xs text-slate-500 mt-1">Minstens 8 tekens.</p>
+          </div>
+
+          {foutmelding && (
+            <p className="text-sm text-rose-600">{foutmelding}</p>
+          )}
+
+          <button
+            type="submit"
+            disabled={bezig || !postcodeGeldig}
+            className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium py-3 rounded-md transition-colors"
+          >
+            {bezig ? "Bezig met registreren..." : "Account aanmaken"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}

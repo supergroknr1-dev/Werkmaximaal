@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-04-27
-**Laatste commit op main:** `26e0ce0` — Persoonlijk adres-blok ook voor Hobbyist op /profiel
+**Laatst bijgewerkt:** 2026-04-27 (eind van de dag)
+**Laatste commit op main:** `ce0c1f8` — Multi-machine workflow: SNAPSHOT.md + opening-prompt
 **Live op:** https://werkmaximaal.vercel.app/
 
 ---
@@ -26,10 +26,11 @@ In de laatste sessies (volgorde: oud → nieuw):
 - **Mijn leads** voor vakmannen — overzicht gekochte leads met klant-contactgegevens
 - **Vernieuwde homepage-header** in een witte kaart met emerald → slate accent, avatar-cirkel + rol-badge
 - **Persoonlijk adres** ook beschikbaar voor Hobbyists op `/profiel`
+- **Multi-machine workflow**: `SNAPSHOT.md` + `OPENING_PROMPT.md` in de project-root, plus een feedback-memory-regel die zorgt dat ik SNAPSHOT.md bij sessie-einde automatisch bijwerk
 
 ## 🟡 Waar je was gebleven
 
-Persoonlijk adres-blok (postcode + huisnummer + toevoeging met PDOK-lookup) toegevoegd voor Hobbyists op de profielpagina. Gepusht (`5be09fc..26e0ce0`) en live op Vercel.
+Eind van de werkdag — multi-machine workflow opgezet zodat je vlot kunt schakelen tussen kantoor en thuis (`SNAPSHOT.md` als bron-van-waarheid, `OPENING_PROMPT.md` als startprompt voor nieuwe sessies). Daarna kort besproken: Dropbox voor de hele projectmap is afgeraden (node_modules + Prisma + git geven conflicten); aanbeveling is git voor code + `vercel env pull` voor `.env` + optioneel Dropbox/OneDrive voor de Claude memory-map. **Aanbevolen volgende stap:** Reviews + sterren-systeem.
 
 ## 🔴 Volgende stappen — kies er één om mee te starten
 

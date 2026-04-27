@@ -91,7 +91,8 @@ export async function syncVakmanNaarPipedrive(vakman) {
     pipeline_id: pipelineId ? parseInt(pipelineId) : undefined,
     stage_id: stageId ? parseInt(stageId) : undefined,
     // Hobbyist betaalt €25 inschrijfgeld; Pro betaalt later per lead.
-    value: isPro ? 0 : 2500,
+    // Pipedrive verwacht het bedrag in euro's (niet centen).
+    value: isPro ? 0 : 25,
     currency: "EUR",
   });
 }

@@ -18,6 +18,7 @@ model User {
   wachtwoordHash String
   naam           String
   rol            String // "consument" of "vakman"
+  vakmanType     String? // "professional" of "hobbyist", alleen voor vakmannen
   // Velden voor vakmannen (null voor consumenten)
   bedrijfsnaam   String?
   kvkNummer      String?

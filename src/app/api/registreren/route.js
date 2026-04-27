@@ -33,21 +33,18 @@ export async function POST(request) {
   let extra = {};
 
   if (rol === "vakman") {
-    const bedrijfsnaam = (data.bedrijfsnaam ?? "").trim();
-    const kvkNummer = (data.kvkNummer ?? "").trim();
+    const vakmanType = data.vakmanType;
+    if (vakmanType !== "professional" && vakmanType !== "hobbyist") {
+      return Response.json(
+        { error: "Kies of u een gecertificeerde professional of een hobbyist bent." },
+        { status: 400 }
+      );
+    }
+
     const telefoon = (data.telefoon ?? "").replace(/[\s-]/g, "").trim();
     const werkafstand = parseInt(data.werkafstand);
     const regioPostcode = (data.regioPostcode ?? "").trim().toUpperCase();
 
-    if (!bedrijfsnaam) {
-      return Response.json({ error: "Bedrijfsnaam is verplicht." }, { status: 400 });
-    }
-    if (!KVK_REGEX.test(kvkNummer)) {
-      return Response.json(
-        { error: "KvK-nummer moet 8 cijfers zijn." },
-        { status: 400 }
-      );
-    }
     if (!TELEFOON_REGEX.test(telefoon)) {
       return Response.json(
         { error: "Vul een geldig Nederlands telefoonnummer in." },
@@ -67,7 +64,36 @@ export async function POST(request) {
       );
     }
 
-    extra = { bedrijfsnaam, kvkNummer, telefoon, werkafstand, regioPostcode };
+    extra = { vakmanType, telefoon, werkafstand, regioPostcode };
+
+    if (vakmanType === "professional") {
+      const bedrijfsnaam = (data.bedrijfsnaam ?? "").trim();
+      const kvkNummer = (data.kvkNummer ?? "").trim();
+
+      if (!bedrijfsnaam) {
+        return Response.json(
+          { error: "Bedrijfsnaam is verplicht voor professionals." },
+          { status: 400 }
+        );
+      }
+      if (!KVK_REGEX.test(kvkNummer)) {
+        return Response.json(
+          { error: "KvK-nummer moet 8 cijfers zijn." },
+          { status: 400 }
+        );
+      }
+
+      extra.bedrijfsnaam = bedrijfsnaam;
+      extra.kvkNummer = kvkNummer;
+    } else {
+      // hobbyist
+      if (!data.disclaimerAkkoord) {
+        return Response.json(
+          { error: "U dient akkoord te gaan met de hobbyist-voorwaarden." },
+          { status: 400 }
+        );
+      }
+    }
   }
 
   const wachtwoordHash = await bcrypt.hash(wachtwoord, 10);

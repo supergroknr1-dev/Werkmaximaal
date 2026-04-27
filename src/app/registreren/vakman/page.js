@@ -30,6 +30,8 @@ export default function RegistrerenVakmanPage() {
   const [bezig, setBezig] = useState(false);
   const [foutmelding, setFoutmelding] = useState("");
   const [succes, setSucces] = useState(false);
+  const [vakmanType, setVakmanType] = useState(null); // "professional" of "hobbyist"
+  const [disclaimerAkkoord, setDisclaimerAkkoord] = useState(false);
 
   useEffect(() => {
     const schoon = regioPostcode.trim().toUpperCase();
@@ -69,6 +71,7 @@ export default function RegistrerenVakmanPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         rol: "vakman",
+        vakmanType,
         naam,
         bedrijfsnaam,
         kvkNummer,
@@ -77,6 +80,7 @@ export default function RegistrerenVakmanPage() {
         regioPostcode: regioPostcode.toUpperCase(),
         email,
         wachtwoord,
+        disclaimerAkkoord,
       }),
     });
 
@@ -154,6 +158,56 @@ export default function RegistrerenVakmanPage() {
           className="bg-white border border-slate-200 rounded-md shadow-sm p-6 md:p-8 space-y-5"
         >
           <div>
+            <label className="block text-sm font-medium text-slate-700 mb-3">
+              Welk type vakman bent u?
+            </label>
+            <div className="grid gap-3 md:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => setVakmanType("professional")}
+                className={`text-left p-4 border rounded-md transition-colors ${
+                  vakmanType === "professional"
+                    ? "border-slate-900 bg-slate-50"
+                    : "border-slate-200 hover:border-slate-400 bg-white"
+                }`}
+              >
+                <p className="text-xs uppercase tracking-wider text-slate-500 font-medium mb-1">
+                  Pro
+                </p>
+                <p className="text-sm font-semibold text-slate-900 mb-1">
+                  Gecertificeerde Professional
+                </p>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  KvK-geregistreerd bedrijf met bedrijfsverzekering en garantie
+                  op uw werk.
+                </p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setVakmanType("hobbyist")}
+                className={`text-left p-4 border rounded-md transition-colors ${
+                  vakmanType === "hobbyist"
+                    ? "border-slate-900 bg-slate-50"
+                    : "border-slate-200 hover:border-slate-400 bg-white"
+                }`}
+              >
+                <p className="text-xs uppercase tracking-wider text-slate-500 font-medium mb-1">
+                  Hobbyist
+                </p>
+                <p className="text-sm font-semibold text-slate-900 mb-1">
+                  Handige Harry
+                </p>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Geen KvK-plicht. Werk wordt op eigen risico uitgevoerd, geen
+                  bedrijfsverzekering via het platform.
+                </p>
+              </button>
+            </div>
+          </div>
+
+          {vakmanType && (
+          <>
+          <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Volledige naam
             </label>
@@ -167,6 +221,8 @@ export default function RegistrerenVakmanPage() {
             />
           </div>
 
+          {vakmanType === "professional" && (
+          <>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Bedrijfsnaam
@@ -196,6 +252,8 @@ export default function RegistrerenVakmanPage() {
             />
             <p className="text-xs text-slate-500 mt-1">8 cijfers.</p>
           </div>
+          </>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -316,17 +374,39 @@ export default function RegistrerenVakmanPage() {
             <p className="text-xs text-slate-500 mt-1">Minstens 8 tekens.</p>
           </div>
 
+          {vakmanType === "hobbyist" && (
+            <label className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-md cursor-pointer">
+              <input
+                type="checkbox"
+                checked={disclaimerAkkoord}
+                onChange={(e) => setDisclaimerAkkoord(e.target.checked)}
+                required
+                className="mt-0.5 shrink-0"
+              />
+              <span className="text-sm text-slate-700">
+                Ik begrijp dat ik werk op eigen risico en niet onder de
+                bedrijfsverzekering van het platform val.
+              </span>
+            </label>
+          )}
+
           {foutmelding && (
             <p className="text-sm text-rose-600">{foutmelding}</p>
           )}
 
           <button
             type="submit"
-            disabled={bezig || !postcodeGeldig}
+            disabled={
+              bezig ||
+              !postcodeGeldig ||
+              (vakmanType === "hobbyist" && !disclaimerAkkoord)
+            }
             className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium py-3 rounded-md transition-colors"
           >
             {bezig ? "Bezig met registreren..." : "Account aanmaken"}
           </button>
+          </>
+          )}
         </form>
       </div>
     </div>

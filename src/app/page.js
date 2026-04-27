@@ -93,11 +93,16 @@ export default function Home() {
   const [trefwoorden, setTrefwoorden] = useState([]);
   const [huidigeUser, setHuidigeUser] = useState(null);
   const [userLoaded, setUserLoaded] = useState(false);
+  const [hobbyistInschakeld, setHobbyistInschakeld] = useState(true);
 
   useEffect(() => {
     haalKlussenOp();
     haalTrefwoordenOp();
     haalUserOp();
+    fetch("/api/instellingen")
+      .then((r) => r.json())
+      .then((d) => setHobbyistInschakeld(d.hobbyistInschakeld !== false))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -260,12 +265,14 @@ export default function Home() {
                 </Link>
               </>
             )}
-            <Link
-              href="/beheer"
-              className="text-slate-400 hover:text-slate-700 transition-colors"
-            >
-              Beheer →
-            </Link>
+            {huidigeUser?.isAdmin && (
+              <Link
+                href="/admin"
+                className="text-slate-400 hover:text-slate-700 transition-colors"
+              >
+                Admin →
+              </Link>
+            )}
           </div>
         </header>
 
@@ -492,11 +499,13 @@ export default function Home() {
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Type vakman gewenst
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className={`grid gap-2 ${hobbyistInschakeld ? "grid-cols-3" : "grid-cols-2"}`}>
                   {[
                     { val: "", label: "Beide" },
                     { val: "professional", label: "Professional" },
-                    { val: "hobbyist", label: "Hobbyist" },
+                    ...(hobbyistInschakeld
+                      ? [{ val: "hobbyist", label: "Hobbyist" }]
+                      : []),
                   ].map((opt) => (
                     <button
                       key={opt.val}

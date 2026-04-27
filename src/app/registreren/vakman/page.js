@@ -33,6 +33,14 @@ export default function RegistrerenVakmanPage() {
   const [vakmanType, setVakmanType] = useState(null); // "professional" of "hobbyist"
   const [disclaimerAkkoord, setDisclaimerAkkoord] = useState(false);
   const [kvkStatus, setKvkStatus] = useState({ state: "leeg" });
+  const [hobbyistInschakeld, setHobbyistInschakeld] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/instellingen")
+      .then((r) => r.json())
+      .then((d) => setHobbyistInschakeld(d.hobbyistInschakeld !== false))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const kvk = kvkNummer.trim();
@@ -234,9 +242,12 @@ export default function RegistrerenVakmanPage() {
               </button>
               <button
                 type="button"
-                onClick={() => setVakmanType("hobbyist")}
+                onClick={() => hobbyistInschakeld && setVakmanType("hobbyist")}
+                disabled={!hobbyistInschakeld}
                 className={`text-left p-4 border rounded-md transition-colors ${
-                  vakmanType === "hobbyist"
+                  !hobbyistInschakeld
+                    ? "border-slate-200 bg-slate-50 opacity-50 cursor-not-allowed"
+                    : vakmanType === "hobbyist"
                     ? "border-slate-900 bg-slate-50"
                     : "border-slate-200 hover:border-slate-400 bg-white"
                 }`}
@@ -246,16 +257,16 @@ export default function RegistrerenVakmanPage() {
                     Hobbyist
                   </p>
                   <span className="text-xs font-semibold text-slate-700 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5">
-                    € 25 eenmalig
+                    {hobbyistInschakeld ? "€ 25 eenmalig" : "Uitgeschakeld"}
                   </span>
                 </div>
                 <p className="text-sm font-semibold text-slate-900 mb-1">
                   Handige Harry
                 </p>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  Geen KvK-plicht. Werk op eigen risico, geen
-                  bedrijfsverzekering via het platform. € 25 eenmalig
-                  inschrijfgeld.
+                  {hobbyistInschakeld
+                    ? "Geen KvK-plicht. Werk op eigen risico, geen bedrijfsverzekering via het platform. € 25 eenmalig inschrijfgeld."
+                    : "Hobbyist-registratie is op dit moment uitgeschakeld door de beheerder."}
                 </p>
               </button>
             </div>

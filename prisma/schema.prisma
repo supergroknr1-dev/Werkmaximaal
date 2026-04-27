@@ -18,6 +18,7 @@ model User {
   wachtwoordHash String
   naam           String
   rol            String // "consument" of "vakman"
+  isAdmin        Boolean   @default(false)
   vakmanType     String? // "professional" of "hobbyist", alleen voor vakmannen
   // Velden voor vakmannen (null voor consumenten)
   bedrijfsnaam   String?
@@ -65,6 +66,12 @@ model Klus {
   user         User?     @relation(fields: [userId], references: [id])
 
   @@index([userId])
+}
+
+model Setting {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
 }
 
 model Lead {

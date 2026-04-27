@@ -1,4 +1,5 @@
 import { prisma } from "../../../lib/prisma";
+import { getCurrentUser } from "../../../lib/auth";
 
 export async function GET() {
   const trefwoorden = await prisma.trefwoord.findMany({
@@ -8,6 +9,11 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  const user = await getCurrentUser();
+  if (!user || !user.isAdmin) {
+    return Response.json({ error: "Geen toegang." }, { status: 403 });
+  }
+
   const data = await request.json();
   const categorie = (data.categorie ?? "").trim();
   const woord = (data.woord ?? "").trim().toLowerCase();

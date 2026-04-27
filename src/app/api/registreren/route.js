@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "../../../lib/prisma";
+import { getInstellingen } from "../../../lib/instellingen";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const TELEFOON_REGEX = /^(\+31|0)[1-9]\d{8}$/;
@@ -39,6 +40,16 @@ export async function POST(request) {
         { error: "Kies of u een gecertificeerde professional of een hobbyist bent." },
         { status: 400 }
       );
+    }
+
+    if (vakmanType === "hobbyist") {
+      const instellingen = await getInstellingen();
+      if (!instellingen.hobbyistInschakeld) {
+        return Response.json(
+          { error: "Hobbyist-registratie is momenteel uitgeschakeld." },
+          { status: 403 }
+        );
+      }
     }
 
     const telefoon = (data.telefoon ?? "").replace(/[\s-]/g, "").trim();

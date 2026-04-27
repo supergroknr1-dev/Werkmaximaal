@@ -1,5 +1,6 @@
 import { prisma } from "../../../lib/prisma";
 import { getSession } from "../../../lib/session";
+import { getInstellingen } from "../../../lib/instellingen";
 
 export async function GET() {
   const klussen = await prisma.klus.findMany({
@@ -36,7 +37,16 @@ export async function POST(request) {
   }
 
   const data = await request.json();
-  const voorkeur = data.voorkeurVakmanType;
+  let voorkeur = data.voorkeurVakmanType;
+  if (voorkeur === "hobbyist") {
+    const instellingen = await getInstellingen();
+    if (!instellingen.hobbyistInschakeld) {
+      return Response.json(
+        { error: "Hobbyist-voorkeur is momenteel uitgeschakeld." },
+        { status: 400 }
+      );
+    }
+  }
   const nieuweKlus = await prisma.klus.create({
     data: {
       titel: data.titel,

@@ -9,7 +9,14 @@ export async function GET() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { id: true, email: true, naam: true, rol: true },
+    select: {
+      id: true,
+      email: true,
+      naam: true,
+      rol: true,
+      isAdmin: true,
+      vakmanType: true,
+    },
   });
   if (!user) {
     // Account is verwijderd terwijl sessie nog actief was

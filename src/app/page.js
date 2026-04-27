@@ -85,6 +85,7 @@ export default function Home() {
   const [categorie, setCategorie] = useState("");
   const [bezig, setBezig] = useState(false);
   const [gekozenPlaats, setGekozenPlaats] = useState("");
+  const [gekozenCategorie, setGekozenCategorie] = useState("");
   const [categorieAangeraakt, setCategorieAangeraakt] = useState(false);
   const [stap, setStap] = useState(1);
   const [postcodeStatus, setPostcodeStatus] = useState({ state: "leeg" });
@@ -198,9 +199,17 @@ export default function Home() {
   const stap1Geldig = postcodeStatus.state === "ok" && titel.trim().length > 0;
 
   const uniekePlaatsen = [...new Set(klussen.map((k) => k.plaats))].sort();
-  const gefilterdeKlussen = gekozenPlaats
-    ? klussen.filter((k) => k.plaats === gekozenPlaats)
-    : klussen;
+  const uniekeCategorieen = [
+    ...new Set(klussen.map((k) => k.categorie).filter(Boolean)),
+  ].sort();
+  const gefilterdeKlussen = klussen.filter((k) => {
+    if (gekozenPlaats && k.plaats !== gekozenPlaats) return false;
+    if (gekozenCategorie && k.categorie !== gekozenCategorie) return false;
+    return true;
+  });
+
+  const isVakman = huidigeUser?.rol === "vakman";
+  const lijstHeading = isVakman ? "Openstaande opdrachten" : "Geplaatste klussen";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -500,26 +509,45 @@ export default function Home() {
 
         <div>
           <h2 className="text-lg font-semibold text-slate-900 mb-4">
-            Geplaatste klussen ({gefilterdeKlussen.length})
+            {lijstHeading} ({gefilterdeKlussen.length})
           </h2>
 
           {klussen.length > 0 && (
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Filter op plaats
-              </label>
-              <select
-                value={gekozenPlaats}
-                onChange={(e) => setGekozenPlaats(e.target.value)}
-                className="w-full md:w-64 px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:border-slate-900 transition-colors text-sm"
-              >
-                <option value="">Alle plaatsen</option>
-                {uniekePlaatsen.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
+            <div className="grid gap-3 md:grid-cols-2 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Filter op plaats
+                </label>
+                <select
+                  value={gekozenPlaats}
+                  onChange={(e) => setGekozenPlaats(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+                >
+                  <option value="">Alle plaatsen</option>
+                  {uniekePlaatsen.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Filter op categorie
+                </label>
+                <select
+                  value={gekozenCategorie}
+                  onChange={(e) => setGekozenCategorie(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+                >
+                  <option value="">Alle categorieën</option>
+                  {uniekeCategorieen.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           )}
 
@@ -529,7 +557,7 @@ export default function Home() {
             </div>
           ) : gefilterdeKlussen.length === 0 ? (
             <div className="bg-white border border-slate-200 rounded-md p-6 text-slate-500 text-sm text-center">
-              Geen klussen gevonden in {gekozenPlaats}.
+              Geen klussen gevonden met dit filter.
             </div>
           ) : (
             <div className="space-y-3">

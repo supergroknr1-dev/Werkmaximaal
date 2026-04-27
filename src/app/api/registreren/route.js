@@ -1,6 +1,8 @@
 import bcrypt from "bcryptjs";
+import { after } from "next/server";
 import { prisma } from "../../../lib/prisma";
 import { getInstellingen } from "../../../lib/instellingen";
+import { syncVakmanNaarPipedrive } from "../../../lib/pipedrive";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const TELEFOON_REGEX = /^(\+31|0)[1-9]\d{8}$/;
@@ -119,9 +121,28 @@ export async function POST(request) {
   try {
     const user = await prisma.user.create({
       data: { email, wachtwoordHash, naam, rol, ...extra },
-      select: { id: true, email: true, naam: true, rol: true },
     });
-    return Response.json(user);
+
+    // Vakman-aanmeldingen worden naar Pipedrive gepusht voor lead-
+    // beheer. Dit gebeurt na de response (after()) zodat de gebruiker
+    // niet hoeft te wachten op de Pipedrive API; bij geen token doet
+    // de helper niets.
+    if (user.rol === "vakman") {
+      after(async () => {
+        try {
+          await syncVakmanNaarPipedrive(user);
+        } catch (err) {
+          console.error("[pipedrive] sync vakman naar Pipedrive mislukt:", err);
+        }
+      });
+    }
+
+    return Response.json({
+      id: user.id,
+      email: user.email,
+      naam: user.naam,
+      rol: user.rol,
+    });
   } catch (e) {
     if (e.code === "P2002") {
       return Response.json(

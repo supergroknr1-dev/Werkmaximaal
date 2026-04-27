@@ -273,6 +273,14 @@ export default function Home() {
                 Mijn klussen
               </Link>
             )}
+            {huidigeUser && (
+              <Link
+                href="/profiel"
+                className="text-slate-400 hover:text-slate-700 transition-colors"
+              >
+                Profiel
+              </Link>
+            )}
             {huidigeUser?.isAdmin && (
               <Link
                 href="/admin"

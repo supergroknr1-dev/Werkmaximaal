@@ -495,17 +495,16 @@ export default function Home() {
                 </datalist>
               </div>
 
+              {hobbyistInschakeld && (
               <div className="mb-6">
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Type vakman gewenst
                 </label>
-                <div className={`grid gap-2 ${hobbyistInschakeld ? "grid-cols-3" : "grid-cols-2"}`}>
+                <div className="grid grid-cols-3 gap-2">
                   {[
                     { val: "", label: "Beide" },
                     { val: "professional", label: "Professional" },
-                    ...(hobbyistInschakeld
-                      ? [{ val: "hobbyist", label: "Hobbyist" }]
-                      : []),
+                    { val: "hobbyist", label: "Hobbyist" },
                   ].map((opt) => (
                     <button
                       key={opt.val}
@@ -522,7 +521,9 @@ export default function Home() {
                   ))}
                 </div>
               </div>
+              )}
 
+              {hobbyistInschakeld && (
               <div className="bg-slate-50 border border-slate-200 rounded-md p-4 mb-6">
                 <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-3">
                   Pro vs Hobbyist
@@ -559,6 +560,7 @@ export default function Home() {
                   </tbody>
                 </table>
               </div>
+              )}
 
               <div className="flex gap-3">
                 <button

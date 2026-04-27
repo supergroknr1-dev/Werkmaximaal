@@ -32,6 +32,41 @@ export default function RegistrerenVakmanPage() {
   const [succes, setSucces] = useState(false);
   const [vakmanType, setVakmanType] = useState(null); // "professional" of "hobbyist"
   const [disclaimerAkkoord, setDisclaimerAkkoord] = useState(false);
+  const [kvkStatus, setKvkStatus] = useState({ state: "leeg" });
+
+  useEffect(() => {
+    const kvk = kvkNummer.trim();
+    if (vakmanType !== "professional" || !/^\d{8}$/.test(kvk) || !bedrijfsnaam.trim()) {
+      setKvkStatus({ state: "leeg" });
+      return;
+    }
+
+    setKvkStatus({ state: "bezig" });
+    let geannuleerd = false;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/kvk-check?kvk=${kvk}`);
+        if (geannuleerd) return;
+        const data = await res.json();
+        if (!data.found) {
+          setKvkStatus({ state: "niet-gevonden" });
+        } else if (
+          bedrijfsnaam.trim().toLowerCase() ===
+          data.bedrijfsnaam.trim().toLowerCase()
+        ) {
+          setKvkStatus({ state: "match", officieleNaam: data.bedrijfsnaam });
+        } else {
+          setKvkStatus({ state: "mismatch", officieleNaam: data.bedrijfsnaam });
+        }
+      } catch {
+        setKvkStatus({ state: "leeg" });
+      }
+    }, 300);
+    return () => {
+      geannuleerd = true;
+      clearTimeout(timer);
+    };
+  }, [kvkNummer, bedrijfsnaam, vakmanType]);
 
   useEffect(() => {
     const schoon = regioPostcode.trim().toUpperCase();
@@ -273,6 +308,44 @@ export default function RegistrerenVakmanPage() {
             />
             <p className="text-xs text-slate-500 mt-1">8 cijfers.</p>
           </div>
+
+          {kvkStatus.state === "bezig" && (
+            <div className="bg-slate-50 border border-slate-200 rounded-md p-3 text-xs text-slate-500 animate-pulse">
+              Bezig met KvK-controle...
+            </div>
+          )}
+          {kvkStatus.state === "match" && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-md p-3 text-xs text-emerald-900 flex items-start gap-2">
+              <svg
+                className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={3}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>
+                Match met KvK-register: <strong>{kvkStatus.officieleNaam}</strong>
+              </span>
+            </div>
+          )}
+          {kvkStatus.state === "mismatch" && (
+            <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-xs text-amber-900">
+              <p className="font-semibold mb-1">⚠ Naam wijkt af van KvK</p>
+              <p>
+                Officiële naam volgens KvK:{" "}
+                <strong>{kvkStatus.officieleNaam}</strong>. Controleer of u de
+                bedrijfsnaam exact hebt overgenomen.
+              </p>
+            </div>
+          )}
+          {kvkStatus.state === "niet-gevonden" && (
+            <div className="bg-slate-50 border border-slate-200 rounded-md p-3 text-xs text-slate-600">
+              KvK-nummer niet gevonden in onze mock-database. Bij echte deploy
+              wordt hier kvk.nl bevraagd.
+            </div>
+          )}
           </>
           )}
 

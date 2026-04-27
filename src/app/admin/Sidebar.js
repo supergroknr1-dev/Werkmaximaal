@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
+  UserSquare,
   ClipboardList,
   Settings,
   ArrowLeft,
@@ -12,6 +13,7 @@ import {
 
 const ITEMS = [
   { href: "/admin", label: "Overzicht", icon: LayoutDashboard, exact: true },
+  { href: "/admin/consumenten", label: "Consumenten", icon: UserSquare },
   { href: "/admin/vakmannen", label: "Vakmannen", icon: Users },
   { href: "/admin/klussen", label: "Klussen", icon: ClipboardList },
   { href: "/admin/instellingen", label: "Instellingen", icon: Settings },

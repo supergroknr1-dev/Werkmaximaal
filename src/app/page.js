@@ -674,6 +674,23 @@ export default function Home() {
                       </>
                     )}
                   </p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {klus.voorkeurVakmanType === "professional" && (
+                      <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        Pro
+                      </span>
+                    )}
+                    {klus.voorkeurVakmanType === "hobbyist" && (
+                      <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
+                        Hobbyist
+                      </span>
+                    )}
+                    {!klus.voorkeurVakmanType && (
+                      <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-50 text-slate-600 border border-slate-200">
+                        Pro of Hobbyist
+                      </span>
+                    )}
+                  </div>
                   <Link
                     href={`/klussen/${klus.id}`}
                     className="text-xs text-slate-600 hover:text-slate-900 mt-3 inline-block transition-colors"

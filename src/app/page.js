@@ -592,6 +592,7 @@ export default function Home() {
         </>
         )}
 
+        {userLoaded && huidigeUser && (
         <div>
           <h2 className="text-lg font-semibold text-slate-900 mb-4">
             {lijstHeading} ({gefilterdeKlussen.length})
@@ -710,6 +711,7 @@ export default function Home() {
             </div>
           )}
         </div>
+        )}
       </div>
     </div>
   );

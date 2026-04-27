@@ -265,6 +265,14 @@ export default function Home() {
                 </Link>
               </>
             )}
+            {huidigeUser?.rol === "consument" && (
+              <Link
+                href="/mijn-klussen"
+                className="text-slate-400 hover:text-slate-700 transition-colors"
+              >
+                Mijn klussen
+              </Link>
+            )}
             {huidigeUser?.isAdmin && (
               <Link
                 href="/admin"

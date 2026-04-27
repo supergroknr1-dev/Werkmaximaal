@@ -27,10 +27,16 @@ export async function POST(request, { params }) {
 
   const klus = await prisma.klus.findUnique({
     where: { id: klusId },
-    select: { id: true, userId: true, voorkeurVakmanType: true },
+    select: { id: true, userId: true, voorkeurVakmanType: true, gesloten: true },
   });
   if (!klus) {
     return Response.json({ error: "Klus niet gevonden." }, { status: 404 });
+  }
+  if (klus.gesloten) {
+    return Response.json(
+      { error: "Deze klus is gesloten en accepteert geen nieuwe leads meer." },
+      { status: 400 }
+    );
   }
   if (klus.userId === user.id) {
     return Response.json(

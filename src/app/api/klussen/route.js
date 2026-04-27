@@ -4,6 +4,7 @@ import { getInstellingen } from "../../../lib/instellingen";
 
 export async function GET() {
   const klussen = await prisma.klus.findMany({
+    where: { gesloten: false },
     orderBy: { aangemaakt: "desc" },
   });
   return Response.json(klussen);

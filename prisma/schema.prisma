@@ -59,6 +59,7 @@ model Klus {
   plaats       String
   categorie    String?
   voorkeurVakmanType String? // "professional", "hobbyist" of null voor 'beide'
+  gesloten     Boolean   @default(false)
   aangemaakt   DateTime  @default(now())
   reacties     Reactie[]
   leads        Lead[]

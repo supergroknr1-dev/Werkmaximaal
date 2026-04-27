@@ -23,6 +23,8 @@ model User {
   // Velden voor vakmannen (null voor consumenten)
   bedrijfsnaam   String?
   kvkNummer      String?
+  kvkUittrekselUrl  String?
+  kvkUittrekselNaam String?
   telefoon       String?
   werkafstand    Int? // in km
   regioPostcode  String? // postcode-4 als centrum van werkgebied

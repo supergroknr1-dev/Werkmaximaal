@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import KvkUpload from "./KvkUpload";
 
 const POSTCODE_REGEX = /^\d{4}[A-Z]{2}$/;
 
@@ -32,6 +33,8 @@ export default function RegistrerenVakmanPage() {
   const [succes, setSucces] = useState(false);
   const [vakmanType, setVakmanType] = useState(null); // "professional" of "hobbyist"
   const [disclaimerAkkoord, setDisclaimerAkkoord] = useState(false);
+  const [kvkUittrekselUrl, setKvkUittrekselUrl] = useState("");
+  const [kvkUittrekselNaam, setKvkUittrekselNaam] = useState("");
   const [kvkStatus, setKvkStatus] = useState({ state: "leeg" });
   const [hobbyistInschakeld, setHobbyistInschakeld] = useState(true);
 
@@ -128,6 +131,8 @@ export default function RegistrerenVakmanPage() {
         naam,
         bedrijfsnaam,
         kvkNummer,
+        kvkUittrekselUrl,
+        kvkUittrekselNaam,
         telefoon,
         werkafstand: parseInt(werkafstand),
         regioPostcode: regioPostcode.toUpperCase(),
@@ -357,6 +362,15 @@ export default function RegistrerenVakmanPage() {
               wordt hier kvk.nl bevraagd.
             </div>
           )}
+
+          <KvkUpload
+            huidigeUrl={kvkUittrekselUrl}
+            huidigeNaam={kvkUittrekselNaam}
+            onUploaded={(url, naam) => {
+              setKvkUittrekselUrl(url);
+              setKvkUittrekselNaam(naam);
+            }}
+          />
           </>
           )}
 

@@ -96,6 +96,13 @@ export async function POST(request) {
 
       extra.bedrijfsnaam = bedrijfsnaam;
       extra.kvkNummer = kvkNummer;
+
+      const url = (data.kvkUittrekselUrl ?? "").trim();
+      const naam = (data.kvkUittrekselNaam ?? "").trim();
+      if (url) {
+        extra.kvkUittrekselUrl = url;
+        extra.kvkUittrekselNaam = naam || null;
+      }
     } else {
       // hobbyist
       if (!data.disclaimerAkkoord) {

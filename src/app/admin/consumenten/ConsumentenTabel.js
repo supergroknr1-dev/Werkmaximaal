@@ -117,23 +117,23 @@ export default function ConsumentenTabel({ consumenten }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-[11px] uppercase tracking-wider text-slate-500 font-medium bg-slate-50 border-b border-slate-100">
-                <th className="text-left px-4 py-3 whitespace-nowrap">Voornaam</th>
-                <th className="text-left px-3 py-3 whitespace-nowrap">Achternaam</th>
-                <th className="text-left px-3 py-3 whitespace-nowrap">Adres</th>
-                <th className="text-left px-3 py-3 whitespace-nowrap">Postcode</th>
-                <th className="text-left px-3 py-3 whitespace-nowrap">Plaats</th>
-                <th className="text-left px-3 py-3 whitespace-nowrap">E-mail</th>
-                <th className="text-left px-3 py-3 whitespace-nowrap">Telefoon</th>
-                <th className="text-left px-3 py-3 whitespace-nowrap">Beroep van klussen</th>
-                <th className="text-right px-3 py-3 whitespace-nowrap">Aantal klussen</th>
-                <th className="text-left px-3 py-3 whitespace-nowrap">Aangemeld</th>
-                <th className="text-right px-4 py-3 whitespace-nowrap"></th>
+                <th className="text-left px-3 py-3 whitespace-nowrap">Voornaam</th>
+                <th className="text-left px-2 py-3 whitespace-nowrap">Achternaam</th>
+                <th className="text-left px-2 py-3 whitespace-nowrap">Adres</th>
+                <th className="text-left px-2 py-3 whitespace-nowrap">Postcode</th>
+                <th className="text-left px-2 py-3 whitespace-nowrap">Plaats</th>
+                <th className="text-left px-2 py-3 whitespace-nowrap">E-mail</th>
+                <th className="text-left px-2 py-3 whitespace-nowrap">Telefoon</th>
+                <th className="text-left px-2 py-3 whitespace-nowrap">Beroep</th>
+                <th className="text-right px-2 py-3 whitespace-nowrap">Klussen</th>
+                <th className="text-left px-2 py-3 whitespace-nowrap">Aangemeld</th>
+                <th className="text-right px-3 py-3 whitespace-nowrap"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {gefilterd.map((c) => (
                 <tr key={c.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td className="px-3 py-3 whitespace-nowrap">
                     <div className="flex items-center gap-1.5">
                       <span className="text-slate-900 font-medium">
                         {c.voornaam || (
@@ -151,19 +151,19 @@ export default function ConsumentenTabel({ consumenten }) {
                       <p className="text-[11px] text-slate-500">{c.naam}</p>
                     )}
                   </td>
-                  <td className="px-3 py-3 whitespace-nowrap text-slate-900">
+                  <td className="px-2 py-3 whitespace-nowrap text-slate-900">
                     {c.achternaam || <span className="text-slate-300">—</span>}
                   </td>
-                  <td className="px-3 py-3 whitespace-nowrap text-slate-700">
+                  <td className="px-2 py-3 whitespace-nowrap text-slate-700">
                     {c.adres || <span className="text-slate-300">—</span>}
                   </td>
-                  <td className="px-3 py-3 whitespace-nowrap text-slate-700 font-mono text-xs">
+                  <td className="px-2 py-3 whitespace-nowrap text-slate-700 font-mono text-xs">
                     {c.postcode || <span className="text-slate-300">—</span>}
                   </td>
-                  <td className="px-3 py-3 whitespace-nowrap text-slate-700">
+                  <td className="px-2 py-3 whitespace-nowrap text-slate-700">
                     {c.plaats || <span className="text-slate-300">—</span>}
                   </td>
-                  <td className="px-3 py-3 whitespace-nowrap">
+                  <td className="px-2 py-3 whitespace-nowrap">
                     <a
                       href={`mailto:${c.email}`}
                       className="text-slate-700 hover:text-slate-900 hover:underline text-xs"
@@ -171,7 +171,7 @@ export default function ConsumentenTabel({ consumenten }) {
                       {c.email}
                     </a>
                   </td>
-                  <td className="px-3 py-3 whitespace-nowrap">
+                  <td className="px-2 py-3 whitespace-nowrap">
                     {c.telefoon ? (
                       <a
                         href={`tel:${c.telefoon}`}
@@ -210,10 +210,10 @@ export default function ConsumentenTabel({ consumenten }) {
                       {c.klussenCount}
                     </span>
                   </td>
-                  <td className="px-3 py-3 whitespace-nowrap text-slate-600 text-xs">
+                  <td className="px-2 py-3 whitespace-nowrap text-slate-600 text-xs">
                     {formatDatum(c.aangemaakt)}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-right">
+                  <td className="px-3 py-3 whitespace-nowrap text-right">
                     <button
                       type="button"
                       onClick={() => verwijder(c)}

@@ -36,7 +36,7 @@ export default async function AdminLayout({ children }) {
     <div className="min-h-screen bg-slate-50">
       <Sidebar adminNaam={user.naam} />
       <div className="md:pl-60">
-        <main className="px-6 md:px-10 py-8 md:py-10 max-w-7xl">
+        <main className="px-6 md:px-10 py-8 md:py-10">
           {children}
         </main>
       </div>

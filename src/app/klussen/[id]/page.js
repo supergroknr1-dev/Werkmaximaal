@@ -56,9 +56,10 @@ export default async function KlusDetailPage({ params }) {
     });
   }
 
-  // Vakmannen zien de volledige info pas na het kopen van de lead.
-  // Consumenten (eigenaren én anderen) zien alles.
-  const magVolledigeInfoZien = !isVakman || !!leadGekocht;
+  // Adressen zijn privé. Alleen de eigenaar, een admin of een vakman
+  // die de lead heeft gekocht ziet de volledige info. Andere consumenten
+  // en anonieme bezoekers krijgen de paywall-view.
+  const magVolledigeInfoZien = isOwner || isAdmin || (isVakman && !!leadGekocht);
   const magVerwijderen =
     sessionUser && (klus.userId === null || klus.userId === sessionUser.id);
 
@@ -153,8 +154,9 @@ export default async function KlusDetailPage({ params }) {
                 Opdracht in {klus.plaats}
               </h1>
               <p className="text-sm text-slate-500 mb-8">
-                De volledige omschrijving en het exacte adres zijn pas zichtbaar
-                nadat u deze lead heeft gekocht.
+                {isVakman
+                  ? "De volledige omschrijving en het exacte adres zijn pas zichtbaar nadat u deze lead heeft gekocht."
+                  : "Het exacte adres en de volledige omschrijving worden pas vrijgegeven aan een vakman zodra hij of zij de lead koopt."}
               </p>
 
               <dl className="space-y-0 mb-10 border-t border-slate-100">
@@ -174,10 +176,18 @@ export default async function KlusDetailPage({ params }) {
                 </div>
               </dl>
 
-              <LeadKopen
-                klusId={klus.id}
-                bedragInCenten={await bedragVoorVakman(sessionUser?.vakmanType)}
-              />
+              {isVakman ? (
+                <LeadKopen
+                  klusId={klus.id}
+                  bedragInCenten={await bedragVoorVakman(sessionUser?.vakmanType)}
+                />
+              ) : (
+                <div className="bg-slate-50 border border-slate-200 rounded-md p-4 text-sm text-slate-600">
+                  Het exacte adres en de volledige omschrijving zijn alleen
+                  zichtbaar voor de eigenaar van deze klus en voor vakmannen
+                  die een lead hebben gekocht.
+                </div>
+              )}
             </>
           )}
         </div>

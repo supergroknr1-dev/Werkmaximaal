@@ -7,7 +7,32 @@ export async function GET() {
     where: { gesloten: false, goedgekeurd: true },
     orderBy: { aangemaakt: "desc" },
   });
-  return Response.json(klussen);
+
+  const session = await getSession();
+  let sessieUser = null;
+  if (session.userId) {
+    sessieUser = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { id: true, isAdmin: true },
+    });
+  }
+
+  // Adressen zijn alleen zichtbaar voor de eigenaar of een admin.
+  // Voor iedereen anders strippen we straatnaam + huisnummer en tonen
+  // we alleen de eerste vier postcode-cijfers (de buurtindicator).
+  const veilig = klussen.map((k) => {
+    const magVolledig =
+      sessieUser?.isAdmin || (sessieUser && k.userId === sessieUser.id);
+    if (magVolledig) return k;
+    return {
+      ...k,
+      straatnaam: null,
+      huisnummer: null,
+      postcode: k.postcode ? k.postcode.slice(0, 4) : null,
+    };
+  });
+
+  return Response.json(veilig);
 }
 
 export async function POST(request) {

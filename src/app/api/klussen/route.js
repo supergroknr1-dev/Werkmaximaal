@@ -3,19 +3,32 @@ import { getSession } from "../../../lib/session";
 import { getInstellingen } from "../../../lib/instellingen";
 
 export async function GET() {
-  const klussen = await prisma.klus.findMany({
-    where: { gesloten: false, goedgekeurd: true },
-    orderBy: { aangemaakt: "desc" },
-  });
-
   const session = await getSession();
   let sessieUser = null;
   if (session.userId) {
     sessieUser = await prisma.user.findUnique({
       where: { id: session.userId },
-      select: { id: true, isAdmin: true },
+      select: { id: true, rol: true, isAdmin: true },
     });
   }
+
+  // Consumenten zien op het dashboard alleen hun eigen klussen (alle
+  // statussen). Vakmannen en admins zien alle goedgekeurde, openstaande
+  // klussen. Anonieme bezoekers krijgen niets — de homepage verbergt de
+  // lijst toch al voor hen.
+  let where;
+  if (!sessieUser) {
+    where = { gesloten: false, goedgekeurd: true };
+  } else if (sessieUser.rol === "consument") {
+    where = { userId: sessieUser.id };
+  } else {
+    where = { gesloten: false, goedgekeurd: true };
+  }
+
+  const klussen = await prisma.klus.findMany({
+    where,
+    orderBy: { aangemaakt: "desc" },
+  });
 
   // Adressen zijn alleen zichtbaar voor de eigenaar of een admin.
   // Voor iedereen anders strippen we straatnaam + huisnummer en tonen

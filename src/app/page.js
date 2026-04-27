@@ -217,7 +217,7 @@ export default function Home() {
   });
 
   const isVakman = huidigeUser?.rol === "vakman";
-  const lijstHeading = isVakman ? "Openstaande opdrachten" : "Geplaatste klussen";
+  const lijstHeading = isVakman ? "Openstaande opdrachten" : "Mijn klussen";
 
   return (
     <div className="min-h-screen bg-gray-50">

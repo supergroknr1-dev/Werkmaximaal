@@ -13,6 +13,8 @@ export async function POST(request) {
     data: {
       titel: data.titel,
       postcode: data.postcode || null,
+      huisnummer: data.huisnummer || null,
+      straatnaam: data.straatnaam || null,
       plaats: data.plaats,
       categorie: data.categorie || null,
     },

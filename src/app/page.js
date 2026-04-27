@@ -49,14 +49,29 @@ function detectCategorie(tekst, trefwoorden) {
 const POSTCODE_REGEX = /^\d{4}[A-Z]{2}$/;
 
 // Vraagt de officiële PDOK Locatieserver (Nederlandse overheid, gratis)
-// om de woonplaats bij een postcode. Dekt alle ~460.000 NL postcodes.
-async function fetchPlaats(postcode) {
-  const url = `https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=postcode:${postcode}&fl=woonplaatsnaam&rows=1`;
+// om het volledige adres bij een postcode + huisnummer. Filter op
+// type:adres zodat we het specifieke adres krijgen, niet de straatnaam.
+async function fetchAdres(postcode, huisnummer) {
+  const url = `https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=postcode:${postcode}+huisnummer:${huisnummer}&fq=type:adres&fl=weergavenaam,straatnaam,huisnummer,woonplaatsnaam,postcode&rows=1`;
   try {
     const res = await fetch(url);
     if (!res.ok) return null;
     const data = await res.json();
-    return data?.response?.docs?.[0]?.woonplaatsnaam ?? null;
+    const doc = data?.response?.docs?.[0];
+    if (!doc) return null;
+    if (
+      doc.postcode !== postcode ||
+      String(doc.huisnummer) !== String(huisnummer)
+    ) {
+      return null; // PDOK gaf 'best match' terug, niet ons exacte adres
+    }
+    return {
+      weergavenaam: doc.weergavenaam,
+      straatnaam: doc.straatnaam,
+      huisnummer: String(doc.huisnummer),
+      postcode: doc.postcode,
+      plaats: doc.woonplaatsnaam,
+    };
   } catch {
     return null;
   }
@@ -66,6 +81,7 @@ export default function Home() {
   const [klussen, setKlussen] = useState([]);
   const [titel, setTitel] = useState("");
   const [postcode, setPostcode] = useState("");
+  const [huisnummer, setHuisnummer] = useState("");
   const [categorie, setCategorie] = useState("");
   const [bezig, setBezig] = useState(false);
   const [gekozenPlaats, setGekozenPlaats] = useState("");
@@ -88,16 +104,18 @@ export default function Home() {
   }, [titel, categorieAangeraakt, trefwoorden]);
 
   useEffect(() => {
-    const schoon = postcode.trim().toUpperCase();
-    if (!schoon) {
+    const schoonPc = postcode.trim().toUpperCase();
+    const schoonHnr = huisnummer.trim();
+
+    if (!schoonPc && !schoonHnr) {
       setPostcodeStatus({ state: "leeg" });
       return;
     }
-    if (schoon.length < 6) {
+    if (schoonPc.length < 6 || !schoonHnr) {
       setPostcodeStatus({ state: "typen" });
       return;
     }
-    if (!POSTCODE_REGEX.test(schoon)) {
+    if (!POSTCODE_REGEX.test(schoonPc)) {
       setPostcodeStatus({ state: "fout" });
       return;
     }
@@ -105,16 +123,16 @@ export default function Home() {
     setPostcodeStatus({ state: "bezig" });
     let geannuleerd = false;
     const timer = setTimeout(async () => {
-      const plaats = await fetchPlaats(schoon);
+      const adres = await fetchAdres(schoonPc, schoonHnr);
       if (geannuleerd) return;
-      setPostcodeStatus(plaats ? { state: "ok", plaats } : { state: "fout" });
+      setPostcodeStatus(adres ? { state: "ok", ...adres } : { state: "fout" });
     }, 250);
 
     return () => {
       geannuleerd = true;
       clearTimeout(timer);
     };
-  }, [postcode]);
+  }, [postcode, huisnummer]);
 
   async function haalKlussenOp() {
     const reactie = await fetch("/api/klussen");
@@ -149,6 +167,8 @@ export default function Home() {
       body: JSON.stringify({
         titel,
         postcode,
+        huisnummer,
+        straatnaam: postcodeStatus.straatnaam,
         plaats: postcodeStatus.plaats,
         categorie,
       }),
@@ -156,6 +176,7 @@ export default function Home() {
 
     setTitel("");
     setPostcode("");
+    setHuisnummer("");
     setCategorie("");
     setCategorieAangeraakt(false);
     setStap(1);
@@ -271,57 +292,72 @@ export default function Home() {
 
               <div className="mb-6">
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Postcode
+                  Postcode &amp; huisnummer
                 </label>
-                <div className="flex">
+                <div className="flex gap-2">
                   <input
                     type="text"
                     value={postcode}
                     onChange={(e) => setPostcode(e.target.value.toUpperCase().slice(0, 6))}
                     maxLength={6}
                     placeholder="1234AB"
-                    className={`w-32 px-3 py-2.5 bg-white border rounded-l-md text-slate-900 placeholder:text-slate-400 focus:outline-none transition-colors uppercase tracking-wider font-mono text-sm ${
+                    className={`w-32 px-3 py-2.5 bg-white border rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none transition-colors uppercase tracking-wider font-mono text-sm ${
                       postcodeStatus.state === "fout"
                         ? "border-rose-300 focus:border-rose-400"
                         : "border-slate-300 focus:border-slate-900"
                     }`}
                     aria-invalid={postcodeStatus.state === "fout"}
+                    aria-label="Postcode"
                   />
-                  <div
-                    className={`flex-1 px-3 py-2.5 bg-slate-50 border border-l-0 rounded-r-md flex items-center gap-2 text-sm ${
-                      postcodeStatus.state === "fout" ? "border-rose-300" : "border-slate-300"
+                  <input
+                    type="text"
+                    value={huisnummer}
+                    onChange={(e) => setHuisnummer(e.target.value.replace(/[^0-9]/g, "").slice(0, 5))}
+                    inputMode="numeric"
+                    placeholder="12"
+                    className={`w-20 px-3 py-2.5 bg-white border rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none transition-colors font-mono text-sm ${
+                      postcodeStatus.state === "fout"
+                        ? "border-rose-300 focus:border-rose-400"
+                        : "border-slate-300 focus:border-slate-900"
                     }`}
-                  >
-                    {postcodeStatus.state === "ok" && (
-                      <>
-                        <svg
-                          className="w-4 h-4 text-emerald-600 shrink-0"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={3}
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span className="text-slate-500">{postcodeStatus.plaats}</span>
-                      </>
-                    )}
-                    {postcodeStatus.state === "bezig" && (
-                      <span className="text-slate-400 text-xs animate-pulse">
-                        Bezig met opzoeken...
-                      </span>
-                    )}
-                    {postcodeStatus.state === "fout" && (
-                      <span className="text-slate-400 text-xs">—</span>
-                    )}
-                    {(postcodeStatus.state === "leeg" || postcodeStatus.state === "typen") && (
-                      <span className="text-slate-400 text-xs">Plaatsnaam verschijnt hier</span>
-                    )}
-                  </div>
+                    aria-label="Huisnummer"
+                  />
                 </div>
-                {postcodeStatus.state === "fout" && (
-                  <p className="text-sm text-rose-600 mt-2">Ongeldige postcode</p>
-                )}
+                <div
+                  className={`mt-2 px-3 py-2.5 bg-slate-50 border rounded-md flex items-center gap-2 text-sm ${
+                    postcodeStatus.state === "fout"
+                      ? "border-rose-300"
+                      : "border-slate-200"
+                  }`}
+                >
+                  {postcodeStatus.state === "ok" && (
+                    <>
+                      <svg
+                        className="w-4 h-4 text-emerald-600 shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={3}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-slate-700">{postcodeStatus.weergavenaam}</span>
+                    </>
+                  )}
+                  {postcodeStatus.state === "bezig" && (
+                    <span className="text-slate-400 text-xs animate-pulse">
+                      Bezig met opzoeken...
+                    </span>
+                  )}
+                  {postcodeStatus.state === "fout" && (
+                    <span className="text-rose-600 text-xs">Adres niet gevonden</span>
+                  )}
+                  {(postcodeStatus.state === "leeg" || postcodeStatus.state === "typen") && (
+                    <span className="text-slate-400 text-xs">
+                      Het volledige adres verschijnt hier
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="mb-8">
@@ -356,7 +392,7 @@ export default function Home() {
                 </p>
                 <p className="text-slate-900 mb-2">{titel}</p>
                 <p className="text-sm text-slate-500">
-                  {postcode} · {postcodeStatus.plaats}
+                  {postcodeStatus.weergavenaam || `${postcode} ${huisnummer}, ${postcodeStatus.plaats}`}
                 </p>
               </div>
 
@@ -469,7 +505,8 @@ export default function Home() {
                     </button>
                   </div>
                   <p className="text-xs text-slate-500">
-                    {klus.postcode && <>{klus.postcode} · </>}
+                    {klus.straatnaam && <>{klus.straatnaam} {klus.huisnummer}, </>}
+                    {!klus.straatnaam && klus.postcode && <>{klus.postcode}{klus.huisnummer ? ` ${klus.huisnummer}` : ""} · </>}
                     {klus.plaats}
                     <span className="mx-1.5">·</span>
                     {tijdGeleden(klus.aangemaakt)}

@@ -61,15 +61,28 @@ export default async function KlusDetailPage({ params }) {
                 <dd className="text-sm text-slate-900">{klus.categorie}</dd>
               </div>
             )}
-            <div className="flex py-3 border-b border-slate-100">
-              <dt className="w-32 text-sm font-medium text-slate-500 shrink-0">Plaats</dt>
-              <dd className="text-sm text-slate-900">{klus.plaats}</dd>
-            </div>
-            {klus.postcode && (
+            {klus.straatnaam ? (
               <div className="flex py-3 border-b border-slate-100">
-                <dt className="w-32 text-sm font-medium text-slate-500 shrink-0">Postcode</dt>
-                <dd className="text-sm text-slate-900 font-mono">{klus.postcode}</dd>
+                <dt className="w-32 text-sm font-medium text-slate-500 shrink-0">Adres</dt>
+                <dd className="text-sm text-slate-900">
+                  {klus.straatnaam} {klus.huisnummer}, {klus.postcode} {klus.plaats}
+                </dd>
               </div>
+            ) : (
+              <>
+                <div className="flex py-3 border-b border-slate-100">
+                  <dt className="w-32 text-sm font-medium text-slate-500 shrink-0">Plaats</dt>
+                  <dd className="text-sm text-slate-900">{klus.plaats}</dd>
+                </div>
+                {klus.postcode && (
+                  <div className="flex py-3 border-b border-slate-100">
+                    <dt className="w-32 text-sm font-medium text-slate-500 shrink-0">Postcode</dt>
+                    <dd className="text-sm text-slate-900 font-mono">
+                      {klus.postcode}{klus.huisnummer ? ` ${klus.huisnummer}` : ""}
+                    </dd>
+                  </div>
+                )}
+              </>
             )}
             <div className="flex py-3 border-b border-slate-100">
               <dt className="w-32 text-sm font-medium text-slate-500 shrink-0">Geplaatst</dt>

@@ -49,6 +49,8 @@ model Klus {
   titel        String
   beschrijving String?
   postcode     String?
+  huisnummer   String?
+  straatnaam   String?
   plaats       String
   categorie    String?
   aangemaakt   DateTime  @default(now())

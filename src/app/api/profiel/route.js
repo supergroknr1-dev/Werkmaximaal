@@ -29,8 +29,12 @@ export async function PUT(request) {
   const naam =
     voornaam || achternaam ? `${voornaam} ${achternaam}`.trim() : naamFallback;
   const telefoonRuw = (data.telefoon ?? "").replace(/[\s-]/g, "").trim();
-  const adres = (data.adres ?? "").trim();
   const persoonsPostcode = (data.persoonsPostcode ?? "").trim().toUpperCase();
+  const huisnummer = (data.huisnummer ?? "").toString().trim();
+  const huisnummerToevoeging = (data.huisnummerToevoeging ?? "")
+    .toString()
+    .trim();
+  const straatnaam = (data.straatnaam ?? "").trim();
   const persoonsPlaats = (data.persoonsPlaats ?? "").trim();
 
   if (!naam) {
@@ -51,6 +55,20 @@ export async function PUT(request) {
       { status: 400 }
     );
   }
+  if (huisnummer && !/^\d{1,5}$/.test(huisnummer)) {
+    return Response.json(
+      { error: "Huisnummer mag alleen cijfers bevatten." },
+      { status: 400 }
+    );
+  }
+
+  // Combineer straatnaam + huisnummer + toevoeging als legacy-weergave
+  // in het 'adres'-veld, zodat oude code en exports niet stuk gaan.
+  const samengesteld = straatnaam
+    ? `${straatnaam}${huisnummer ? ` ${huisnummer}` : ""}${
+        huisnummerToevoeging ? ` ${huisnummerToevoeging}` : ""
+      }`.trim()
+    : "";
 
   const update = {
     naam,
@@ -58,7 +76,10 @@ export async function PUT(request) {
     achternaam: achternaam || null,
     email,
     telefoon: telefoonRuw || null,
-    adres: adres || null,
+    straatnaam: straatnaam || null,
+    huisnummer: huisnummer || null,
+    huisnummerToevoeging: huisnummerToevoeging || null,
+    adres: samengesteld || null,
     postcode: persoonsPostcode || null,
     plaats: persoonsPlaats || null,
   };

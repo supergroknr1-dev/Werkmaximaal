@@ -13,6 +13,9 @@ export default async function AdminConsumentenPage() {
       email: true,
       telefoon: true,
       adres: true,
+      straatnaam: true,
+      huisnummer: true,
+      huisnummerToevoeging: true,
       postcode: true,
       plaats: true,
       isAdmin: true,
@@ -31,6 +34,13 @@ export default async function AdminConsumentenPage() {
           .filter((cat) => cat && cat.trim().length > 0)
       ),
     ].sort();
+    // Toon de gestructureerde velden indien beschikbaar; val anders
+    // terug op de legacy 'adres'-string.
+    const straatnaamWeergave = c.straatnaam
+      ? `${c.straatnaam}${c.huisnummer ? ` ${c.huisnummer}` : ""}${
+          c.huisnummerToevoeging ? ` ${c.huisnummerToevoeging}` : ""
+        }`
+      : c.adres ?? "";
     return {
       id: c.id,
       naam: c.naam,
@@ -38,7 +48,7 @@ export default async function AdminConsumentenPage() {
       achternaam: c.achternaam,
       email: c.email,
       telefoon: c.telefoon,
-      adres: c.adres,
+      adres: straatnaamWeergave || null,
       postcode: c.postcode,
       plaats: c.plaats,
       isAdmin: c.isAdmin,

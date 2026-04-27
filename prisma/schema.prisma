@@ -22,7 +22,12 @@ model User {
   voornaam       String?
   achternaam     String?
   // Persoonlijk adres van de gebruiker (los van adressen per klus).
-  adres          String? // straat + huisnummer
+  // adres = legacy 'straat + huisnummer'-veld; nieuwe code schrijft
+  // naar straatnaam + huisnummer + huisnummerToevoeging.
+  adres          String?
+  straatnaam     String?
+  huisnummer     String?
+  huisnummerToevoeging String?
   postcode       String?
   plaats         String?
   rol            String // "consument" of "vakman"

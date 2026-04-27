@@ -90,6 +90,7 @@ export default function Home() {
   const [postcodeStatus, setPostcodeStatus] = useState({ state: "leeg" });
   const [trefwoorden, setTrefwoorden] = useState([]);
   const [huidigeUser, setHuidigeUser] = useState(null);
+  const [userLoaded, setUserLoaded] = useState(false);
 
   useEffect(() => {
     haalKlussenOp();
@@ -150,6 +151,7 @@ export default function Home() {
     const reactie = await fetch("/api/me");
     const data = await reactie.json();
     setHuidigeUser(data.user);
+    setUserLoaded(true);
   }
 
   async function uitloggen() {
@@ -218,6 +220,9 @@ export default function Home() {
                 <span className="text-slate-500">
                   Ingelogd als{" "}
                   <span className="text-slate-900 font-medium">{huidigeUser.naam}</span>
+                  <span className="text-slate-400">
+                    {" "}({huidigeUser.rol})
+                  </span>
                 </span>
                 <button
                   type="button"
@@ -252,6 +257,49 @@ export default function Home() {
           </div>
         </header>
 
+        {userLoaded && !huidigeUser && (
+          <div className="bg-white border border-slate-200 rounded-md shadow-sm p-6 md:p-8 mb-10">
+            <h2 className="text-xl font-semibold text-slate-900 mb-2">
+              Plaats een klus
+            </h2>
+            <p className="text-sm text-slate-500 mb-6">
+              Maak eerst een account aan om een klus te plaatsen. Bent u een
+              vakman? Maak een vakman-account aan om straks leads te kopen.
+            </p>
+            <div className="flex gap-3">
+              <Link
+                href="/inloggen"
+                className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
+              >
+                Inloggen
+              </Link>
+              <Link
+                href="/registreren"
+                className="bg-white border border-slate-300 hover:border-slate-900 text-slate-900 text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
+              >
+                Account aanmaken
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {userLoaded && huidigeUser && huidigeUser.rol !== "consument" && (
+          <div className="bg-white border border-slate-200 rounded-md shadow-sm p-6 md:p-8 mb-10">
+            <p className="text-xs uppercase tracking-wider text-slate-500 font-medium mb-2">
+              Vakman-account
+            </p>
+            <h2 className="text-xl font-semibold text-slate-900 mb-2">
+              Welkom, {huidigeUser.naam}
+            </h2>
+            <p className="text-sm text-slate-500">
+              Klussen plaatsen is alleen voor consumenten. Hieronder ziet u alle
+              openstaande opdrachten waar u een lead voor kunt kopen.
+            </p>
+          </div>
+        )}
+
+        {userLoaded && huidigeUser && huidigeUser.rol === "consument" && (
+        <>
         <div className="flex items-center gap-3 mb-6">
           <div className="flex items-center gap-2">
             <span
@@ -447,6 +495,8 @@ export default function Home() {
             </div>
           )}
         </form>
+        </>
+        )}
 
         <div>
           <h2 className="text-lg font-semibold text-slate-900 mb-4">
@@ -497,12 +547,14 @@ export default function Home() {
                         {klus.titel}
                       </Link>
                     </h3>
-                    <button
-                      onClick={() => verwijderKlus(klus.id)}
-                      className="text-xs text-slate-400 hover:text-rose-600 hover:underline shrink-0 transition-colors"
-                    >
-                      Verwijderen
-                    </button>
+                    {huidigeUser && (klus.userId === huidigeUser.id || klus.userId === null) && (
+                      <button
+                        onClick={() => verwijderKlus(klus.id)}
+                        className="text-xs text-slate-400 hover:text-rose-600 hover:underline shrink-0 transition-colors"
+                      >
+                        Verwijderen
+                      </button>
+                    )}
                   </div>
                   <p className="text-xs text-slate-500">
                     {klus.straatnaam && <>{klus.straatnaam} {klus.huisnummer}, </>}

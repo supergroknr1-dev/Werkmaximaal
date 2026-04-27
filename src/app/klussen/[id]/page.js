@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "../../../lib/prisma";
+import { getSession } from "../../../lib/session";
 import VerwijderKnop from "./VerwijderKnop";
 import ReactieForm from "./ReactieForm";
 
@@ -26,6 +27,11 @@ export default async function KlusDetailPage({ params }) {
     },
   });
   if (!klus) notFound();
+
+  const session = await getSession();
+  const magVerwijderen =
+    session.userId &&
+    (klus.userId === null || klus.userId === session.userId);
 
   const datumLang = new Date(klus.aangemaakt).toLocaleDateString("nl-NL", {
     weekday: "long",
@@ -90,7 +96,7 @@ export default async function KlusDetailPage({ params }) {
             </div>
           </dl>
 
-          <VerwijderKnop id={klus.id} />
+          {magVerwijderen && <VerwijderKnop id={klus.id} />}
         </div>
 
         <div className="bg-white border border-slate-200 rounded-md shadow-sm p-6 md:p-8">

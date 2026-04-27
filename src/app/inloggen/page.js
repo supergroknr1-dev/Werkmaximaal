@@ -96,12 +96,22 @@ export default function InloggenPage() {
             {bezig ? "Bezig met inloggen..." : "Inloggen"}
           </button>
 
-          <p className="text-sm text-slate-500 text-center pt-2 border-t border-slate-100">
-            Nog geen account?{" "}
-            <Link href="/registreren" className="text-slate-900 hover:underline font-medium">
-              Registreren
-            </Link>
-          </p>
+          <div className="text-sm text-center pt-2 border-t border-slate-100 space-y-1">
+            <p>
+              <Link
+                href="/wachtwoord-vergeten"
+                className="text-slate-600 hover:text-slate-900 hover:underline"
+              >
+                Wachtwoord vergeten?
+              </Link>
+            </p>
+            <p className="text-slate-500">
+              Nog geen account?{" "}
+              <Link href="/registreren" className="text-slate-900 hover:underline font-medium">
+                Registreren
+              </Link>
+            </p>
+          </div>
         </form>
       </div>
     </div>

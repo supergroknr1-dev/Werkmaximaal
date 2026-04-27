@@ -27,8 +27,21 @@ model User {
   aangemaakt     DateTime  @default(now())
   klussen        Klus[]
   reacties       Reactie[]
+  resetTokens    WachtwoordResetToken[]
 
   @@index([rol])
+}
+
+model WachtwoordResetToken {
+  id         Int      @id @default(autoincrement())
+  token      String   @unique
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vervaltOp  DateTime
+  gebruikt   Boolean  @default(false)
+  aangemaakt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Klus {

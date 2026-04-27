@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "../../../lib/prisma";
 import { getSession } from "../../../lib/session";
+import { bedragVoorVakman } from "../../../lib/lead-prijs";
 import VerwijderKnop from "./VerwijderKnop";
 import ReactieForm from "./ReactieForm";
 import LeadKopen from "./LeadKopen";
@@ -33,7 +34,7 @@ export default async function KlusDetailPage({ params }) {
   const sessionUser = session.userId
     ? await prisma.user.findUnique({
         where: { id: session.userId },
-        select: { id: true, rol: true },
+        select: { id: true, rol: true, vakmanType: true },
       })
     : null;
 
@@ -154,7 +155,10 @@ export default async function KlusDetailPage({ params }) {
                 </div>
               </dl>
 
-              <LeadKopen klusId={klus.id} />
+              <LeadKopen
+                klusId={klus.id}
+                bedragInCenten={bedragVoorVakman(sessionUser?.vakmanType)}
+              />
             </>
           )}
         </div>

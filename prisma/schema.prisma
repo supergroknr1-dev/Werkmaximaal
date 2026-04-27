@@ -55,6 +55,7 @@ model Klus {
   straatnaam   String?
   plaats       String
   categorie    String?
+  voorkeurVakmanType String? // "professional", "hobbyist" of null voor 'beide'
   aangemaakt   DateTime  @default(now())
   reacties     Reactie[]
   leads        Lead[]

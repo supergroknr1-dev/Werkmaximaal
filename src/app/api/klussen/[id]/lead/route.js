@@ -1,7 +1,6 @@
 import { prisma } from "../../../../../lib/prisma";
 import { getSession } from "../../../../../lib/session";
-
-const LEAD_BEDRAG_CENTEN = 1000; // €10
+import { bedragVoorVakman } from "../../../../../lib/lead-prijs";
 
 export async function POST(request, { params }) {
   const { id } = await params;
@@ -17,7 +16,7 @@ export async function POST(request, { params }) {
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { id: true, rol: true },
+    select: { id: true, rol: true, vakmanType: true },
   });
   if (!user || user.rol !== "vakman") {
     return Response.json(
@@ -28,7 +27,7 @@ export async function POST(request, { params }) {
 
   const klus = await prisma.klus.findUnique({
     where: { id: klusId },
-    select: { id: true, userId: true },
+    select: { id: true, userId: true, voorkeurVakmanType: true },
   });
   if (!klus) {
     return Response.json({ error: "Klus niet gevonden." }, { status: 404 });
@@ -39,11 +38,26 @@ export async function POST(request, { params }) {
       { status: 400 }
     );
   }
+  if (
+    klus.voorkeurVakmanType &&
+    user.vakmanType &&
+    klus.voorkeurVakmanType !== user.vakmanType
+  ) {
+    return Response.json(
+      {
+        error:
+          "Deze klant heeft een ander type vakman gevraagd voor deze opdracht.",
+      },
+      { status: 403 }
+    );
+  }
+
+  const bedrag = bedragVoorVakman(user.vakmanType);
 
   // upsert: idempotent — opnieuw kopen geeft de bestaande lead terug
   const lead = await prisma.lead.upsert({
     where: { klusId_vakmanId: { klusId, vakmanId: user.id } },
-    create: { klusId, vakmanId: user.id, bedrag: LEAD_BEDRAG_CENTEN },
+    create: { klusId, vakmanId: user.id, bedrag },
     update: {},
   });
 

@@ -83,6 +83,7 @@ export default function Home() {
   const [postcode, setPostcode] = useState("");
   const [huisnummer, setHuisnummer] = useState("");
   const [categorie, setCategorie] = useState("");
+  const [voorkeurVakmanType, setVoorkeurVakmanType] = useState(""); // "" = beide
   const [bezig, setBezig] = useState(false);
   const [gekozenPlaats, setGekozenPlaats] = useState("");
   const [gekozenCategorie, setGekozenCategorie] = useState("");
@@ -174,6 +175,7 @@ export default function Home() {
         straatnaam: postcodeStatus.straatnaam,
         plaats: postcodeStatus.plaats,
         categorie,
+        voorkeurVakmanType: voorkeurVakmanType || null,
       }),
     });
 
@@ -181,6 +183,7 @@ export default function Home() {
     setPostcode("");
     setHuisnummer("");
     setCategorie("");
+    setVoorkeurVakmanType("");
     setCategorieAangeraakt(false);
     setStap(1);
     setBezig(false);
@@ -483,6 +486,69 @@ export default function Home() {
                     <option key={c} value={c} />
                   ))}
                 </datalist>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Type vakman gewenst
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { val: "", label: "Beide" },
+                    { val: "professional", label: "Professional" },
+                    { val: "hobbyist", label: "Hobbyist" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.val}
+                      type="button"
+                      onClick={() => setVoorkeurVakmanType(opt.val)}
+                      className={`px-3 py-2.5 text-sm font-medium rounded-md border transition-colors ${
+                        voorkeurVakmanType === opt.val
+                          ? "bg-slate-900 text-white border-slate-900"
+                          : "bg-white text-slate-700 border-slate-300 hover:border-slate-900"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200 rounded-md p-4 mb-6">
+                <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-3">
+                  Pro vs Hobbyist
+                </p>
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="text-slate-500">
+                      <th className="text-left font-normal py-1"></th>
+                      <th className="text-center font-medium py-1 px-2">Pro</th>
+                      <th className="text-center font-medium py-1 px-2">Hobbyist</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-slate-700">
+                    <tr className="border-t border-slate-200">
+                      <td className="py-1.5">KvK-geregistreerd</td>
+                      <td className="text-center text-emerald-600">✓</td>
+                      <td className="text-center text-slate-300">—</td>
+                    </tr>
+                    <tr className="border-t border-slate-200">
+                      <td className="py-1.5">Bedrijfsverzekering</td>
+                      <td className="text-center text-emerald-600">✓</td>
+                      <td className="text-center text-slate-300">—</td>
+                    </tr>
+                    <tr className="border-t border-slate-200">
+                      <td className="py-1.5">Garantie op werk</td>
+                      <td className="text-center text-emerald-600">✓</td>
+                      <td className="text-center text-slate-300">—</td>
+                    </tr>
+                    <tr className="border-t border-slate-200">
+                      <td className="py-1.5">Indicatieve prijs</td>
+                      <td className="text-center text-slate-500">Markt</td>
+                      <td className="text-center text-emerald-700">Goedkoper</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
 
               <div className="flex gap-3">

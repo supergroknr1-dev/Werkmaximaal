@@ -36,6 +36,7 @@ export async function POST(request) {
   }
 
   const data = await request.json();
+  const voorkeur = data.voorkeurVakmanType;
   const nieuweKlus = await prisma.klus.create({
     data: {
       titel: data.titel,
@@ -44,6 +45,8 @@ export async function POST(request) {
       straatnaam: data.straatnaam || null,
       plaats: data.plaats,
       categorie: data.categorie || null,
+      voorkeurVakmanType:
+        voorkeur === "professional" || voorkeur === "hobbyist" ? voorkeur : null,
       userId: user.id,
     },
   });

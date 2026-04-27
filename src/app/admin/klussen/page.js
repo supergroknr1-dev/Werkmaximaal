@@ -2,10 +2,16 @@ import { prisma } from "../../../lib/prisma";
 import { getLeadPrijs } from "../../../lib/lead-prijs";
 import KlussenTabel from "./KlussenTabel";
 
-export default async function AdminKlussenPage() {
+export default async function AdminKlussenPage({ searchParams }) {
+  const sp = (await searchParams) ?? {};
+  const beginFilter = sp.filter === "te-keuren" ? "te-keuren" : "alle";
   const [klussen, prijzen] = await Promise.all([
     prisma.klus.findMany({
-      orderBy: [{ gesloten: "asc" }, { aangemaakt: "desc" }],
+      orderBy: [
+        { goedgekeurd: "asc" },
+        { gesloten: "asc" },
+        { aangemaakt: "desc" },
+      ],
       include: {
         user: { select: { naam: true, email: true } },
         reacties: { select: { id: true } },
@@ -24,6 +30,7 @@ export default async function AdminKlussenPage() {
     straatnaam: k.straatnaam,
     voorkeurVakmanType: k.voorkeurVakmanType,
     gesloten: k.gesloten,
+    goedgekeurd: k.goedgekeurd,
     aangemaakt: k.aangemaakt.toISOString(),
     eigenaarNaam: k.user?.naam ?? null,
     reactiesCount: k.reacties.length,
@@ -45,7 +52,11 @@ export default async function AdminKlussenPage() {
         </p>
       </header>
 
-      <KlussenTabel klussen={rijen} prijzen={prijzen} />
+      <KlussenTabel
+        klussen={rijen}
+        prijzen={prijzen}
+        beginFilter={beginFilter}
+      />
     </>
   );
 }

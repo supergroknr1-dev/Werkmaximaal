@@ -27,9 +27,15 @@ export async function POST(request, { params }) {
 
   const klus = await prisma.klus.findUnique({
     where: { id: klusId },
-    select: { id: true, userId: true, voorkeurVakmanType: true, gesloten: true },
+    select: {
+      id: true,
+      userId: true,
+      voorkeurVakmanType: true,
+      gesloten: true,
+      goedgekeurd: true,
+    },
   });
-  if (!klus) {
+  if (!klus || !klus.goedgekeurd) {
     return Response.json({ error: "Klus niet gevonden." }, { status: 404 });
   }
   if (klus.gesloten) {

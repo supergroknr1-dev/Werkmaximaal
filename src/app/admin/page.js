@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { Users, ClipboardList, TrendingUp, ArrowUpRight } from "lucide-react";
+import {
+  Users,
+  ClipboardList,
+  TrendingUp,
+  ArrowUpRight,
+  AlertCircle,
+} from "lucide-react";
 import { prisma } from "../../lib/prisma";
 import { formatBedrag } from "../../lib/lead-prijs";
 
@@ -51,16 +57,19 @@ export default async function AdminOverzicht() {
     aantalHobbyAanmeldingen,
     aantalActieveKlussen,
     aantalGeslotenKlussen,
+    aantalTeKeuren,
     leadsDezeWeek,
     recenteVakmannen,
+    teKeurenKlussen,
   ] = await Promise.all([
     prisma.user.count({ where: { rol: "vakman" } }),
     prisma.user.count({
       where: { rol: "vakman", vakmanType: "professional" },
     }),
     prisma.user.count({ where: { rol: "vakman", vakmanType: "hobbyist" } }),
-    prisma.klus.count({ where: { gesloten: false } }),
+    prisma.klus.count({ where: { gesloten: false, goedgekeurd: true } }),
     prisma.klus.count({ where: { gesloten: true } }),
+    prisma.klus.count({ where: { goedgekeurd: false, gesloten: false } }),
     prisma.lead.aggregate({
       where: { gekochtOp: { gte: sinds } },
       _sum: { bedrag: true },
@@ -77,6 +86,14 @@ export default async function AdminOverzicht() {
         vakmanType: true,
         kvkNummer: true,
         aangemaakt: true,
+      },
+    }),
+    prisma.klus.findMany({
+      where: { goedgekeurd: false, gesloten: false },
+      orderBy: { aangemaakt: "asc" },
+      take: 5,
+      include: {
+        user: { select: { naam: true } },
       },
     }),
   ]);
@@ -97,6 +114,29 @@ export default async function AdminOverzicht() {
           Realtime statistieken over aanmeldingen, klussen en omzet.
         </p>
       </header>
+
+      {aantalTeKeuren > 0 && (
+        <Link
+          href="/admin/klussen?filter=te-keuren"
+          className="flex items-center justify-between gap-4 bg-amber-50 border border-amber-200 rounded-lg px-5 py-4 mb-6 hover:bg-amber-100 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-md bg-amber-100 text-amber-700 flex items-center justify-center">
+              <AlertCircle size={18} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-amber-900">
+                {aantalTeKeuren} klus{aantalTeKeuren === 1 ? "" : "sen"} wacht
+                {aantalTeKeuren === 1 ? "" : "en"} op goedkeuring
+              </p>
+              <p className="text-xs text-amber-700">
+                Open de klussen-monitor om ze te beoordelen.
+              </p>
+            </div>
+          </div>
+          <ArrowUpRight size={16} className="text-amber-700" />
+        </Link>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
         <StatKaart

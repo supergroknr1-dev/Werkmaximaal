@@ -34,12 +34,20 @@ export default async function KlusDetailPage({ params }) {
   const sessionUser = session.userId
     ? await prisma.user.findUnique({
         where: { id: session.userId },
-        select: { id: true, rol: true, vakmanType: true },
+        select: { id: true, rol: true, vakmanType: true, isAdmin: true },
       })
     : null;
 
   const isVakman = sessionUser?.rol === "vakman";
   const isOwner = sessionUser && klus.userId === sessionUser.id;
+  const isAdmin = !!sessionUser?.isAdmin;
+
+  // Niet-goedgekeurde klussen zijn alleen zichtbaar voor de eigenaar of
+  // een admin. Voor anderen (anoniem of vakmannen) doen we alsof de klus
+  // niet bestaat — er moet niets uit de inhoud lekken.
+  if (!klus.goedgekeurd && !isOwner && !isAdmin) {
+    notFound();
+  }
 
   let leadGekocht = null;
   if (isVakman) {
@@ -72,6 +80,17 @@ export default async function KlusDetailPage({ params }) {
         >
           ← Terug naar overzicht
         </Link>
+
+        {!klus.goedgekeurd && (
+          <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-6 text-sm text-amber-900">
+            <p className="font-semibold mb-1">In afwachting van goedkeuring</p>
+            <p className="text-xs">
+              Deze klus wordt eerst gecontroleerd door de administratie. Hij is
+              nog niet zichtbaar voor vakmannen. U krijgt hierover bericht zodra
+              de klus is goedgekeurd.
+            </p>
+          </div>
+        )}
 
         <div className="bg-white border border-slate-200 rounded-md shadow-sm p-6 md:p-8 mb-6">
           <p className="text-xs uppercase tracking-wider text-slate-500 font-medium mb-3">

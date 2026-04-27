@@ -60,6 +60,9 @@ model Klus {
   categorie    String?
   voorkeurVakmanType String? // "professional", "hobbyist" of null voor 'beide'
   gesloten     Boolean   @default(false)
+  // Moderatie: nieuwe klussen staan op 'in afwachting' totdat een admin
+  // ze goedkeurt. Bestaande klussen zijn in de migration op true gezet.
+  goedgekeurd  Boolean   @default(false)
   aangemaakt   DateTime  @default(now())
   reacties     Reactie[]
   leads        Lead[]

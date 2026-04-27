@@ -9,6 +9,8 @@ import {
   ExternalLink,
   CircleDot,
   CircleCheck,
+  Clock,
+  ShieldCheck,
 } from "lucide-react";
 
 function formatDatum(datum) {
@@ -45,11 +47,12 @@ function VoorkeurBadge({ voorkeur }) {
   );
 }
 
-export default function KlussenTabel({ klussen, prijzen }) {
+export default function KlussenTabel({ klussen, prijzen, beginFilter = "alle" }) {
   const router = useRouter();
   const [zoek, setZoek] = useState("");
-  const [filter, setFilter] = useState("alle"); // alle / professional / hobbyist / open / gesloten
+  const [filter, setFilter] = useState(beginFilter);
   const [bezigId, setBezigId] = useState(null);
+  const [keurId, setKeurId] = useState(null);
 
   function leadPrijs(voorkeur) {
     if (voorkeur === "hobbyist") return prijzen.hobbyist;
@@ -67,8 +70,9 @@ export default function KlussenTabel({ klussen, prijzen }) {
         return false;
       if (filter === "hobbyist" && k.voorkeurVakmanType !== "hobbyist")
         return false;
-      if (filter === "open" && k.gesloten) return false;
+      if (filter === "open" && (k.gesloten || !k.goedgekeurd)) return false;
       if (filter === "gesloten" && !k.gesloten) return false;
+      if (filter === "te-keuren" && (k.goedgekeurd || k.gesloten)) return false;
       if (!term) return true;
       const haystack = [
         k.titel,
@@ -104,6 +108,23 @@ export default function KlussenTabel({ klussen, prijzen }) {
     setBezigId(null);
   }
 
+  async function keur(k, goedgekeurd) {
+    setKeurId(k.id);
+    const res = await fetch(`/api/klussen/${k.id}/keuren`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ goedgekeurd }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || "Bijwerken is mislukt.");
+      setKeurId(null);
+      return;
+    }
+    router.refresh();
+    setKeurId(null);
+  }
+
   return (
     <div className="bg-white border border-slate-200 rounded-lg shadow-sm">
       <div className="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
@@ -123,7 +144,8 @@ export default function KlussenTabel({ klussen, prijzen }) {
         <div className="flex gap-1 flex-wrap">
           {[
             { val: "alle", label: "Alle" },
-            { val: "open", label: "Open" },
+            { val: "te-keuren", label: "Te keuren" },
+            { val: "open", label: "Live" },
             { val: "gesloten", label: "Gesloten" },
             { val: "professional", label: "Pro" },
             { val: "hobbyist", label: "Hobbyist" },
@@ -204,23 +226,41 @@ export default function KlussenTabel({ klussen, prijzen }) {
                         <CircleCheck size={12} />
                         Gesloten
                       </span>
+                    ) : !k.goedgekeurd ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-amber-600">
+                        <Clock size={12} />
+                        Te keuren
+                      </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
                         <CircleDot size={12} />
-                        Open
+                        Live
                       </span>
                     )}
                   </td>
                   <td className="px-5 py-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => verwijder(k)}
-                      disabled={bezigId === k.id}
-                      className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-rose-600 transition-colors disabled:opacity-50"
-                    >
-                      <Trash2 size={13} />
-                      {bezigId === k.id ? "Bezig..." : "Verwijderen"}
-                    </button>
+                    <div className="inline-flex items-center gap-3">
+                      {!k.goedgekeurd && !k.gesloten && (
+                        <button
+                          type="button"
+                          onClick={() => keur(k, true)}
+                          disabled={keurId === k.id}
+                          className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-800 transition-colors disabled:opacity-50"
+                        >
+                          <ShieldCheck size={13} />
+                          {keurId === k.id ? "Bezig..." : "Goedkeuren"}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => verwijder(k)}
+                        disabled={bezigId === k.id}
+                        className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-rose-600 transition-colors disabled:opacity-50"
+                      >
+                        <Trash2 size={13} />
+                        {bezigId === k.id ? "Bezig..." : "Verwijderen"}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

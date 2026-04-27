@@ -76,7 +76,8 @@ export default async function MijnKlussenPage() {
     },
   });
 
-  const open = klussen.filter((k) => !k.gesloten);
+  const inAfwachting = klussen.filter((k) => !k.gesloten && !k.goedgekeurd);
+  const open = klussen.filter((k) => !k.gesloten && k.goedgekeurd);
   const gesloten = klussen.filter((k) => k.gesloten);
 
   return (
@@ -108,10 +109,27 @@ export default async function MijnKlussenPage() {
           </div>
         )}
 
+        {inAfwachting.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-sm font-semibold text-amber-700 uppercase tracking-wider mb-3">
+              In afwachting van goedkeuring ({inAfwachting.length})
+            </h2>
+            <p className="text-xs text-slate-500 mb-3">
+              Deze klussen zijn nog niet zichtbaar voor vakmannen. De
+              administratie controleert ze eerst.
+            </p>
+            <div className="space-y-3">
+              {inAfwachting.map((klus) => (
+                <KlusKaart key={klus.id} klus={klus} />
+              ))}
+            </div>
+          </section>
+        )}
+
         {open.length > 0 && (
           <section className="mb-10">
             <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-3">
-              Open ({open.length})
+              Live ({open.length})
             </h2>
             <div className="space-y-3">
               {open.map((klus) => (
@@ -176,9 +194,13 @@ function KlusKaart({ klus }) {
             <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
               Gesloten
             </span>
-          ) : (
+          ) : klus.goedgekeurd ? (
             <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-              Open
+              Live
+            </span>
+          ) : (
+            <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
+              In afwachting
             </span>
           )}
           <SluitKnop id={klus.id} gesloten={klus.gesloten} />

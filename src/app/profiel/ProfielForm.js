@@ -35,7 +35,11 @@ export default function ProfielForm({ user }) {
   const router = useRouter();
   const isVakman = user.rol === "vakman";
   const isProfessional = user.vakmanType === "professional";
+  const isHobbyist = user.vakmanType === "hobbyist";
   const isConsument = user.rol === "consument";
+  // Persoonlijk adres invullen geldt voor consumenten én voor hobbyists
+  // (privépersonen zonder KvK).
+  const toonPersoonlijkAdres = isConsument || isHobbyist;
 
   const [voornaam, setVoornaam] = useState(user.voornaam ?? "");
   const [achternaam, setAchternaam] = useState(user.achternaam ?? "");
@@ -63,7 +67,7 @@ export default function ProfielForm({ user }) {
   // zijn ingevuld. Werkt met een korte debounce zodat we niet bij
   // elke toetsaanslag een request doen.
   useEffect(() => {
-    if (!isConsument) return;
+    if (!toonPersoonlijkAdres) return;
 
     const schoonPc = postcode.trim().toUpperCase();
     const schoonHnr = huisnummer.trim();
@@ -105,7 +109,7 @@ export default function ProfielForm({ user }) {
       geannuleerd = true;
       clearTimeout(timer);
     };
-  }, [postcode, huisnummer, isConsument]);
+  }, [postcode, huisnummer, toonPersoonlijkAdres]);
 
   async function opslaan(e) {
     e.preventDefault();
@@ -114,7 +118,7 @@ export default function ProfielForm({ user }) {
     setSuccesAnimatie(false);
 
     if (
-      isConsument &&
+      toonPersoonlijkAdres &&
       (postcode.trim() || huisnummer.trim()) &&
       adresStatus !== "ok"
     ) {
@@ -224,7 +228,7 @@ export default function ProfielForm({ user }) {
         />
       </div>
 
-      {isConsument && (
+      {toonPersoonlijkAdres && (
         <div className="pt-2 mt-2 border-t border-slate-100">
           <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-3">
             Persoonlijk adres

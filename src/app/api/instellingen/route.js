@@ -20,5 +20,17 @@ export async function PUT(request) {
     updates.hobbyistInschakeld = data.hobbyistInschakeld;
   }
 
+  if (data.leadPrijsCenten !== undefined) {
+    const centen = parseInt(data.leadPrijsCenten, 10);
+    if (!Number.isFinite(centen) || centen < 100 || centen > 100000) {
+      return Response.json(
+        { error: "Lead-prijs moet tussen € 1,00 en € 1.000,00 zijn." },
+        { status: 400 }
+      );
+    }
+    await setInstelling("leadPrijsCenten", centen);
+    updates.leadPrijsCenten = centen;
+  }
+
   return Response.json(updates);
 }

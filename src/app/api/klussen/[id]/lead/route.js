@@ -58,7 +58,7 @@ export async function POST(request, { params }) {
     );
   }
 
-  const bedrag = bedragVoorVakman(user.vakmanType);
+  const bedrag = await bedragVoorVakman(user.vakmanType);
 
   // upsert: idempotent — opnieuw kopen geeft de bestaande lead terug
   const lead = await prisma.lead.upsert({

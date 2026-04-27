@@ -157,7 +157,7 @@ export default async function KlusDetailPage({ params }) {
 
               <LeadKopen
                 klusId={klus.id}
-                bedragInCenten={bedragVoorVakman(sessionUser?.vakmanType)}
+                bedragInCenten={await bedragVoorVakman(sessionUser?.vakmanType)}
               />
             </>
           )}

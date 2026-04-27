@@ -2,11 +2,13 @@ import { prisma } from "./prisma";
 
 const DEFAULTS = {
   hobbyistInschakeld: true,
+  leadPrijsCenten: 1000,
 };
 
 function parseValue(raw) {
   if (raw === "true") return true;
   if (raw === "false") return false;
+  if (/^-?\d+$/.test(raw)) return parseInt(raw, 10);
   return raw;
 }
 

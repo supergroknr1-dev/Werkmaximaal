@@ -28,6 +28,7 @@ model User {
   klussen        Klus[]
   reacties       Reactie[]
   resetTokens    WachtwoordResetToken[]
+  leads          Lead[]
 
   @@index([rol])
 }
@@ -55,12 +56,27 @@ model Klus {
   categorie    String?
   aangemaakt   DateTime  @default(now())
   reacties     Reactie[]
+  leads        Lead[]
   // Eigenaar van de klus (consument). Nullable voor bestaande klussen
   // die zonder account zijn aangemaakt.
   userId       Int?
   user         User?     @relation(fields: [userId], references: [id])
 
   @@index([userId])
+}
+
+model Lead {
+  id        Int      @id @default(autoincrement())
+  klusId    Int
+  klus      Klus     @relation(fields: [klusId], references: [id], onDelete: Cascade)
+  vakmanId  Int
+  vakman    User     @relation(fields: [vakmanId], references: [id], onDelete: Cascade)
+  bedrag    Int // in centen, 1000 = 10 euro
+  gekochtOp DateTime @default(now())
+
+  @@unique([klusId, vakmanId])
+  @@index([klusId])
+  @@index([vakmanId])
 }
 
 model Reactie {

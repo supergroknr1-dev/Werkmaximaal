@@ -42,9 +42,17 @@ export async function syncVakmanNaarPipedrive(vakman) {
   // Custom-field-keys (afkomstig uit Pipedrive zelf, bv. "abc123def...")
   const customFieldsPerson = {};
   if (process.env.PIPEDRIVE_CF_VAKMAN_TYPE) {
-    customFieldsPerson[process.env.PIPEDRIVE_CF_VAKMAN_TYPE] = isPro
-      ? "Professional"
-      : "Hobbyist";
+    // Vakman type is een enum-veld; Pipedrive verwacht de option-id
+    // (een geheel getal), niet de label-string.
+    const optieId = isPro
+      ? process.env.PIPEDRIVE_CF_VAKMAN_TYPE_OPTION_PRO
+      : process.env.PIPEDRIVE_CF_VAKMAN_TYPE_OPTION_HOBBY;
+    if (optieId) {
+      customFieldsPerson[process.env.PIPEDRIVE_CF_VAKMAN_TYPE] = parseInt(
+        optieId,
+        10
+      );
+    }
   }
   if (process.env.PIPEDRIVE_CF_POSTCODE && vakman.regioPostcode) {
     customFieldsPerson[process.env.PIPEDRIVE_CF_POSTCODE] = vakman.regioPostcode;

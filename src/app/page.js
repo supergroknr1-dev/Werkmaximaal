@@ -222,81 +222,99 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-2xl mx-auto px-4 py-12 md:py-16">
-        <header className="mb-10 flex items-baseline justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
-              Werkmaximaal
-            </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Vakmensen voor uw klus
-            </p>
-          </div>
-          <div className="flex items-center gap-4 shrink-0 text-xs">
-            {huidigeUser ? (
-              <>
-                <span className="text-slate-500">
-                  Ingelogd als{" "}
-                  <span className="text-slate-900 font-medium">{huidigeUser.naam}</span>
-                  <span className="text-slate-400">
-                    {" "}({huidigeUser.rol})
+        <header className="mb-10 bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+          <div className="h-1 bg-gradient-to-r from-emerald-500 via-emerald-600 to-slate-900" />
+          <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-md bg-slate-900 text-white flex items-center justify-center font-bold text-base shrink-0">
+                W
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-lg font-semibold text-slate-900 tracking-tight leading-tight">
+                  Werkmaximaal
+                </h1>
+                <p className="text-xs text-slate-500">Vakmensen voor uw klus</p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+              {huidigeUser ? (
+                <>
+                  <span className="inline-flex items-center gap-2">
+                    <span className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[11px] font-semibold text-slate-700">
+                      {(huidigeUser.naam ?? "?").charAt(0).toUpperCase()}
+                    </span>
+                    <span className="text-slate-700">
+                      <span className="font-medium text-slate-900">
+                        {huidigeUser.naam}
+                      </span>
+                      <span
+                        className={`ml-2 inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                          huidigeUser.rol === "vakman"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            : "bg-blue-50 text-blue-700 border-blue-200"
+                        }`}
+                      >
+                        {huidigeUser.rol}
+                      </span>
+                    </span>
                   </span>
-                </span>
-                <button
-                  type="button"
-                  onClick={uitloggen}
+
+                  {huidigeUser.rol === "consument" && (
+                    <Link
+                      href="/mijn-klussen"
+                      className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
+                    >
+                      Mijn klussen
+                    </Link>
+                  )}
+                  {huidigeUser.rol === "vakman" && (
+                    <Link
+                      href="/mijn-leads"
+                      className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
+                    >
+                      Mijn leads
+                    </Link>
+                  )}
+                  <Link
+                    href="/profiel"
+                    className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
+                  >
+                    Profiel
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={uitloggen}
+                    className="text-slate-400 hover:text-rose-600 transition-colors"
+                  >
+                    Uitloggen
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/inloggen"
+                    className="bg-slate-900 hover:bg-slate-800 text-white font-medium px-3 py-1.5 rounded-md transition-colors"
+                  >
+                    Inloggen
+                  </Link>
+                  <Link
+                    href="/registreren"
+                    className="text-slate-700 hover:text-slate-900 font-medium transition-colors"
+                  >
+                    Registreren
+                  </Link>
+                </>
+              )}
+              {huidigeUser?.isAdmin && (
+                <Link
+                  href="/admin"
                   className="text-slate-400 hover:text-slate-700 transition-colors"
                 >
-                  Uitloggen
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/inloggen"
-                  className="text-slate-700 hover:text-slate-900 font-medium transition-colors"
-                >
-                  Inloggen
+                  Admin →
                 </Link>
-                <Link
-                  href="/registreren"
-                  className="text-slate-400 hover:text-slate-700 transition-colors"
-                >
-                  Registreren
-                </Link>
-              </>
-            )}
-            {huidigeUser?.rol === "consument" && (
-              <Link
-                href="/mijn-klussen"
-                className="text-slate-400 hover:text-slate-700 transition-colors"
-              >
-                Mijn klussen
-              </Link>
-            )}
-            {huidigeUser?.rol === "vakman" && (
-              <Link
-                href="/mijn-leads"
-                className="text-slate-400 hover:text-slate-700 transition-colors"
-              >
-                Mijn leads
-              </Link>
-            )}
-            {huidigeUser && (
-              <Link
-                href="/profiel"
-                className="text-slate-400 hover:text-slate-700 transition-colors"
-              >
-                Profiel
-              </Link>
-            )}
-            {huidigeUser?.isAdmin && (
-              <Link
-                href="/admin"
-                className="text-slate-400 hover:text-slate-700 transition-colors"
-              >
-                Admin →
-              </Link>
-            )}
+              )}
+            </div>
           </div>
         </header>
 

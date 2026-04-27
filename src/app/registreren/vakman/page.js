@@ -63,6 +63,16 @@ export default function RegistrerenVakmanPage() {
 
   async function registreer(e) {
     e.preventDefault();
+
+    if (vakmanType === "hobbyist") {
+      const ok = confirm(
+        "Bevestig: € 25,00 eenmalig inschrijfgeld voor een Handige Harry-account.\n\n" +
+          "Demo-modus — er wordt geen echt geld afgeschreven. Bij echte deploy " +
+          "komt hier iDEAL via Mollie of Stripe."
+      );
+      if (!ok) return;
+    }
+
     setBezig(true);
     setFoutmelding("");
 
@@ -171,15 +181,20 @@ export default function RegistrerenVakmanPage() {
                     : "border-slate-200 hover:border-slate-400 bg-white"
                 }`}
               >
-                <p className="text-xs uppercase tracking-wider text-slate-500 font-medium mb-1">
-                  Pro
-                </p>
+                <div className="flex items-baseline justify-between mb-1 gap-2">
+                  <p className="text-xs uppercase tracking-wider text-slate-500 font-medium">
+                    Pro
+                  </p>
+                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1.5 py-0.5">
+                    Gratis
+                  </span>
+                </div>
                 <p className="text-sm font-semibold text-slate-900 mb-1">
                   Gecertificeerde Professional
                 </p>
                 <p className="text-xs text-slate-500 leading-relaxed">
                   KvK-geregistreerd bedrijf met bedrijfsverzekering en garantie
-                  op uw werk.
+                  op uw werk. Geen inschrijfkosten.
                 </p>
               </button>
               <button
@@ -191,15 +206,21 @@ export default function RegistrerenVakmanPage() {
                     : "border-slate-200 hover:border-slate-400 bg-white"
                 }`}
               >
-                <p className="text-xs uppercase tracking-wider text-slate-500 font-medium mb-1">
-                  Hobbyist
-                </p>
+                <div className="flex items-baseline justify-between mb-1 gap-2">
+                  <p className="text-xs uppercase tracking-wider text-slate-500 font-medium">
+                    Hobbyist
+                  </p>
+                  <span className="text-xs font-semibold text-slate-700 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5">
+                    € 25 eenmalig
+                  </span>
+                </div>
                 <p className="text-sm font-semibold text-slate-900 mb-1">
                   Handige Harry
                 </p>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  Geen KvK-plicht. Werk wordt op eigen risico uitgevoerd, geen
-                  bedrijfsverzekering via het platform.
+                  Geen KvK-plicht. Werk op eigen risico, geen
+                  bedrijfsverzekering via het platform. € 25 eenmalig
+                  inschrijfgeld.
                 </p>
               </button>
             </div>

@@ -73,10 +73,12 @@ export default function Home() {
   const [stap, setStap] = useState(1);
   const [postcodeStatus, setPostcodeStatus] = useState({ state: "leeg" });
   const [trefwoorden, setTrefwoorden] = useState([]);
+  const [huidigeUser, setHuidigeUser] = useState(null);
 
   useEffect(() => {
     haalKlussenOp();
     haalTrefwoordenOp();
+    haalUserOp();
   }, []);
 
   useEffect(() => {
@@ -124,6 +126,17 @@ export default function Home() {
     const reactie = await fetch("/api/trefwoorden");
     const data = await reactie.json();
     setTrefwoorden(data);
+  }
+
+  async function haalUserOp() {
+    const reactie = await fetch("/api/me");
+    const data = await reactie.json();
+    setHuidigeUser(data.user);
+  }
+
+  async function uitloggen() {
+    await fetch("/api/logout", { method: "POST" });
+    setHuidigeUser(null);
   }
 
   async function plaatsKlus(e) {
@@ -179,12 +192,36 @@ export default function Home() {
             </p>
           </div>
           <div className="flex items-center gap-4 shrink-0 text-xs">
-            <Link
-              href="/registreren"
-              className="text-slate-700 hover:text-slate-900 font-medium transition-colors"
-            >
-              Registreren
-            </Link>
+            {huidigeUser ? (
+              <>
+                <span className="text-slate-500">
+                  Ingelogd als{" "}
+                  <span className="text-slate-900 font-medium">{huidigeUser.naam}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={uitloggen}
+                  className="text-slate-400 hover:text-slate-700 transition-colors"
+                >
+                  Uitloggen
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/inloggen"
+                  className="text-slate-700 hover:text-slate-900 font-medium transition-colors"
+                >
+                  Inloggen
+                </Link>
+                <Link
+                  href="/registreren"
+                  className="text-slate-400 hover:text-slate-700 transition-colors"
+                >
+                  Registreren
+                </Link>
+              </>
+            )}
             <Link
               href="/beheer"
               className="text-slate-400 hover:text-slate-700 transition-colors"

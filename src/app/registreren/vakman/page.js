@@ -111,13 +111,13 @@ export default function RegistrerenVakmanPage() {
               Account aangemaakt
             </h1>
             <p className="text-sm text-slate-500 mb-6">
-              U kunt zo straks inloggen zodra de inlogpagina is opgeleverd.
+              U kunt nu inloggen met uw e-mail en wachtwoord.
             </p>
             <Link
-              href="/"
+              href="/inloggen"
               className="inline-block bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
             >
-              Terug naar overzicht
+              Naar inloggen
             </Link>
           </div>
         </div>

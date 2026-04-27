@@ -8,23 +8,45 @@ export default async function AdminConsumentenPage() {
     select: {
       id: true,
       naam: true,
+      voornaam: true,
+      achternaam: true,
       email: true,
       telefoon: true,
+      adres: true,
+      postcode: true,
+      plaats: true,
       isAdmin: true,
       aangemaakt: true,
-      _count: { select: { klussen: true } },
+      klussen: {
+        select: { id: true, categorie: true },
+      },
     },
   });
 
-  const rijen = consumenten.map((c) => ({
-    id: c.id,
-    naam: c.naam,
-    email: c.email,
-    telefoon: c.telefoon,
-    isAdmin: c.isAdmin,
-    aangemaakt: c.aangemaakt.toISOString(),
-    klussenCount: c._count.klussen,
-  }));
+  const rijen = consumenten.map((c) => {
+    const categorieen = [
+      ...new Set(
+        c.klussen
+          .map((k) => k.categorie)
+          .filter((cat) => cat && cat.trim().length > 0)
+      ),
+    ].sort();
+    return {
+      id: c.id,
+      naam: c.naam,
+      voornaam: c.voornaam,
+      achternaam: c.achternaam,
+      email: c.email,
+      telefoon: c.telefoon,
+      adres: c.adres,
+      postcode: c.postcode,
+      plaats: c.plaats,
+      isAdmin: c.isAdmin,
+      aangemaakt: c.aangemaakt.toISOString(),
+      klussenCount: c.klussen.length,
+      categorieen,
+    };
+  });
 
   return (
     <>
@@ -36,8 +58,8 @@ export default async function AdminConsumentenPage() {
           Consumenten
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          {rijen.length} aanvrager{rijen.length === 1 ? "" : "s"} — overzicht
-          van alle consument-accounts en hun contactgegevens.
+          {rijen.length} aanvrager{rijen.length === 1 ? "" : "s"} — volledig
+          overzicht van klantgegevens en hun klussen.
         </p>
       </header>
 

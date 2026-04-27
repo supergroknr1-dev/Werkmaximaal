@@ -23,8 +23,15 @@ export async function PUT(request) {
   const data = await request.json();
 
   const email = (data.email ?? "").trim().toLowerCase();
-  const naam = (data.naam ?? "").trim();
+  const voornaam = (data.voornaam ?? "").trim();
+  const achternaam = (data.achternaam ?? "").trim();
+  const naamFallback = (data.naam ?? "").trim();
+  const naam =
+    voornaam || achternaam ? `${voornaam} ${achternaam}`.trim() : naamFallback;
   const telefoonRuw = (data.telefoon ?? "").replace(/[\s-]/g, "").trim();
+  const adres = (data.adres ?? "").trim();
+  const persoonsPostcode = (data.persoonsPostcode ?? "").trim().toUpperCase();
+  const persoonsPlaats = (data.persoonsPlaats ?? "").trim();
 
   if (!naam) {
     return Response.json({ error: "Naam is verplicht." }, { status: 400 });
@@ -38,11 +45,22 @@ export async function PUT(request) {
       { status: 400 }
     );
   }
+  if (persoonsPostcode && !POSTCODE_REGEX.test(persoonsPostcode)) {
+    return Response.json(
+      { error: "Vul een geldige postcode in voor uw adres (of laat leeg)." },
+      { status: 400 }
+    );
+  }
 
   const update = {
     naam,
+    voornaam: voornaam || null,
+    achternaam: achternaam || null,
     email,
     telefoon: telefoonRuw || null,
+    adres: adres || null,
+    postcode: persoonsPostcode || null,
+    plaats: persoonsPlaats || null,
   };
 
   // Vakmannen mogen ook hun werkgebied bijwerken.

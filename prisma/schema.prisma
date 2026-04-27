@@ -17,6 +17,14 @@ model User {
   email          String    @unique
   wachtwoordHash String
   naam           String
+  // Aparte voor- en achternaam, gevuld via /profiel; voor bestaande
+  // accounts blijft `naam` de fallback-weergave.
+  voornaam       String?
+  achternaam     String?
+  // Persoonlijk adres van de gebruiker (los van adressen per klus).
+  adres          String? // straat + huisnummer
+  postcode       String?
+  plaats         String?
   rol            String // "consument" of "vakman"
   isAdmin        Boolean   @default(false)
   vakmanType     String? // "professional" of "hobbyist", alleen voor vakmannen

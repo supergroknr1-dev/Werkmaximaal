@@ -7,10 +7,15 @@ export default function ProfielForm({ user }) {
   const router = useRouter();
   const isVakman = user.rol === "vakman";
   const isProfessional = user.vakmanType === "professional";
+  const isConsument = user.rol === "consument";
 
-  const [naam, setNaam] = useState(user.naam ?? "");
+  const [voornaam, setVoornaam] = useState(user.voornaam ?? "");
+  const [achternaam, setAchternaam] = useState(user.achternaam ?? "");
   const [email, setEmail] = useState(user.email ?? "");
   const [telefoon, setTelefoon] = useState(user.telefoon ?? "");
+  const [adres, setAdres] = useState(user.adres ?? "");
+  const [persoonsPostcode, setPersoonsPostcode] = useState(user.postcode ?? "");
+  const [persoonsPlaats, setPersoonsPlaats] = useState(user.plaats ?? "");
   const [bedrijfsnaam, setBedrijfsnaam] = useState(user.bedrijfsnaam ?? "");
   const [regioPostcode, setRegioPostcode] = useState(user.regioPostcode ?? "");
   const [werkafstand, setWerkafstand] = useState(user.werkafstand ?? "");
@@ -22,7 +27,16 @@ export default function ProfielForm({ user }) {
     setBezig(true);
     setBoodschap(null);
 
-    const body = { naam, email, telefoon };
+    const body = {
+      voornaam,
+      achternaam,
+      naam: user.naam,
+      email,
+      telefoon,
+      adres,
+      persoonsPostcode,
+      persoonsPlaats,
+    };
     if (isVakman) {
       if (isProfessional) body.bedrijfsnaam = bedrijfsnaam;
       body.regioPostcode = regioPostcode;
@@ -47,17 +61,31 @@ export default function ProfielForm({ user }) {
 
   return (
     <form onSubmit={opslaan} className="space-y-5">
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-2">
-          Volledige naam
-        </label>
-        <input
-          type="text"
-          value={naam}
-          onChange={(e) => setNaam(e.target.value)}
-          required
-          className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
-        />
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">
+            Voornaam
+          </label>
+          <input
+            type="text"
+            value={voornaam}
+            onChange={(e) => setVoornaam(e.target.value)}
+            autoComplete="given-name"
+            className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">
+            Achternaam
+          </label>
+          <input
+            type="text"
+            value={achternaam}
+            onChange={(e) => setAchternaam(e.target.value)}
+            autoComplete="family-name"
+            className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+          />
+        </div>
       </div>
 
       <div>
@@ -91,6 +119,61 @@ export default function ProfielForm({ user }) {
           className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
         />
       </div>
+
+      {isConsument && (
+        <>
+          <div className="pt-2 mt-2 border-t border-slate-100">
+            <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-3">
+              Persoonlijk adres
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Straat + huisnummer
+                </label>
+                <input
+                  type="text"
+                  value={adres}
+                  onChange={(e) => setAdres(e.target.value)}
+                  placeholder="Bijvoorbeeld: Hoofdstraat 12"
+                  autoComplete="street-address"
+                  className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Postcode
+                  </label>
+                  <input
+                    type="text"
+                    value={persoonsPostcode}
+                    onChange={(e) =>
+                      setPersoonsPostcode(e.target.value.toUpperCase().slice(0, 6))
+                    }
+                    maxLength={6}
+                    placeholder="1234AB"
+                    autoComplete="postal-code"
+                    className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm uppercase tracking-wider font-mono"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Plaats
+                  </label>
+                  <input
+                    type="text"
+                    value={persoonsPlaats}
+                    onChange={(e) => setPersoonsPlaats(e.target.value)}
+                    autoComplete="address-level2"
+                    className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {isVakman && isProfessional && (
         <div>

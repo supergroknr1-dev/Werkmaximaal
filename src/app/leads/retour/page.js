@@ -17,6 +17,28 @@ export const dynamic = "force-dynamic";
  * 3. Toon juiste boodschap; bij 'paid' redirect naar de klus.
  */
 export default async function LeadRetourPage({ searchParams }) {
+  // Eén grote try/catch zodat een onverwachte fout altijd een nette
+  // pagina geeft i.p.v. de generieke Next.js 500-fout. Het werkelijke
+  // probleem komt in de Vercel-functions-logs onder [leads-retour].
+  try {
+    return await renderRetour({ searchParams });
+  } catch (err) {
+    if (err?.digest?.startsWith?.("NEXT_REDIRECT")) throw err; // redirect() niet vangen
+    console.error("[leads-retour] onverwachte fout:", err?.stack || err);
+    return (
+      <Mismatch
+        klusId={null}
+        reden={
+          process.env.NODE_ENV === "production"
+            ? "Er ging onverwacht iets mis bij het verwerken van de betaling. Probeer 't opnieuw of neem contact op."
+            : `Onverwachte fout: ${err?.message || String(err)}`
+        }
+      />
+    );
+  }
+}
+
+async function renderRetour({ searchParams }) {
   const params = await searchParams;
   const klusId = params?.klusId;
 
@@ -42,7 +64,7 @@ export default async function LeadRetourPage({ searchParams }) {
   try {
     resultaat = await verwerkLeadPayment(paymentId, null);
   } catch (err) {
-    console.error("[leads-retour] verwerk-fout:", err);
+    console.error("[leads-retour] verwerk-fout:", err?.stack || err);
     return <Mismatch klusId={klusId} reden="Kon de betaling niet verifiëren." />;
   }
 

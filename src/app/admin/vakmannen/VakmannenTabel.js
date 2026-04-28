@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, Trash2, ShieldCheck, ShieldAlert } from "lucide-react";
+import { Search, Trash2, ShieldCheck, ShieldAlert, Pencil } from "lucide-react";
 
 function formatDatum(datum) {
   return new Date(datum).toLocaleDateString("nl-NL", {
@@ -16,14 +17,14 @@ function TypeBadge({ type }) {
   if (type === "professional") {
     return (
       <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-        Pro
+        Vakman
       </span>
     );
   }
   if (type === "hobbyist") {
     return (
       <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-        Hobbyist
+        Buurtklusser
       </span>
     );
   }
@@ -117,8 +118,8 @@ export default function VakmannenTabel({ vakmannen }) {
         <div className="flex gap-1">
           {[
             { val: "alle", label: "Alle" },
-            { val: "professional", label: "Pro" },
-            { val: "hobbyist", label: "Hobbyist" },
+            { val: "professional", label: "Vakman" },
+            { val: "hobbyist", label: "Buurtklusser" },
           ].map((opt) => (
             <button
               key={opt.val}
@@ -183,15 +184,24 @@ export default function VakmannenTabel({ vakmannen }) {
                     {formatDatum(v.aangemaakt)}
                   </td>
                   <td className="px-5 py-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => verwijder(v)}
-                      disabled={bezigId === v.id}
-                      className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-rose-600 transition-colors disabled:opacity-50"
-                    >
-                      <Trash2 size={13} />
-                      {bezigId === v.id ? "Bezig..." : "Verwijderen"}
-                    </button>
+                    <div className="inline-flex items-center gap-3">
+                      <Link
+                        href={`/admin/vakmannen/${v.id}/bewerken`}
+                        className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900 transition-colors"
+                      >
+                        <Pencil size={13} />
+                        Bewerken
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => verwijder(v)}
+                        disabled={bezigId === v.id}
+                        className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-rose-600 transition-colors disabled:opacity-50"
+                      >
+                        <Trash2 size={13} />
+                        {bezigId === v.id ? "Bezig..." : "Verwijderen"}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

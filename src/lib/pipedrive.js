@@ -71,8 +71,8 @@ export async function syncVakmanNaarPipedrive(vakman) {
   const personRes = await pdFetch("/persons", {
     name: vakman.naam,
     email: [{ value: vakman.email, primary: true }],
-    phone: vakman.telefoon
-      ? [{ value: vakman.telefoon, primary: true }]
+    phone: vakman.werkTelefoon
+      ? [{ value: vakman.werkTelefoon, primary: true }]
       : undefined,
     label: isPro ? "Pro" : "Hobbyist",
     ...customFieldsPerson,

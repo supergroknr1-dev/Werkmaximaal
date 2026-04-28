@@ -32,15 +32,29 @@ model User {
   plaats         String?
   rol            String // "consument" of "vakman"
   isAdmin        Boolean   @default(false)
+  // Tijdstip van de laatste wijziging van `naam` (= schermnaam /
+  // bedrijfsnaam). Wordt gebruikt om zelf-service-wijzigingen op
+  // /profiel te beperken tot 1x per 30 dagen. Admin kan altijd
+  // wijzigen (route /api/admin/vakmannen/[id]) zonder deze check.
+  naamLaatstGewijzigd DateTime?
   vakmanType     String? // "professional" of "hobbyist", alleen voor vakmannen
   // Velden voor vakmannen (null voor consumenten)
   bedrijfsnaam   String?
   kvkNummer      String?
   kvkUittrekselUrl  String?
   kvkUittrekselNaam String?
-  telefoon       String?
+  // werkTelefoon = zakelijk telefoonnummer (zichtbaar voor klanten via
+  // klus-detail en Mijn klussen). DB-kolom blijft 'telefoon' voor
+  // backward-compat met bestaande data.
+  werkTelefoon   String? @map("telefoon")
+  // priveTelefoon = privé-nummer dat alleen admins zien.
+  priveTelefoon  String?
   werkafstand    Int? // in km
-  regioPostcode  String? // postcode-4 als centrum van werkgebied
+  // Werkgebied: óf via 4-cijferige postcode (regioPostcode), óf via
+  // plaatsnaam (regioPlaats). Niet beide tegelijk — UI dwingt keuze af,
+  // PATCH-endpoint maakt de andere leeg.
+  regioPostcode  String?
+  regioPlaats    String?
   aangemaakt     DateTime  @default(now())
   klussen        Klus[]
   reacties       Reactie[]

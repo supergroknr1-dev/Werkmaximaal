@@ -545,8 +545,8 @@ export default function Home() {
                 <div className="grid grid-cols-3 gap-2">
                   {[
                     { val: "", label: "Beide" },
-                    { val: "professional", label: "Professional" },
-                    { val: "hobbyist", label: "Hobbyist" },
+                    { val: "professional", label: "Vakman" },
+                    { val: "hobbyist", label: "Buurtklusser" },
                   ].map((opt) => (
                     <button
                       key={opt.val}
@@ -568,14 +568,14 @@ export default function Home() {
               {hobbyistInschakeld && (
               <div className="bg-slate-50 border border-slate-200 rounded-md p-4 mb-6">
                 <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-3">
-                  Pro vs Hobbyist
+                  Vakman vs Buurtklusser
                 </p>
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="text-slate-500">
                       <th className="text-left font-normal py-1"></th>
-                      <th className="text-center font-medium py-1 px-2">Pro</th>
-                      <th className="text-center font-medium py-1 px-2">Hobbyist</th>
+                      <th className="text-center font-medium py-1 px-2">Vakman</th>
+                      <th className="text-center font-medium py-1 px-2">Buurtklusser</th>
                     </tr>
                   </thead>
                   <tbody className="text-slate-700">
@@ -720,17 +720,17 @@ export default function Home() {
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {klus.voorkeurVakmanType === "professional" && (
                       <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        Pro
+                        Vakman
                       </span>
                     )}
                     {klus.voorkeurVakmanType === "hobbyist" && (
                       <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
-                        Hobbyist
+                        Buurtklusser
                       </span>
                     )}
                     {!klus.voorkeurVakmanType && (
                       <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-50 text-slate-600 border border-slate-200">
-                        Pro of Hobbyist
+                        Vakman of Buurtklusser
                       </span>
                     )}
                   </div>

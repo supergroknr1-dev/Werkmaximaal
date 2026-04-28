@@ -29,14 +29,14 @@ function VoorkeurBadge({ voorkeur }) {
   if (voorkeur === "professional") {
     return (
       <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-        Pro
+        Vakman
       </span>
     );
   }
   if (voorkeur === "hobbyist") {
     return (
       <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-        Hobbyist
+        Buurtklusser
       </span>
     );
   }
@@ -147,8 +147,8 @@ export default function KlussenTabel({ klussen, prijzen, beginFilter = "alle" })
             { val: "te-keuren", label: "Te keuren" },
             { val: "open", label: "Live" },
             { val: "gesloten", label: "Gesloten" },
-            { val: "professional", label: "Pro" },
-            { val: "hobbyist", label: "Hobbyist" },
+            { val: "professional", label: "Vakman" },
+            { val: "hobbyist", label: "Buurtklusser" },
           ].map((opt) => (
             <button
               key={opt.val}

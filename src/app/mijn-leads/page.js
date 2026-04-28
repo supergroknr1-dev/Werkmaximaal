@@ -83,7 +83,7 @@ export default async function MijnLeadsPage() {
               voornaam: true,
               achternaam: true,
               email: true,
-              telefoon: true,
+              werkTelefoon: true,
               straatnaam: true,
               huisnummer: true,
               huisnummerToevoeging: true,
@@ -115,7 +115,7 @@ export default async function MijnLeadsPage() {
 
         <header className="mb-8">
           <p className="text-xs uppercase tracking-wider text-slate-500 font-medium mb-1">
-            {user.vakmanType === "professional" ? "Professional" : "Hobbyist"}
+            {user.vakmanType === "professional" ? "Vakman" : "Buurtklusser"}
           </p>
           <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
             Mijn leads
@@ -262,15 +262,15 @@ function LeadKaart({ lead }) {
               </dd>
             </div>
           )}
-          {klant?.telefoon && (
+          {klant?.werkTelefoon && (
             <div className="flex">
               <dt className="w-24 text-slate-500 shrink-0">Telefoon</dt>
               <dd>
                 <a
-                  href={`tel:${klant.telefoon}`}
+                  href={`tel:${klant.werkTelefoon}`}
                   className="text-slate-700 hover:underline font-mono"
                 >
-                  {klant.telefoon}
+                  {klant.werkTelefoon}
                 </a>
               </dd>
             </div>

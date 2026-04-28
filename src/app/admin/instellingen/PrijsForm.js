@@ -62,7 +62,7 @@ export default function PrijsForm({ basisCenten }) {
 
       <div className="bg-slate-50 border border-slate-200 rounded-md p-3 text-xs text-slate-600">
         <p>
-          Hobbyisten betalen automatisch het dubbele:{" "}
+          Buurtklussers betalen automatisch het dubbele:{" "}
           <span className="font-mono font-semibold text-slate-900">
             € {(hobbyistCenten / 100).toFixed(2).replace(".", ",")}
           </span>{" "}

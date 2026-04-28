@@ -13,7 +13,13 @@ export async function PUT(request) {
 
   const huidig = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { id: true, rol: true, vakmanType: true },
+    select: {
+      id: true,
+      rol: true,
+      vakmanType: true,
+      naam: true,
+      naamLaatstGewijzigd: true,
+    },
   });
   if (!huidig) {
     session.destroy();
@@ -70,12 +76,38 @@ export async function PUT(request) {
       }`.trim()
     : "";
 
+  // 30-dagen-regel: schermnaam (= naam) mag maar 1x per 30 dagen door
+  // de gebruiker zelf worden gewijzigd. Bij wijziging wordt het tijdstip
+  // bijgewerkt; admin omzeilt dit via /api/admin/vakmannen/[id].
+  const naamGewijzigd = naam !== huidig.naam;
+  let nieuweNaamLaatstGewijzigd;
+  if (naamGewijzigd) {
+    const wachttijdMs = 30 * 24 * 60 * 60 * 1000;
+    if (
+      huidig.naamLaatstGewijzigd &&
+      Date.now() - huidig.naamLaatstGewijzigd.getTime() < wachttijdMs
+    ) {
+      const beschikbaarVanaf = new Date(
+        huidig.naamLaatstGewijzigd.getTime() + wachttijdMs
+      );
+      return Response.json(
+        {
+          error: `U kunt uw schermnaam pas weer wijzigen vanaf ${beschikbaarVanaf.toLocaleDateString(
+            "nl-NL"
+          )}.`,
+        },
+        { status: 429 }
+      );
+    }
+    nieuweNaamLaatstGewijzigd = new Date();
+  }
+
   const update = {
     naam,
     voornaam: voornaam || null,
     achternaam: achternaam || null,
     email,
-    telefoon: telefoonRuw || null,
+    werkTelefoon: telefoonRuw || null,
     straatnaam: straatnaam || null,
     huisnummer: huisnummer || null,
     huisnummerToevoeging: huisnummerToevoeging || null,
@@ -83,6 +115,10 @@ export async function PUT(request) {
     postcode: persoonsPostcode || null,
     plaats: persoonsPlaats || null,
   };
+
+  if (nieuweNaamLaatstGewijzigd) {
+    update.naamLaatstGewijzigd = nieuweNaamLaatstGewijzigd;
+  }
 
   // Vakmannen mogen ook hun werkgebied bijwerken.
   if (huidig.rol === "vakman") {
@@ -126,7 +162,7 @@ export async function PUT(request) {
         id: true,
         email: true,
         naam: true,
-        telefoon: true,
+        werkTelefoon: true,
         rol: true,
         bedrijfsnaam: true,
         regioPostcode: true,

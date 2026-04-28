@@ -77,7 +77,7 @@ export async function POST(request) {
       );
     }
 
-    extra = { vakmanType, telefoon, werkafstand, regioPostcode };
+    extra = { vakmanType, werkTelefoon: telefoon, werkafstand, regioPostcode };
 
     if (vakmanType === "professional") {
       const bedrijfsnaam = (data.bedrijfsnaam ?? "").trim();

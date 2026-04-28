@@ -143,7 +143,7 @@ export default async function AdminOverzicht() {
           icon={Users}
           label="Totaal aanmeldingen"
           waarde={aantalAanmeldingen}
-          sub={`${aantalProAanmeldingen} Pro · ${aantalHobbyAanmeldingen} Hobbyist`}
+          sub={`${aantalProAanmeldingen} Vakman · ${aantalHobbyAanmeldingen} Buurtklusser`}
           accent="bg-blue-50 text-blue-600"
         />
         <StatKaart
@@ -207,11 +207,11 @@ export default async function AdminOverzicht() {
                 <div className="flex items-center gap-3 shrink-0">
                   {v.vakmanType === "professional" ? (
                     <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      Pro
+                      Vakman
                     </span>
                   ) : (
                     <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-                      Hobbyist
+                      Buurtklusser
                     </span>
                   )}
                   <span className="text-xs text-slate-500 hidden sm:block">

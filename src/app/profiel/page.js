@@ -12,8 +12,8 @@ export const metadata = {
 function rolLabel(rol, vakmanType) {
   if (rol === "consument") return "Consument";
   if (rol === "vakman") {
-    if (vakmanType === "professional") return "Professional vakman";
-    if (vakmanType === "hobbyist") return "Hobbyist (Handige Harry)";
+    if (vakmanType === "professional") return "Vakman";
+    if (vakmanType === "hobbyist") return "Buurtklusser";
     return "Vakman";
   }
   return rol;
@@ -37,7 +37,7 @@ export default async function ProfielPage() {
       huisnummerToevoeging: true,
       postcode: true,
       plaats: true,
-      telefoon: true,
+      werkTelefoon: true,
       rol: true,
       vakmanType: true,
       bedrijfsnaam: true,
@@ -45,6 +45,7 @@ export default async function ProfielPage() {
       regioPostcode: true,
       werkafstand: true,
       aangemaakt: true,
+      naamLaatstGewijzigd: true,
     },
   });
   if (!user) {

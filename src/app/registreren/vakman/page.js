@@ -231,14 +231,14 @@ export default function RegistrerenVakmanPage() {
               >
                 <div className="flex items-baseline justify-between mb-1 gap-2">
                   <p className="text-xs uppercase tracking-wider text-slate-500 font-medium">
-                    Pro
+                    Vakman
                   </p>
                   <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1.5 py-0.5">
                     Gratis
                   </span>
                 </div>
                 <p className="text-sm font-semibold text-slate-900 mb-1">
-                  Gecertificeerde Professional
+                  Gecertificeerde Vakman
                 </p>
                 <p className="text-xs text-slate-500 leading-relaxed">
                   KvK-geregistreerd bedrijf met bedrijfsverzekering en garantie
@@ -259,19 +259,19 @@ export default function RegistrerenVakmanPage() {
               >
                 <div className="flex items-baseline justify-between mb-1 gap-2">
                   <p className="text-xs uppercase tracking-wider text-slate-500 font-medium">
-                    Hobbyist
+                    Buurtklusser
                   </p>
                   <span className="text-xs font-semibold text-slate-700 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5">
                     {hobbyistInschakeld ? "€ 25 eenmalig" : "Uitgeschakeld"}
                   </span>
                 </div>
                 <p className="text-sm font-semibold text-slate-900 mb-1">
-                  Handige Harry
+                  Buurtklusser
                 </p>
                 <p className="text-xs text-slate-500 leading-relaxed">
                   {hobbyistInschakeld
                     ? "Geen KvK-plicht. Werk op eigen risico, geen bedrijfsverzekering via het platform. € 25 eenmalig inschrijfgeld."
-                    : "Hobbyist-registratie is op dit moment uitgeschakeld door de beheerder."}
+                    : "Buurtklusser-registratie is op dit moment uitgeschakeld door de beheerder."}
                 </p>
               </button>
             </div>

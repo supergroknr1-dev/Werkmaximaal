@@ -69,7 +69,7 @@ export default async function MijnKlussenPage() {
               id: true,
               naam: true,
               email: true,
-              telefoon: true,
+              werkTelefoon: true,
               bedrijfsnaam: true,
               vakmanType: true,
             },
@@ -237,10 +237,10 @@ function KlusKaart({ klus, vakmanScores }) {
                   </span>
                   <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-500">
                     {lead.vakman.vakmanType === "professional"
-                      ? "Pro"
+                      ? "Vakman"
                       : lead.vakman.vakmanType === "hobbyist"
-                      ? "Hobbyist"
-                      : "Vakman"}
+                      ? "Buurtklusser"
+                      : "Onbekend"}
                   </span>
                 </div>
                 <div className="mb-1">
@@ -258,14 +258,14 @@ function KlusKaart({ klus, vakmanScores }) {
                   >
                     {lead.vakman.email}
                   </a>
-                  {lead.vakman.telefoon && (
+                  {lead.vakman.werkTelefoon && (
                     <>
                       {" · "}
                       <a
-                        href={`tel:${lead.vakman.telefoon}`}
+                        href={`tel:${lead.vakman.werkTelefoon}`}
                         className="hover:underline"
                       >
-                        {lead.vakman.telefoon}
+                        {lead.vakman.werkTelefoon}
                       </a>
                     </>
                   )}

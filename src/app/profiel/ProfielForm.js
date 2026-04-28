@@ -43,8 +43,21 @@ export default function ProfielForm({ user }) {
 
   const [voornaam, setVoornaam] = useState(user.voornaam ?? "");
   const [achternaam, setAchternaam] = useState(user.achternaam ?? "");
+
+  // 30-dagen-regel voor schermnaam (= naam, samengesteld uit voornaam+
+  // achternaam). Berekent of er nog wachttijd is.
+  const naamLaatstGewijzigd = user.naamLaatstGewijzigd
+    ? new Date(user.naamLaatstGewijzigd)
+    : null;
+  const naamWachttijdMs = 30 * 24 * 60 * 60 * 1000;
+  const naamBeschikbaarVanaf =
+    naamLaatstGewijzigd &&
+    Date.now() - naamLaatstGewijzigd.getTime() < naamWachttijdMs
+      ? new Date(naamLaatstGewijzigd.getTime() + naamWachttijdMs)
+      : null;
+  const naamGeblokkeerd = !!naamBeschikbaarVanaf;
   const [email, setEmail] = useState(user.email ?? "");
-  const [telefoon, setTelefoon] = useState(user.telefoon ?? "");
+  const [telefoon, setTelefoon] = useState(user.werkTelefoon ?? "");
 
   const [postcode, setPostcode] = useState(user.postcode ?? "");
   const [huisnummer, setHuisnummer] = useState(user.huisnummer ?? "");
@@ -169,6 +182,15 @@ export default function ProfielForm({ user }) {
 
   return (
     <form onSubmit={opslaan} className="space-y-5">
+      {naamGeblokkeerd && (
+        <div className="bg-amber-50 border border-amber-200 rounded-md px-4 py-3 text-xs text-amber-900">
+          Uw schermnaam (voor- en achternaam) kunt u pas weer wijzigen vanaf{" "}
+          <span className="font-semibold">
+            {naamBeschikbaarVanaf.toLocaleDateString("nl-NL")}
+          </span>
+          . Schermnaam mag maximaal 1× per 30 dagen worden gewijzigd.
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -179,7 +201,8 @@ export default function ProfielForm({ user }) {
             value={voornaam}
             onChange={(e) => setVoornaam(e.target.value)}
             autoComplete="given-name"
-            className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+            disabled={naamGeblokkeerd}
+            className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm disabled:bg-slate-50 disabled:text-slate-500"
           />
         </div>
         <div>
@@ -191,7 +214,8 @@ export default function ProfielForm({ user }) {
             value={achternaam}
             onChange={(e) => setAchternaam(e.target.value)}
             autoComplete="family-name"
-            className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+            disabled={naamGeblokkeerd}
+            className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm disabled:bg-slate-50 disabled:text-slate-500"
           />
         </div>
       </div>

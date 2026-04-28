@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import WachtwoordVeld from "../../components/WachtwoordVeld";
+import SpamVelden, { useSpamVelden } from "../../components/SpamVelden";
 
 const PENDING_KEY = "werkmaximaal_pending_klus";
 const AUTO_PLAATSEN_KEY = "werkmaximaal_auto_plaatsen";
@@ -18,6 +19,7 @@ export default function VoltooienPage() {
   const [logEmail, setLogEmail] = useState("");
   const [logWachtwoord, setLogWachtwoord] = useState("");
   // Registreer-form
+  const spam = useSpamVelden();
   const [regVoornaam, setRegVoornaam] = useState("");
   const [regAchternaam, setRegAchternaam] = useState("");
   const [regEmail, setRegEmail] = useState("");
@@ -85,6 +87,7 @@ export default function VoltooienPage() {
           voornaam: regVoornaam.trim(),
           achternaam: regAchternaam.trim(),
           ...adres,
+          ...spam.body(),
         }),
       });
       const regData = await regRes.json();
@@ -322,6 +325,7 @@ export default function VoltooienPage() {
                       className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm text-slate-900 focus:outline-none focus:border-slate-900"
                     />
                   </div>
+                  <SpamVelden state={spam} />
                   <button
                     type="submit"
                     disabled={bezig || !pendingKlus}

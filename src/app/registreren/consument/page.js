@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import WachtwoordVeld from "../../../components/WachtwoordVeld";
+import SpamVelden, { useSpamVelden } from "../../../components/SpamVelden";
 
 export default function RegistrerenConsumentPage() {
   const [naam, setNaam] = useState("");
@@ -11,6 +12,7 @@ export default function RegistrerenConsumentPage() {
   const [bezig, setBezig] = useState(false);
   const [foutmelding, setFoutmelding] = useState("");
   const [succes, setSucces] = useState(false);
+  const spam = useSpamVelden();
 
   async function registreer(e) {
     e.preventDefault();
@@ -20,7 +22,13 @@ export default function RegistrerenConsumentPage() {
     const res = await fetch("/api/registreren", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rol: "consument", naam, email, wachtwoord }),
+      body: JSON.stringify({
+        rol: "consument",
+        naam,
+        email,
+        wachtwoord,
+        ...spam.body(),
+      }),
     });
 
     const data = await res.json();
@@ -136,6 +144,8 @@ export default function RegistrerenConsumentPage() {
             />
             <p className="text-xs text-slate-500 mt-1">Minstens 8 tekens.</p>
           </div>
+
+          <SpamVelden state={spam} />
 
           {foutmelding && (
             <p className="text-sm text-rose-600">{foutmelding}</p>

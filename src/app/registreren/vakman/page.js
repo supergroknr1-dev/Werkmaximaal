@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { POSTCODE_REGEX, searchPlaatsen } from "../../../lib/pdok";
 import WachtwoordVeld from "../../../components/WachtwoordVeld";
+import SpamVelden, { useSpamVelden } from "../../../components/SpamVelden";
 
 async function fetchPlaats(postcode) {
   const url = `https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=postcode:${postcode}&fl=woonplaatsnaam&rows=1`;
@@ -18,6 +19,7 @@ async function fetchPlaats(postcode) {
 }
 
 export default function RegistrerenVakmanPage() {
+  const spam = useSpamVelden();
   const [naam, setNaam] = useState("");
   const [bedrijfsnaam, setBedrijfsnaam] = useState("");
   const [kvkNummer, setKvkNummer] = useState("");
@@ -199,6 +201,7 @@ export default function RegistrerenVakmanPage() {
         email,
         wachtwoord,
         disclaimerAkkoord,
+        ...spam.body(),
       }),
     });
 
@@ -741,6 +744,8 @@ export default function RegistrerenVakmanPage() {
               </span>
             </label>
           )}
+
+          <SpamVelden state={spam} />
 
           {foutmelding && (
             <p className="text-sm text-rose-600">{foutmelding}</p>

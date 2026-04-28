@@ -4,6 +4,10 @@ import { prisma } from "../../../lib/prisma";
 import { getInstellingen } from "../../../lib/instellingen";
 import { syncVakmanNaarPipedrive } from "../../../lib/pipedrive";
 import { emitActivity, EVENT_TYPES, ipFromRequest } from "../../../lib/events";
+import {
+  checkRegistratieSpam,
+  SpamGedetecteerdError,
+} from "../../../lib/spam-protection";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const TELEFOON_REGEX = /^(\+31|0)[1-9]\d{8}$/;
@@ -12,6 +16,21 @@ const POSTCODE_REGEX = /^\d{4}[A-Z]{2}$/;
 
 export async function POST(request) {
   const data = await request.json();
+
+  // Spam-bescherming vóór alle andere validatie + DB-werk: honeypot,
+  // tijd-check, optionele Turnstile, IP-rate-limit.
+  try {
+    await checkRegistratieSpam({
+      data,
+      ipAdres: ipFromRequest(request),
+      request,
+    });
+  } catch (err) {
+    if (err instanceof SpamGedetecteerdError) {
+      return Response.json({ error: err.message }, { status: err.status });
+    }
+    throw err;
+  }
 
   const email = (data.email ?? "").trim().toLowerCase();
   const wachtwoord = data.wachtwoord ?? "";

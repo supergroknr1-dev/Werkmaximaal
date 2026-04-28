@@ -32,8 +32,10 @@ export async function GET() {
   });
 
   // Adressen zijn alleen zichtbaar voor de eigenaar of een admin.
-  // Voor iedereen anders strippen we straatnaam + huisnummer en tonen
-  // we alleen de eerste vier postcode-cijfers (de buurtindicator).
+  // Voor iedereen anders (vakman zonder lead, anoniem) strippen we
+  // straatnaam, huisnummer én postcode volledig — alleen plaats blijft
+  // staan voor de buurtindicator. Postcode blijft wel in de DB en wordt
+  // server-side gebruikt voor matching/heatmaps.
   const veilig = klussen.map((k) => {
     const magVolledig =
       sessieUser?.isAdmin || (sessieUser && k.userId === sessieUser.id);
@@ -42,7 +44,7 @@ export async function GET() {
       ...k,
       straatnaam: null,
       huisnummer: null,
-      postcode: k.postcode ? k.postcode.slice(0, 4) : null,
+      postcode: null,
     };
   });
 

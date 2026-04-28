@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-04-28 (admin-bewerk + rebranding gepusht)
-**Laatste commit op main:** `896d525` — Admin vakman bewerken-pagina + Vakman/Buurtklusser-rebranding
+**Laatst bijgewerkt:** 2026-04-28 (consument-conversieflow + multi-werkgebied gepusht)
+**Laatste commit op main:** `0b5b3ce` — Conversie-flow voor consumenten + multi-werkgebied + wijzig-indicator
 **Live op:** https://werkmaximaal.vercel.app/
 
 ---
@@ -32,10 +32,14 @@ In de laatste sessies (volgorde: oud → nieuw):
 - **Werk- + Privé-telefoon**: `werkTelefoon` (was `telefoon` via @map = backward-compat) zichtbaar voor klanten + nieuw `priveTelefoon` alleen zichtbaar voor admin
 - **Schermnaam wijzigen 1× per 30 dagen** op `/profiel` voor de vakman/buurtklusser zelf — admin omzeilt regel via PATCH `/api/admin/vakmannen/[id]`. Velden voor- en achternaam zijn disabled tijdens wachttijd, gele waarschuwingsbalk toont datum waarop weer kan
 - **Vakman/Buurtklusser-rebranding** in alle UI: "Professional/Pro" → "Vakman", "Hobbyist/Handige Harry" → "Buurtklusser". DB-waarden (`professional`/`hobbyist`) en Pipedrive CRM-labels onveranderd
+- **Klus-plaatsen flow voor anonieme bezoekers**: homepage toont stap 1 + 2 ook zonder login. Klik op 'Plaats klus' bewaart formstate in `sessionStorage` en redirect naar nieuwe pagina `/voltooien` met dual-block lay-out (inloggen + consument-only snel-registratie, géén zakelijke optie). Na succesvol login/registratie wordt de klus automatisch geplaatst zodra gebruiker geladen is en PDOK-adres bevestigd. Migration `werkgebied_extra` voor toekomstige multi-werkgebied
+- **Multi-werkgebied per Vakman** (admin-only, alleen Pro): primair blijft op `User`, nieuwe tabel `WerkgebiedExtra` voor extra rijen. UI in admin bewerk-pagina met **+ Werkgebied toevoegen** / **🗑 verwijderen** per rij, postcode/plaats-toggle. Buurtklussers krijgen geen extra werkgebieden — bij type-switch worden alle extras automatisch geleegd in transactie
+- **Wijzig-indicator op admin bewerk-pagina**: geel (amber-50) = ingetikt-niet-opgeslagen, groen (emerald-50) = net opgeslagen (flash 3s, daarna wit). Werkt op alle hoofdvelden (naam, contact, adres, werkgebied)
+- **Registreren als vakman uitgelijnd met admin-bewerk-stijl**: type-cards met 5-punten lijst + kleur-highlight, conditioneel naam-label, werkgebied postcode/plaats-toggle + PDOK-autocomplete, KvK-uittreksel als donkere upload-knop (oude `KvkUpload`-component verwijderd)
 
 ## 🟡 Waar je was gebleven
 
-Admin-bewerken + Vakman/Buurtklusser-rebranding volledig opgeleverd en gepusht (`896d525`). Migrations toegepast: `werk_prive_telefoon`, `naam_laatst_gewijzigd`, `regio_plaats`. Sessie eindigde met openstaande feature-aanvraag van de user: **meerdere werkgebieden per Vakman** (alleen Pro, niet Buurtklusser) + **wijzig-indicator** (geel = niet opgeslagen, kort groen na save, daarna wit). Plan was: hybride aanpak — primair werkgebied blijft op `User` (regioPostcode/regioPlaats/werkafstand) voor backward-compat, nieuwe tabel `WerkgebiedExtra` voor extra rijen. **Volgende sessie:** dit feature bouwen of switchen naar iets uit de top-3.
+Volledige consumenten-conversieflow + admin multi-werkgebied + wijzig-indicator opgeleverd en gepusht (`0b5b3ce`). Migrations toegepast: `werk_prive_telefoon`, `naam_laatst_gewijzigd`, `regio_plaats`, `werkgebied_extra`. End-to-end-test uitstaande punten: (1) reviews aanmaken vereist nog steeds consument-account met lead ≥10 dagen oud; (2) auto-plaats-flow vereist daadwerkelijk doorklikken na registratie. **Aanbevolen volgende stap:** kies een feature uit de top-3.
 
 ## 🔴 Volgende stappen — kies er één om mee te starten
 

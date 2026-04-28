@@ -82,12 +82,32 @@ export default async function KlusDetailPage({ params }) {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-2xl mx-auto px-4 py-12 md:py-16">
-        <Link
-          href="/"
-          className="text-sm text-slate-600 hover:text-slate-900 inline-flex items-center gap-1 mb-6 transition-colors"
-        >
-          ← Terug naar overzicht
-        </Link>
+        {isAdmin ? (
+          <nav
+            aria-label="Breadcrumb"
+            className="flex items-center gap-1.5 text-sm text-slate-500 mb-6"
+          >
+            <Link href="/admin" className="hover:text-slate-900 transition-colors">
+              Admin
+            </Link>
+            <span className="text-slate-300">/</span>
+            <Link
+              href="/admin/klussen"
+              className="hover:text-slate-900 transition-colors"
+            >
+              Klussen Monitor
+            </Link>
+            <span className="text-slate-300">/</span>
+            <span className="text-slate-900 font-medium">Klus #{klus.id}</span>
+          </nav>
+        ) : (
+          <Link
+            href="/"
+            className="text-sm text-slate-600 hover:text-slate-900 inline-flex items-center gap-1 mb-6 transition-colors"
+          >
+            ← Terug naar overzicht
+          </Link>
+        )}
 
         {!klus.goedgekeurd && (
           <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-6 text-sm text-amber-900">

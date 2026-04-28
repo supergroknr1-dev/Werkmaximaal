@@ -207,6 +207,13 @@ export default function Home() {
     setUserLoaded(true);
   }
 
+  // Admins horen niet op de publieke homepage — direct naar /admin
+  useEffect(() => {
+    if (userLoaded && huidigeUser?.rol === "admin" && huidigeUser?.isAdmin) {
+      router.push("/admin");
+    }
+  }, [userLoaded, huidigeUser, router]);
+
   async function uitloggen() {
     await fetch("/api/logout", { method: "POST" });
     setHuidigeUser(null);
@@ -347,7 +354,7 @@ export default function Home() {
           </div>
         </header>
 
-        {userLoaded && huidigeUser && huidigeUser.rol !== "consument" && (
+        {userLoaded && huidigeUser?.rol === "vakman" && (
           <div className="bg-white border border-slate-200 rounded-md shadow-sm p-6 md:p-8 mb-10">
             <p className="text-xs uppercase tracking-wider text-slate-500 font-medium mb-2">
               Vakman-account

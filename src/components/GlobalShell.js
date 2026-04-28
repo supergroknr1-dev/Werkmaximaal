@@ -3,6 +3,8 @@
 import { usePathname } from "next/navigation";
 import IngelogdSidebar from "./IngelogdSidebar";
 import AdminToolbar from "./AdminToolbar";
+import CookieBanner from "./CookieBanner";
+import PubliekFooter from "./PubliekFooter";
 
 /**
  * Wrapper voor de hele app. Drie verantwoordelijkheden:
@@ -53,10 +55,17 @@ export default function GlobalShell({ user, adminInfo, children }) {
     children
   );
 
+  // Cookie-banner + footer alleen op publieke pagina's — niet op
+  // admin-area (heeft eigen navigatie) en niet op auth-flows (zou
+  // afleiden van inloggen).
+  const toonPubliekChrome = !opAdmin && !opAuthPad;
+
   return (
     <>
       {toonToolbar && <AdminToolbar info={adminInfo} />}
       {inhoud}
+      {toonPubliekChrome && <PubliekFooter />}
+      {toonPubliekChrome && <CookieBanner />}
     </>
   );
 }

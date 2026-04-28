@@ -1,6 +1,9 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { getCurrentUser } from "@/lib/auth";
+import { getSession } from "@/lib/session";
+import { prisma } from "@/lib/prisma";
+import { isToegestaneAdminEmail } from "@/lib/admin-paths";
 import GlobalShell from "@/components/GlobalShell";
 
 const inter = Inter({
@@ -17,12 +20,60 @@ export const metadata = {
 // per request opnieuw renderen en niet statisch worden gecached.
 export const dynamic = "force-dynamic";
 
+/**
+ * Detecteer of de huidige sessie een admin is (gewone modus of
+ * shadow-mode). Resultaat wordt naar GlobalShell gegeven die er een
+ * toolbar van rendert. Geeft `null` voor niet-admins zodat GlobalShell
+ * niets toont.
+ */
+async function detecteerAdminInfo() {
+  const session = await getSession();
+  if (!session.userId && !session.shadowAdminId) return null;
+
+  // Shadow-mode: échte admin-id zit in shadowAdminId
+  if (session.shadowAdminId) {
+    const [admin, gemimickt] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: session.shadowAdminId },
+        select: { id: true, rol: true, isAdmin: true, email: true },
+      }),
+      prisma.user.findUnique({
+        where: { id: session.userId },
+        select: { id: true, naam: true, bedrijfsnaam: true, email: true },
+      }),
+    ]);
+    if (
+      admin?.rol === "admin" &&
+      admin?.isAdmin &&
+      isToegestaneAdminEmail(admin.email) &&
+      gemimickt
+    ) {
+      return {
+        kind: "shadow",
+        gemimicktNaam:
+          gemimickt.bedrijfsnaam || gemimickt.naam || gemimickt.email,
+      };
+    }
+    return null;
+  }
+
+  // Gewone admin
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { rol: true, isAdmin: true, email: true },
+  });
+  if (
+    user?.rol === "admin" &&
+    user?.isAdmin &&
+    isToegestaneAdminEmail(user.email)
+  ) {
+    return { kind: "admin" };
+  }
+  return null;
+}
+
 export default async function RootLayout({ children }) {
   const user = await getCurrentUser();
-  // Iedere ingelogde consument/vakman krijgt de globale sidebar — ook
-  // admins (zij zien hem op alle niet-/admin-pagina's). De /admin-layout
-  // gebruikt zijn eigen sidebar, dus GlobalShell verbergt zichzelf op
-  // /admin-paden via de pathname-check.
   const sidebarUser =
     user && (user.rol === "consument" || user.rol === "vakman")
       ? {
@@ -32,10 +83,14 @@ export default async function RootLayout({ children }) {
         }
       : null;
 
+  const adminInfo = await detecteerAdminInfo();
+
   return (
     <html lang="nl" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans">
-        <GlobalShell user={sidebarUser}>{children}</GlobalShell>
+        <GlobalShell user={sidebarUser} adminInfo={adminInfo}>
+          {children}
+        </GlobalShell>
       </body>
     </html>
   );

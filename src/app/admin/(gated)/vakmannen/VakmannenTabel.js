@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, Trash2, ShieldCheck, ShieldAlert, Pencil } from "lucide-react";
+import { Search, Trash2, ShieldCheck, ShieldAlert, Pencil, ExternalLink, UserCog } from "lucide-react";
 import {
   useInterventionConfirm,
   interventionHeaders,
@@ -88,6 +88,36 @@ export default function VakmannenTabel({ vakmannen }) {
       return haystack.includes(term);
     });
   }, [vakmannen, zoek, typeFilter]);
+
+  async function shadowStart(v) {
+    const naam = v.bedrijfsnaam || v.naam;
+    const ok = await bevestigIngreep({
+      titel: "Bekijk als deze vakman",
+      beschrijving: `${naam} (${v.email}) — je sessie wordt tijdelijk overgenomen tot je 'Stop shadowen' klikt`,
+      defaultCategorie: "support",
+      bevestigLabel: "Start shadowen",
+      onBevestig: async ({ reden, actieCategorie }) => {
+        const res = await fetch(`/api/admin/shadow/start`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...interventionHeaders({ reden, actieCategorie }),
+          },
+          body: JSON.stringify({ vakmanId: v.id }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || "Shadow starten mislukt.");
+        }
+      },
+    });
+    if (ok) {
+      // Hard reload zodat de session-cookie effect heeft op de
+      // server-rendered admin-pagina ook
+      router.push("/");
+      router.refresh();
+    }
+  }
 
   async function verwijder(v) {
     const naam = v.bedrijfsnaam || v.naam;
@@ -202,6 +232,25 @@ export default function VakmannenTabel({ vakmannen }) {
                   </td>
                   <td className="px-5 py-3 text-right">
                     <div className="inline-flex items-center gap-3">
+                      <Link
+                        href={`/vakmannen/${v.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Open publiek profiel in nieuw tabblad"
+                        className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900 transition-colors"
+                      >
+                        <ExternalLink size={13} />
+                        Profiel
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => shadowStart(v)}
+                        title="Bekijk als deze vakman (shadow mode)"
+                        className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-amber-700 transition-colors"
+                      >
+                        <UserCog size={13} />
+                        Bekijk als
+                      </button>
                       <Link
                         href={`/admin/vakmannen/${v.id}/bewerken`}
                         className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900 transition-colors"

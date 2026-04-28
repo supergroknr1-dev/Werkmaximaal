@@ -2,14 +2,15 @@
 
 import { usePathname } from "next/navigation";
 import IngelogdSidebar from "./IngelogdSidebar";
+import AdminToolbar from "./AdminToolbar";
 
 /**
- * Wrapper voor de hele app. Toont de IngelogdSidebar links wanneer:
- *  - er een ingelogde gebruiker is (rol consument of vakman), én
- *  - we niet binnen /admin zitten (heeft eigen sidebar), én
- *  - we niet op een auth-pagina zitten (/inloggen, /registreren, etc.)
- * In alle andere gevallen (anoniem of admin) rendert de wrapper de
- * children gewoon zonder shell.
+ * Wrapper voor de hele app. Drie verantwoordelijkheden:
+ *  - IngelogdSidebar tonen voor ingelogde consumenten/vakmannen op
+ *    niet-/admin- en niet-auth-pagina's
+ *  - AdminToolbar bovenin tonen voor admins op publieke pagina's
+ *    (en voor shadow-mode altijd, ook op auth-pagina's)
+ *  - Gewone passthrough in alle andere gevallen
  */
 const AUTH_PATHS = [
   "/inloggen",
@@ -17,9 +18,10 @@ const AUTH_PATHS = [
   "/voltooien",
   "/wachtwoord-vergeten",
   "/wachtwoord-resetten",
+  "/management-secure-login",
 ];
 
-export default function GlobalShell({ user, children }) {
+export default function GlobalShell({ user, adminInfo, children }) {
   const pathname = usePathname() || "/";
 
   const opAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
@@ -28,11 +30,17 @@ export default function GlobalShell({ user, children }) {
   );
   const moetSidebar = !!user && !opAdmin && !opAuthPad;
 
-  if (!moetSidebar) {
-    return children;
-  }
+  // Admin-toolbar verbergen op /admin/* (admin is daar al in z'n
+  // eigen omgeving) en op auth-pagina's (anders: 'Terug naar Admin'
+  // op het login-scherm — verwarrend).
+  // Shadow-mode tonen we wél op auth-pagina's: dan kan de admin
+  // direct stoppen als 'ie per ongeluk doorklikt.
+  const toonToolbar =
+    adminInfo &&
+    !opAdmin &&
+    (adminInfo.kind === "shadow" || !opAuthPad);
 
-  return (
+  const inhoud = moetSidebar ? (
     <div className="min-h-screen bg-gray-50">
       <IngelogdSidebar
         rol={user.rol}
@@ -41,5 +49,14 @@ export default function GlobalShell({ user, children }) {
       />
       <div className="md:pl-60">{children}</div>
     </div>
+  ) : (
+    children
+  );
+
+  return (
+    <>
+      {toonToolbar && <AdminToolbar info={adminInfo} />}
+      {inhoud}
+    </>
   );
 }

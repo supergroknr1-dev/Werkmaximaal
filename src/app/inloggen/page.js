@@ -3,6 +3,7 @@
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import WachtwoordVeld from "../../components/WachtwoordVeld";
 
 export default function InloggenPage() {
   return (
@@ -97,8 +98,7 @@ function InloggenContent() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Wachtwoord
             </label>
-            <input
-              type="password"
+            <WachtwoordVeld
               value={wachtwoord}
               onChange={(e) => setWachtwoord(e.target.value)}
               required

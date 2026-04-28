@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import WachtwoordVeld from "../../../components/WachtwoordVeld";
+
+const VELD_KLASSEN =
+  "w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:border-slate-900 transition-colors text-sm";
 
 export default function WachtwoordForm() {
   const [huidig, setHuidig] = useState("");
@@ -53,13 +57,12 @@ export default function WachtwoordForm() {
         <label className="block text-sm font-medium text-slate-700 mb-2">
           Huidig wachtwoord
         </label>
-        <input
-          type="password"
+        <WachtwoordVeld
           value={huidig}
           onChange={(e) => setHuidig(e.target.value)}
           required
           autoComplete="current-password"
-          className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+          className={VELD_KLASSEN}
         />
       </div>
 
@@ -67,14 +70,13 @@ export default function WachtwoordForm() {
         <label className="block text-sm font-medium text-slate-700 mb-2">
           Nieuw wachtwoord
         </label>
-        <input
-          type="password"
+        <WachtwoordVeld
           value={nieuw}
           onChange={(e) => setNieuw(e.target.value)}
           required
           minLength={8}
           autoComplete="new-password"
-          className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+          className={VELD_KLASSEN}
         />
         <p className="text-xs text-slate-500 mt-1">Minimaal 8 tekens.</p>
       </div>
@@ -83,13 +85,12 @@ export default function WachtwoordForm() {
         <label className="block text-sm font-medium text-slate-700 mb-2">
           Bevestig nieuw wachtwoord
         </label>
-        <input
-          type="password"
+        <WachtwoordVeld
           value={bevestig}
           onChange={(e) => setBevestig(e.target.value)}
           required
           autoComplete="new-password"
-          className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+          className={VELD_KLASSEN}
         />
       </div>
 

@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import WachtwoordVeld from "../../components/WachtwoordVeld";
 
 export default function WachtwoordResettenPage() {
   return (
@@ -123,8 +124,7 @@ function WachtwoordResettenContent() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Nieuw wachtwoord
             </label>
-            <input
-              type="password"
+            <WachtwoordVeld
               value={wachtwoord}
               onChange={(e) => setWachtwoord(e.target.value)}
               required
@@ -138,8 +138,7 @@ function WachtwoordResettenContent() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Bevestig nieuw wachtwoord
             </label>
-            <input
-              type="password"
+            <WachtwoordVeld
               value={bevestiging}
               onChange={(e) => setBevestiging(e.target.value)}
               required

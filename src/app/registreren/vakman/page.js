@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { POSTCODE_REGEX, searchPlaatsen } from "../../../lib/pdok";
+import WachtwoordVeld from "../../../components/WachtwoordVeld";
 
 async function fetchPlaats(postcode) {
   const url = `https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=postcode:${postcode}&fl=woonplaatsnaam&rows=1`;
@@ -714,8 +715,7 @@ export default function RegistrerenVakmanPage() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Wachtwoord
             </label>
-            <input
-              type="password"
+            <WachtwoordVeld
               value={wachtwoord}
               onChange={(e) => setWachtwoord(e.target.value)}
               required

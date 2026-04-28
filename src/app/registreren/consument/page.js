@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import WachtwoordVeld from "../../../components/WachtwoordVeld";
 
 export default function RegistrerenConsumentPage() {
   const [naam, setNaam] = useState("");
@@ -125,8 +126,7 @@ export default function RegistrerenConsumentPage() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Wachtwoord
             </label>
-            <input
-              type="password"
+            <WachtwoordVeld
               value={wachtwoord}
               onChange={(e) => setWachtwoord(e.target.value)}
               required

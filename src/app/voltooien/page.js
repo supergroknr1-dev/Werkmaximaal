@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import WachtwoordVeld from "../../components/WachtwoordVeld";
 
 const PENDING_KEY = "werkmaximaal_pending_klus";
 const AUTO_PLAATSEN_KEY = "werkmaximaal_auto_plaatsen";
@@ -207,8 +208,7 @@ export default function VoltooienPage() {
                     <label className="block text-xs font-medium text-slate-700 mb-1">
                       Wachtwoord
                     </label>
-                    <input
-                      type="password"
+                    <WachtwoordVeld
                       value={logWachtwoord}
                       onChange={(e) => setLogWachtwoord(e.target.value)}
                       onFocus={() => setModus("inloggen")}
@@ -312,8 +312,7 @@ export default function VoltooienPage() {
                         (min 8 tekens)
                       </span>
                     </label>
-                    <input
-                      type="password"
+                    <WachtwoordVeld
                       value={regWachtwoord}
                       onChange={(e) => setRegWachtwoord(e.target.value)}
                       onFocus={() => setModus("registreren")}

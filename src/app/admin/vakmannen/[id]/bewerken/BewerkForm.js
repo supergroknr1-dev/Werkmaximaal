@@ -69,6 +69,55 @@ export default function BewerkForm({ vakman }) {
   const [uploadFout, setUploadFout] = useState(null);
   const [plaatsSuggesties, setPlaatsSuggesties] = useState([]);
   const [plaatsSuggestiesOpen, setPlaatsSuggestiesOpen] = useState(false);
+  // Extra werkgebieden — alleen Vakman ziet deze. Tijdelijk client-side
+  // ID (clientId) zodat we per rij een stabiele key hebben (de DB-id
+  // ontbreekt bij net-toegevoegde rijen).
+  const [werkgebiedenExtra, setWerkgebiedenExtra] = useState(() =>
+    (vakman.werkgebiedenExtra || []).map((w) => ({
+      clientId: `db-${w.id}`,
+      type: w.type,
+      waarde: w.waarde,
+      werkafstand: String(w.werkafstand ?? ""),
+    }))
+  );
+
+  // Wijzig-indicator: snapshot van de form-staat zoals laatst opgeslagen.
+  // Velden die afwijken krijgen geel; net opgeslagen velden flashen groen.
+  const initielePrimary = {
+    naam: vakman.naam || "",
+    voornaam: vakman.voornaam || "",
+    achternaam: vakman.achternaam || "",
+    email: vakman.email || "",
+    bedrijfsnaam: vakman.bedrijfsnaam || "",
+    kvkNummer: vakman.kvkNummer || "",
+    kvkUittrekselUrl: vakman.kvkUittrekselUrl || "",
+    kvkUittrekselNaam: vakman.kvkUittrekselNaam || "",
+    werkTelefoon: vakman.werkTelefoon || "",
+    priveTelefoon: vakman.priveTelefoon || "",
+    vakmanType: vakman.vakmanType || "",
+    straatnaam: vakman.straatnaam || "",
+    huisnummer: vakman.huisnummer || "",
+    huisnummerToevoeging: vakman.huisnummerToevoeging || "",
+    postcode: vakman.postcode || "",
+    plaats: vakman.plaats || "",
+    werkafstand: String(vakman.werkafstand ?? ""),
+    regioPostcode: vakman.regioPostcode || "",
+    regioPlaats: vakman.regioPlaats || "",
+  };
+  const [origineel, setOrigineel] = useState(initielePrimary);
+  const [netOpgeslagenVelden, setNetOpgeslagenVelden] = useState([]);
+
+  function isVeranderd(key) {
+    const huidig = String(form[key] ?? "");
+    const oud = String(origineel[key] ?? "");
+    return huidig !== oud;
+  }
+  function veldKlasse(key) {
+    if (isVeranderd(key)) return "bg-amber-50 border-amber-300";
+    if (netOpgeslagenVelden.includes(key))
+      return "bg-emerald-50 border-emerald-300";
+    return "";
+  }
   // adresStatus: "leeg" | "typen" | "bezig" | "ok" | "fout"
   const [adresStatus, setAdresStatus] = useState(
     vakman.straatnaam && vakman.plaats ? "ok" : "leeg"
@@ -178,19 +227,57 @@ export default function BewerkForm({ vakman }) {
     setForm((prev) => ({ ...prev, kvkUittrekselUrl: "", kvkUittrekselNaam: "" }));
   }
 
+  function voegWerkgebiedToe() {
+    setWerkgebiedenExtra((prev) => [
+      ...prev,
+      {
+        clientId: `nieuw-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        type: "postcode",
+        waarde: "",
+        werkafstand: "25",
+      },
+    ]);
+  }
+  function verwijderWerkgebied(clientId) {
+    setWerkgebiedenExtra((prev) => prev.filter((w) => w.clientId !== clientId));
+  }
+  function wijzigWerkgebied(clientId, key, waarde) {
+    setWerkgebiedenExtra((prev) =>
+      prev.map((w) => (w.clientId === clientId ? { ...w, [key]: waarde } : w))
+    );
+  }
+
   async function submit(e) {
     e.preventDefault();
     setFout(null);
     setSucces(false);
     setBezig(true);
     try {
+      const payload = {
+        ...form,
+        werkgebiedenExtra: werkgebiedenExtra.map((w) => ({
+          type: w.type,
+          waarde: w.waarde,
+          werkafstand: parseInt(w.werkafstand, 10) || 0,
+        })),
+      };
       const res = await fetch(`/api/admin/vakmannen/${vakman.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Opslaan mislukt");
+
+      // Wijzig-indicator: bepaal welke velden afwijken van origineel
+      // (= net opgeslagen) en flash ze 3 seconden groen, daarna wit.
+      const netGewijzigd = Object.keys(origineel).filter(
+        (k) => String(form[k] ?? "") !== String(origineel[k] ?? "")
+      );
+      setNetOpgeslagenVelden(netGewijzigd);
+      setOrigineel({ ...origineel, ...form });
+      setTimeout(() => setNetOpgeslagenVelden([]), 3000);
+
       setSucces(true);
       router.refresh();
     } catch (err) {
@@ -295,7 +382,7 @@ export default function BewerkForm({ vakman }) {
               type="text"
               value={form.naam}
               onChange={(e) => set("naam", e.target.value)}
-              className={inputCls}
+              className={`${inputCls} ${veldKlasse("naam")}`}
               required
             />
           </Veld>
@@ -304,7 +391,7 @@ export default function BewerkForm({ vakman }) {
               type="text"
               value={form.voornaam}
               onChange={(e) => set("voornaam", e.target.value)}
-              className={inputCls}
+              className={`${inputCls} ${veldKlasse("voornaam")}`}
             />
           </Veld>
           <Veld label="Achternaam">
@@ -312,7 +399,7 @@ export default function BewerkForm({ vakman }) {
               type="text"
               value={form.achternaam}
               onChange={(e) => set("achternaam", e.target.value)}
-              className={inputCls}
+              className={`${inputCls} ${veldKlasse("achternaam")}`}
             />
           </Veld>
           <Veld label="E-mail">
@@ -320,7 +407,7 @@ export default function BewerkForm({ vakman }) {
               type="email"
               value={form.email}
               onChange={(e) => set("email", e.target.value)}
-              className={inputCls}
+              className={`${inputCls} ${veldKlasse("email")}`}
               required
             />
           </Veld>
@@ -332,7 +419,7 @@ export default function BewerkForm({ vakman }) {
               type="tel"
               value={form.werkTelefoon}
               onChange={(e) => set("werkTelefoon", e.target.value)}
-              className={inputCls}
+              className={`${inputCls} ${veldKlasse("werkTelefoon")}`}
             />
           </Veld>
           <Veld
@@ -343,7 +430,7 @@ export default function BewerkForm({ vakman }) {
               type="tel"
               value={form.priveTelefoon}
               onChange={(e) => set("priveTelefoon", e.target.value)}
-              className={inputCls}
+              className={`${inputCls} ${veldKlasse("priveTelefoon")}`}
             />
           </Veld>
         </div>
@@ -364,7 +451,7 @@ export default function BewerkForm({ vakman }) {
               type="text"
               value={form.bedrijfsnaam}
               onChange={(e) => set("bedrijfsnaam", e.target.value)}
-              className={inputCls}
+              className={`${inputCls} ${veldKlasse("bedrijfsnaam")}`}
               required={isPro}
             />
           </Veld>
@@ -373,7 +460,7 @@ export default function BewerkForm({ vakman }) {
               type="text"
               value={form.kvkNummer}
               onChange={(e) => set("kvkNummer", e.target.value)}
-              className={inputCls}
+              className={`${inputCls} ${veldKlasse("kvkNummer")}`}
               required={isPro}
             />
           </Veld>
@@ -467,7 +554,7 @@ export default function BewerkForm({ vakman }) {
               onChange={(e) =>
                 set("postcode", e.target.value.toUpperCase())
               }
-              className={inputCls}
+              className={`${inputCls} ${veldKlasse("postcode")}`}
               placeholder="1234AB"
               maxLength={7}
             />
@@ -477,7 +564,7 @@ export default function BewerkForm({ vakman }) {
               type="text"
               value={form.huisnummer}
               onChange={(e) => set("huisnummer", e.target.value)}
-              className={inputCls}
+              className={`${inputCls} ${veldKlasse("huisnummer")}`}
               placeholder="42"
             />
           </Veld>
@@ -486,7 +573,7 @@ export default function BewerkForm({ vakman }) {
               type="text"
               value={form.huisnummerToevoeging}
               onChange={(e) => set("huisnummerToevoeging", e.target.value)}
-              className={inputCls}
+              className={`${inputCls} ${veldKlasse("huisnummerToevoeging")}`}
               placeholder="A"
             />
           </Veld>
@@ -495,7 +582,7 @@ export default function BewerkForm({ vakman }) {
               type="text"
               value={form.straatnaam}
               onChange={(e) => set("straatnaam", e.target.value)}
-              className={`${inputCls} bg-slate-50`}
+              className={`${inputCls} bg-slate-50 ${veldKlasse("straatnaam")}`}
               readOnly={adresStatus === "bezig"}
             />
           </Veld>
@@ -504,7 +591,7 @@ export default function BewerkForm({ vakman }) {
               type="text"
               value={form.plaats}
               onChange={(e) => set("plaats", e.target.value)}
-              className={`${inputCls} bg-slate-50`}
+              className={`${inputCls} bg-slate-50 ${veldKlasse("plaats")}`}
               readOnly={adresStatus === "bezig"}
             />
           </Veld>
@@ -555,7 +642,7 @@ export default function BewerkForm({ vakman }) {
                 onChange={(e) =>
                   set("regioPostcode", e.target.value.toUpperCase())
                 }
-                className={inputCls}
+                className={`${inputCls} ${veldKlasse("regioPostcode")}`}
                 maxLength={4}
                 placeholder="5611"
               />
@@ -577,7 +664,7 @@ export default function BewerkForm({ vakman }) {
                   onBlur={() =>
                     setTimeout(() => setPlaatsSuggestiesOpen(false), 150)
                   }
-                  className={inputCls}
+                  className={`${inputCls} ${veldKlasse("regioPlaats")}`}
                   placeholder="Begin te typen, bv. Eindhoven"
                   autoComplete="off"
                 />
@@ -614,9 +701,112 @@ export default function BewerkForm({ vakman }) {
               min={0}
               value={form.werkafstand}
               onChange={(e) => set("werkafstand", e.target.value)}
-              className={inputCls}
+              className={`${inputCls} ${veldKlasse("werkafstand")}`}
             />
           </Veld>
+
+          {/* Extra werkgebieden — alleen voor Vakman */}
+          {isPro && (
+            <div className="border-t border-slate-100 pt-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="block text-xs font-medium text-slate-700">
+                  Extra werkgebieden ({werkgebiedenExtra.length})
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 mb-3">
+                Voor Vakmannen die in meerdere regio's werken. Elk extra
+                werkgebied heeft eigen postcode/plaats + werkafstand.
+              </p>
+              {werkgebiedenExtra.length > 0 && (
+                <ul className="space-y-3 mb-3">
+                  {werkgebiedenExtra.map((w) => (
+                    <li
+                      key={w.clientId}
+                      className="border border-slate-200 rounded-md p-3 bg-slate-50/50 space-y-2"
+                    >
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            wijzigWerkgebied(w.clientId, "type", "postcode")
+                          }
+                          className={`text-[11px] px-2 py-1.5 rounded border transition-colors ${
+                            w.type === "postcode"
+                              ? "bg-slate-900 border-slate-900 text-white"
+                              : "bg-white border-slate-200 text-slate-700 hover:border-slate-400"
+                          }`}
+                        >
+                          Postcode
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            wijzigWerkgebied(w.clientId, "type", "plaats")
+                          }
+                          className={`text-[11px] px-2 py-1.5 rounded border transition-colors ${
+                            w.type === "plaats"
+                              ? "bg-slate-900 border-slate-900 text-white"
+                              : "bg-white border-slate-200 text-slate-700 hover:border-slate-400"
+                          }`}
+                        >
+                          Plaats
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        value={w.waarde}
+                        onChange={(e) =>
+                          wijzigWerkgebied(
+                            w.clientId,
+                            "waarde",
+                            w.type === "postcode"
+                              ? e.target.value.toUpperCase()
+                              : e.target.value
+                          )
+                        }
+                        placeholder={w.type === "postcode" ? "5611" : "Eindhoven"}
+                        maxLength={w.type === "postcode" ? 4 : 60}
+                        className={inputCls}
+                      />
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min={1}
+                          max={500}
+                          value={w.werkafstand}
+                          onChange={(e) =>
+                            wijzigWerkgebied(
+                              w.clientId,
+                              "werkafstand",
+                              e.target.value
+                            )
+                          }
+                          placeholder="25"
+                          className={`${inputCls} flex-1`}
+                        />
+                        <span className="text-[11px] text-slate-500">km</span>
+                        <button
+                          type="button"
+                          onClick={() => verwijderWerkgebied(w.clientId)}
+                          className="text-[11px] text-rose-700 hover:text-rose-900 px-2 py-1 shrink-0"
+                          aria-label="Verwijder werkgebied"
+                        >
+                          🗑 verwijder
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <button
+                type="button"
+                onClick={voegWerkgebiedToe}
+                className="text-xs px-3 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-50"
+              >
+                + Werkgebied toevoegen
+              </button>
+            </div>
+          )}
         </div>
       </section>
 

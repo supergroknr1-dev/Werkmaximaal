@@ -57,6 +57,7 @@ export async function POST(request) {
     const telefoon = (data.telefoon ?? "").replace(/[\s-]/g, "").trim();
     const werkafstand = parseInt(data.werkafstand);
     const regioPostcode = (data.regioPostcode ?? "").trim().toUpperCase();
+    const regioPlaats = (data.regioPlaats ?? "").trim();
 
     if (!TELEFOON_REGEX.test(telefoon)) {
       return Response.json(
@@ -70,14 +71,26 @@ export async function POST(request) {
         { status: 400 }
       );
     }
-    if (!POSTCODE_REGEX.test(regioPostcode)) {
+    if (!regioPostcode && !regioPlaats) {
+      return Response.json(
+        { error: "Vul een postcode of plaatsnaam in als werkgebied." },
+        { status: 400 }
+      );
+    }
+    if (regioPostcode && !POSTCODE_REGEX.test(regioPostcode)) {
       return Response.json(
         { error: "Vul een geldige postcode in als regio." },
         { status: 400 }
       );
     }
 
-    extra = { vakmanType, werkTelefoon: telefoon, werkafstand, regioPostcode };
+    extra = {
+      vakmanType,
+      werkTelefoon: telefoon,
+      werkafstand,
+      regioPostcode: regioPostcode || null,
+      regioPlaats: regioPlaats || null,
+    };
 
     if (vakmanType === "professional") {
       const bedrijfsnaam = (data.bedrijfsnaam ?? "").trim();

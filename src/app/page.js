@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+
+const PENDING_KEY = "werkmaximaal_pending_klus";
+const AUTO_PLAATSEN_KEY = "werkmaximaal_auto_plaatsen";
 
 function tijdGeleden(datumString) {
   const verschilSeconden = Math.floor((Date.now() - new Date(datumString).getTime()) / 1000);
@@ -78,6 +82,7 @@ async function fetchAdres(postcode, huisnummer) {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [klussen, setKlussen] = useState([]);
   const [titel, setTitel] = useState("");
   const [postcode, setPostcode] = useState("");
@@ -103,7 +108,48 @@ export default function Home() {
       .then((r) => r.json())
       .then((d) => setHobbyistInschakeld(d.hobbyistInschakeld !== false))
       .catch(() => {});
+    // Herstel een onafgemaakte klus uit sessionStorage (gebruiker ging
+    // eerst inloggen/registreren). Velden worden gevuld; gebruiker
+    // klikt zelf 'Volgende' / 'Plaats klus' om af te ronden — tenzij
+    // AUTO_PLAATSEN_KEY is gezet, dan wordt de klus automatisch
+    // geplaatst zodra alle gegevens beschikbaar zijn.
+    if (typeof window !== "undefined") {
+      try {
+        const opgeslagen = sessionStorage.getItem(PENDING_KEY);
+        if (opgeslagen) {
+          const d = JSON.parse(opgeslagen);
+          if (d.titel) setTitel(d.titel);
+          if (d.postcode) setPostcode(d.postcode);
+          if (d.huisnummer) setHuisnummer(d.huisnummer);
+          if (d.categorie) {
+            setCategorie(d.categorie);
+            setCategorieAangeraakt(true);
+          }
+          if (d.voorkeurVakmanType) setVoorkeurVakmanType(d.voorkeurVakmanType);
+          if (d.stap) setStap(d.stap);
+        }
+      } catch {
+        // negeer corrupt JSON
+      }
+    }
   }, []);
+
+  // Auto-plaatsen na login/registratie: zodra de gebruiker is geladen,
+  // het pending-vlag is gezet, de klus-velden gevuld zijn en het adres
+  // door PDOK is bevestigd, plaatsen we de klus zonder dat de gebruiker
+  // nog op een knop hoeft te klikken.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const autoFlag = sessionStorage.getItem(AUTO_PLAATSEN_KEY);
+    if (!autoFlag) return;
+    if (!userLoaded || !huidigeUser || huidigeUser.rol !== "consument") return;
+    if (!titel.trim() || !postcode || !huisnummer) return;
+    if (postcodeStatus.state !== "ok") return;
+    // Alles oké — direct vlag wegruimen om dubbele-submit te voorkomen
+    sessionStorage.removeItem(AUTO_PLAATSEN_KEY);
+    plaatsKlus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userLoaded, huidigeUser, postcodeStatus.state, titel, postcode, huisnummer]);
 
   useEffect(() => {
     if (categorieAangeraakt) return;
@@ -167,7 +213,32 @@ export default function Home() {
   }
 
   async function plaatsKlus(e) {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
+
+    // Niet ingelogd? Sla de huidige form-staat op in sessionStorage en
+    // stuur de gebruiker naar inloggen — na succesvol inloggen of
+    // registreren komen ze terug op /, waar de waarden weer in het
+    // formulier verschijnen en ze kunnen klikken op 'Plaats klus'.
+    if (!huidigeUser) {
+      try {
+        sessionStorage.setItem(
+          PENDING_KEY,
+          JSON.stringify({
+            titel,
+            postcode,
+            huisnummer,
+            categorie,
+            voorkeurVakmanType,
+            stap,
+          })
+        );
+      } catch {
+        // sessionStorage kan in private mode falen — dan gewoon door
+      }
+      router.push("/voltooien");
+      return;
+    }
+
     setBezig(true);
 
     await fetch("/api/klussen", {
@@ -183,6 +254,11 @@ export default function Home() {
         voorkeurVakmanType: voorkeurVakmanType || null,
       }),
     });
+
+    // Klus geplaatst — onthouden hoeft niet meer
+    try {
+      sessionStorage.removeItem(PENDING_KEY);
+    } catch {}
 
     setTitel("");
     setPostcode("");
@@ -318,32 +394,6 @@ export default function Home() {
           </div>
         </header>
 
-        {userLoaded && !huidigeUser && (
-          <div className="bg-white border border-slate-200 rounded-md shadow-sm p-6 md:p-8 mb-10">
-            <h2 className="text-xl font-semibold text-slate-900 mb-2">
-              Plaats een klus
-            </h2>
-            <p className="text-sm text-slate-500 mb-6">
-              Maak eerst een account aan om een klus te plaatsen. Bent u een
-              vakman? Maak een vakman-account aan om straks leads te kopen.
-            </p>
-            <div className="flex gap-3">
-              <Link
-                href="/inloggen"
-                className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
-              >
-                Inloggen
-              </Link>
-              <Link
-                href="/registreren"
-                className="bg-white border border-slate-300 hover:border-slate-900 text-slate-900 text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
-              >
-                Account aanmaken
-              </Link>
-            </div>
-          </div>
-        )}
-
         {userLoaded && huidigeUser && huidigeUser.rol !== "consument" && (
           <div className="bg-white border border-slate-200 rounded-md shadow-sm p-6 md:p-8 mb-10">
             <p className="text-xs uppercase tracking-wider text-slate-500 font-medium mb-2">
@@ -359,7 +409,7 @@ export default function Home() {
           </div>
         )}
 
-        {userLoaded && huidigeUser && huidigeUser.rol === "consument" && (
+        {userLoaded && (!huidigeUser || huidigeUser.rol === "consument") && (
         <>
         <div className="flex items-center gap-3 mb-6">
           <div className="flex items-center gap-2">

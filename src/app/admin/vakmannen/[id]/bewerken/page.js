@@ -33,6 +33,10 @@ export default async function VakmanBewerkenPage({ params }) {
       werkafstand: true,
       regioPostcode: true,
       regioPlaats: true,
+      werkgebiedenExtra: {
+        select: { id: true, type: true, waarde: true, werkafstand: true },
+        orderBy: { id: "asc" },
+      },
     },
   });
 

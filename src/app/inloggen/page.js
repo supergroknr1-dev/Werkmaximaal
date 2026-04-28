@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 export default function InloggenPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const reden = searchParams.get("reden");
   const [email, setEmail] = useState("");
   const [wachtwoord, setWachtwoord] = useState("");
   const [bezig, setBezig] = useState(false);
@@ -51,6 +53,19 @@ export default function InloggenPage() {
             Voer uw e-mailadres en wachtwoord in.
           </p>
         </header>
+
+        {reden === "plaats-klus" && (
+          <div className="bg-emerald-50 border border-emerald-200 rounded-md px-4 py-3 mb-6 text-sm text-emerald-900">
+            Log in om uw klus te plaatsen. Nog geen account?{" "}
+            <Link
+              href="/registreren?reden=plaats-klus"
+              className="font-semibold underline hover:text-emerald-700"
+            >
+              Maak er nu een aan
+            </Link>
+            .
+          </div>
+        )}
 
         <form
           onSubmit={inloggen}

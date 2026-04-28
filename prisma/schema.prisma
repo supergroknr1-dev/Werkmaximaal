@@ -61,6 +61,7 @@ model User {
   resetTokens    WachtwoordResetToken[]
   leads          Lead[]
   reviews        Review[]
+  werkgebiedenExtra WerkgebiedExtra[]
 
   @@index([rol])
 }
@@ -153,6 +154,21 @@ model Reactie {
   user       User?    @relation(fields: [userId], references: [id])
 
   @@index([klusId])
+  @@index([userId])
+}
+
+// Extra werkgebieden voor Vakmannen (alleen Pro). Het primaire werk-
+// gebied blijft op User (regioPostcode/regioPlaats/werkafstand) voor
+// backward-compat — alle bestaande code die daar leest blijft werken.
+// Buurtklussers krijgen geen extra werkgebieden in de admin-UI.
+model WerkgebiedExtra {
+  id          Int    @id @default(autoincrement())
+  userId      Int
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String // "postcode" of "plaats"
+  waarde      String
+  werkafstand Int
+
   @@index([userId])
 }
 

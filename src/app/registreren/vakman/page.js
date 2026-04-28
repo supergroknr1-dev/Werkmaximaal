@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import KvkUpload from "./KvkUpload";
-
-const POSTCODE_REGEX = /^\d{4}[A-Z]{2}$/;
+import { POSTCODE_REGEX, searchPlaatsen } from "../../../lib/pdok";
 
 async function fetchPlaats(postcode) {
   const url = `https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=postcode:${postcode}&fl=woonplaatsnaam&rows=1`;
@@ -37,6 +35,14 @@ export default function RegistrerenVakmanPage() {
   const [kvkUittrekselNaam, setKvkUittrekselNaam] = useState("");
   const [kvkStatus, setKvkStatus] = useState({ state: "leeg" });
   const [hobbyistInschakeld, setHobbyistInschakeld] = useState(true);
+  // Werkgebied: postcode of plaats
+  const [regioType, setRegioType] = useState("postcode"); // "postcode" | "plaats"
+  const [regioPlaats, setRegioPlaats] = useState("");
+  const [plaatsSuggesties, setPlaatsSuggesties] = useState([]);
+  const [plaatsSuggestiesOpen, setPlaatsSuggestiesOpen] = useState(false);
+  // KvK upload
+  const [uploadBezig, setUploadBezig] = useState(false);
+  const [uploadFout, setUploadFout] = useState(null);
 
   useEffect(() => {
     fetch("/api/instellingen")
@@ -44,6 +50,28 @@ export default function RegistrerenVakmanPage() {
       .then((d) => setHobbyistInschakeld(d.hobbyistInschakeld !== false))
       .catch(() => {});
   }, []);
+
+  // PDOK-suggesties voor plaatsnaam (alleen wanneer plaats-modus actief)
+  useEffect(() => {
+    if (regioType !== "plaats") {
+      setPlaatsSuggesties([]);
+      return;
+    }
+    const q = (regioPlaats || "").trim();
+    if (q.length < 2) {
+      setPlaatsSuggesties([]);
+      return;
+    }
+    let geannuleerd = false;
+    const timer = setTimeout(async () => {
+      const namen = await searchPlaatsen(q);
+      if (!geannuleerd) setPlaatsSuggesties(namen);
+    }, 250);
+    return () => {
+      geannuleerd = true;
+      clearTimeout(timer);
+    };
+  }, [regioPlaats, regioType]);
 
   useEffect(() => {
     const kvk = kvkNummer.trim();
@@ -107,6 +135,35 @@ export default function RegistrerenVakmanPage() {
     };
   }, [regioPostcode]);
 
+  async function uploadKvk(e) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setUploadFout(null);
+    setUploadBezig(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload/kvk-uittreksel", {
+        method: "POST",
+        body: fd,
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Upload mislukt");
+      setKvkUittrekselUrl(json.url);
+      setKvkUittrekselNaam(json.naam || file.name);
+    } catch (err) {
+      setUploadFout(err.message);
+    } finally {
+      setUploadBezig(false);
+    }
+  }
+
+  function verwijderKvk() {
+    setKvkUittrekselUrl("");
+    setKvkUittrekselNaam("");
+  }
+
   async function registreer(e) {
     e.preventDefault();
 
@@ -135,7 +192,9 @@ export default function RegistrerenVakmanPage() {
         kvkUittrekselNaam,
         telefoon,
         werkafstand: parseInt(werkafstand),
-        regioPostcode: regioPostcode.toUpperCase(),
+        regioPostcode:
+          regioType === "postcode" ? regioPostcode.toUpperCase() : "",
+        regioPlaats: regioType === "plaats" ? regioPlaats : "",
         email,
         wachtwoord,
         disclaimerAkkoord,
@@ -188,6 +247,10 @@ export default function RegistrerenVakmanPage() {
   }
 
   const postcodeGeldig = postcodeStatus.state === "ok";
+  const werkgebiedGeldig =
+    regioType === "postcode"
+      ? postcodeGeldig
+      : regioPlaats.trim().length >= 2;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -223,56 +286,74 @@ export default function RegistrerenVakmanPage() {
               <button
                 type="button"
                 onClick={() => setVakmanType("professional")}
-                className={`text-left p-4 border rounded-md transition-colors ${
+                className={`text-left border-2 rounded-md p-3 text-xs transition-colors ${
                   vakmanType === "professional"
-                    ? "border-slate-900 bg-slate-50"
-                    : "border-slate-200 hover:border-slate-400 bg-white"
+                    ? "border-emerald-500 bg-emerald-50 ring-2 ring-emerald-100"
+                    : "border-slate-200 bg-white hover:border-emerald-300 hover:bg-emerald-50/50"
                 }`}
               >
-                <div className="flex items-baseline justify-between mb-1 gap-2">
-                  <p className="text-xs uppercase tracking-wider text-slate-500 font-medium">
-                    Vakman
+                <div className="flex items-center justify-between mb-1.5 gap-2">
+                  <p className="font-semibold text-slate-900">
+                    Vakman (Professional)
                   </p>
-                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1.5 py-0.5">
-                    Gratis
-                  </span>
+                  {vakmanType === "professional" ? (
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 border border-emerald-300 rounded px-1.5 py-0.5">
+                      ✓ Gekozen
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1.5 py-0.5">
+                      Gratis
+                    </span>
+                  )}
                 </div>
-                <p className="text-sm font-semibold text-slate-900 mb-1">
-                  Gecertificeerde Vakman
-                </p>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  KvK-geregistreerd bedrijf met bedrijfsverzekering en garantie
-                  op uw werk. Geen inschrijfkosten.
-                </p>
+                <ul className="space-y-1 text-slate-600 leading-relaxed">
+                  <li>✓ KvK-geregistreerd bedrijf</li>
+                  <li>✓ Bedrijfsverzekering + garantie op werk</li>
+                  <li>✓ Gratis registratie (geen inschrijfgeld)</li>
+                  <li>✓ Standaard lead-prijs</li>
+                  <li>✓ Pipedrive-pipeline: Pro</li>
+                </ul>
               </button>
               <button
                 type="button"
                 onClick={() => hobbyistInschakeld && setVakmanType("hobbyist")}
                 disabled={!hobbyistInschakeld}
-                className={`text-left p-4 border rounded-md transition-colors ${
+                className={`text-left border-2 rounded-md p-3 text-xs transition-colors ${
                   !hobbyistInschakeld
                     ? "border-slate-200 bg-slate-50 opacity-50 cursor-not-allowed"
                     : vakmanType === "hobbyist"
-                    ? "border-slate-900 bg-slate-50"
-                    : "border-slate-200 hover:border-slate-400 bg-white"
+                    ? "border-blue-500 bg-blue-50 ring-2 ring-blue-100"
+                    : "border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50/50"
                 }`}
               >
-                <div className="flex items-baseline justify-between mb-1 gap-2">
-                  <p className="text-xs uppercase tracking-wider text-slate-500 font-medium">
-                    Buurtklusser
+                <div className="flex items-center justify-between mb-1.5 gap-2">
+                  <p className="font-semibold text-slate-900">
+                    Buurtklusser (Hobbyist)
                   </p>
-                  <span className="text-xs font-semibold text-slate-700 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5">
-                    {hobbyistInschakeld ? "€ 25 eenmalig" : "Uitgeschakeld"}
-                  </span>
+                  {vakmanType === "hobbyist" ? (
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-blue-700 bg-blue-100 border border-blue-300 rounded px-1.5 py-0.5">
+                      ✓ Gekozen
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-700 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5">
+                      {hobbyistInschakeld ? "€ 25 eenmalig" : "Uitgeschakeld"}
+                    </span>
+                  )}
                 </div>
-                <p className="text-sm font-semibold text-slate-900 mb-1">
-                  Buurtklusser
-                </p>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  {hobbyistInschakeld
-                    ? "Geen KvK-plicht. Werk op eigen risico, geen bedrijfsverzekering via het platform. € 25 eenmalig inschrijfgeld."
-                    : "Buurtklusser-registratie is op dit moment uitgeschakeld door de beheerder."}
-                </p>
+                {hobbyistInschakeld ? (
+                  <ul className="space-y-1 text-slate-600 leading-relaxed">
+                    <li>○ Geen KvK-plicht</li>
+                    <li>○ Geen bedrijfsverzekering via platform</li>
+                    <li>○ € 25 eenmalig inschrijfgeld</li>
+                    <li>○ Betaalt het dubbele per lead</li>
+                    <li>○ Pipedrive-pipeline: Hobbyist</li>
+                  </ul>
+                ) : (
+                  <p className="text-slate-500 leading-relaxed">
+                    Buurtklusser-registratie is op dit moment uitgeschakeld door
+                    de beheerder.
+                  </p>
+                )}
               </button>
             </div>
           </div>
@@ -281,7 +362,9 @@ export default function RegistrerenVakmanPage() {
           <>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Volledige naam
+              {vakmanType === "hobbyist"
+                ? "Schermnaam (wat klanten zien)"
+                : "Volledige naam"}
             </label>
             <input
               type="text"
@@ -291,6 +374,17 @@ export default function RegistrerenVakmanPage() {
               autoComplete="name"
               className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
             />
+            {vakmanType === "hobbyist" && (
+              <p className="text-xs text-slate-500 mt-1">
+                Naam zoals klanten u op de site zien.
+              </p>
+            )}
+            {vakmanType === "professional" && (
+              <p className="text-xs text-slate-500 mt-1">
+                Contactpersoon achter het bedrijf — uw bedrijfsnaam (hieronder)
+                is wat klanten zien.
+              </p>
+            )}
           </div>
 
           {vakmanType === "professional" && (
@@ -363,14 +457,74 @@ export default function RegistrerenVakmanPage() {
             </div>
           )}
 
-          <KvkUpload
-            huidigeUrl={kvkUittrekselUrl}
-            huidigeNaam={kvkUittrekselNaam}
-            onUploaded={(url, naam) => {
-              setKvkUittrekselUrl(url);
-              setKvkUittrekselNaam(naam);
-            }}
-          />
+          <div>
+            <span className="block text-sm font-medium text-slate-700 mb-2">
+              KvK-uittreksel{" "}
+              <span className="text-slate-400 font-normal">(optioneel)</span>
+            </span>
+            {kvkUittrekselUrl ? (
+              <div className="flex items-center justify-between gap-3 bg-emerald-50 border border-emerald-200 rounded px-3 py-2">
+                <a
+                  href={kvkUittrekselUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-emerald-800 hover:underline truncate"
+                >
+                  ✓ {kvkUittrekselNaam || "Uittreksel bekijken"}
+                </a>
+                <button
+                  type="button"
+                  onClick={verwijderKvk}
+                  className="text-[11px] text-rose-700 hover:text-rose-900 shrink-0"
+                >
+                  verwijder
+                </button>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-400 mb-1.5">
+                PDF, JPG of PNG · max 5 MB. U kunt dit ook later toevoegen
+                vanaf uw profiel.
+              </p>
+            )}
+            <label
+              className={`inline-flex items-center gap-2 mt-2 px-4 py-2 rounded border text-xs font-medium transition-colors cursor-pointer ${
+                uploadBezig
+                  ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed"
+                  : "bg-slate-900 border-slate-900 text-white hover:bg-slate-800"
+              }`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              {uploadBezig
+                ? "Bezig met uploaden…"
+                : kvkUittrekselUrl
+                ? "Vervang bestand"
+                : "Bestand kiezen"}
+              <input
+                type="file"
+                accept="application/pdf,image/jpeg,image/png"
+                onChange={uploadKvk}
+                disabled={uploadBezig}
+                className="sr-only"
+              />
+            </label>
+            {uploadFout && (
+              <p className="text-[11px] text-rose-700 mt-1">{uploadFout}</p>
+            )}
+          </div>
           </>
           )}
 
@@ -392,56 +546,135 @@ export default function RegistrerenVakmanPage() {
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Postcode (regio van uw werkgebied)
+              Werkgebied bepalen via
             </label>
-            <div className="flex">
-              <input
-                type="text"
-                value={regioPostcode}
-                onChange={(e) => setRegioPostcode(e.target.value.toUpperCase().slice(0, 6))}
-                maxLength={6}
-                required
-                placeholder="1234AB"
-                className={`w-32 px-3 py-2.5 bg-white border rounded-l-md text-slate-900 placeholder:text-slate-400 focus:outline-none transition-colors uppercase tracking-wider font-mono text-sm ${
-                  postcodeStatus.state === "fout"
-                    ? "border-rose-300 focus:border-rose-400"
-                    : "border-slate-300 focus:border-slate-900"
-                }`}
-              />
-              <div
-                className={`flex-1 px-3 py-2.5 bg-slate-50 border border-l-0 rounded-r-md flex items-center gap-2 text-sm ${
-                  postcodeStatus.state === "fout" ? "border-rose-300" : "border-slate-300"
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <button
+                type="button"
+                onClick={() => setRegioType("postcode")}
+                className={`text-xs px-3 py-2 rounded border transition-colors ${
+                  regioType === "postcode"
+                    ? "bg-slate-900 border-slate-900 text-white"
+                    : "bg-white border-slate-200 text-slate-700 hover:border-slate-400"
                 }`}
               >
-                {postcodeStatus.state === "ok" && (
-                  <>
-                    <svg
-                      className="w-4 h-4 text-emerald-600 shrink-0"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={3}
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="text-slate-500">{postcodeStatus.plaats}</span>
-                  </>
-                )}
-                {postcodeStatus.state === "bezig" && (
-                  <span className="text-slate-400 text-xs animate-pulse">
-                    Bezig met opzoeken...
-                  </span>
-                )}
+                Postcode (4 cijfers)
+              </button>
+              <button
+                type="button"
+                onClick={() => setRegioType("plaats")}
+                className={`text-xs px-3 py-2 rounded border transition-colors ${
+                  regioType === "plaats"
+                    ? "bg-slate-900 border-slate-900 text-white"
+                    : "bg-white border-slate-200 text-slate-700 hover:border-slate-400"
+                }`}
+              >
+                Plaats
+              </button>
+            </div>
+            {regioType === "postcode" ? (
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                  Postcode (regio van uw werkgebied)
+                </label>
+                <div className="flex">
+                  <input
+                    type="text"
+                    value={regioPostcode}
+                    onChange={(e) => setRegioPostcode(e.target.value.toUpperCase().slice(0, 6))}
+                    maxLength={6}
+                    required
+                    placeholder="1234AB"
+                    className={`w-32 px-3 py-2.5 bg-white border rounded-l-md text-slate-900 placeholder:text-slate-400 focus:outline-none transition-colors uppercase tracking-wider font-mono text-sm ${
+                      postcodeStatus.state === "fout"
+                        ? "border-rose-300 focus:border-rose-400"
+                        : "border-slate-300 focus:border-slate-900"
+                    }`}
+                  />
+                  <div
+                    className={`flex-1 px-3 py-2.5 bg-slate-50 border border-l-0 rounded-r-md flex items-center gap-2 text-sm ${
+                      postcodeStatus.state === "fout" ? "border-rose-300" : "border-slate-300"
+                    }`}
+                  >
+                    {postcodeStatus.state === "ok" && (
+                      <>
+                        <svg
+                          className="w-4 h-4 text-emerald-600 shrink-0"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={3}
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="text-slate-500">{postcodeStatus.plaats}</span>
+                      </>
+                    )}
+                    {postcodeStatus.state === "bezig" && (
+                      <span className="text-slate-400 text-xs animate-pulse">
+                        Bezig met opzoeken...
+                      </span>
+                    )}
+                    {postcodeStatus.state === "fout" && (
+                      <span className="text-slate-400 text-xs">—</span>
+                    )}
+                    {(postcodeStatus.state === "leeg" || postcodeStatus.state === "typen") && (
+                      <span className="text-slate-400 text-xs">Plaatsnaam verschijnt hier</span>
+                    )}
+                  </div>
+                </div>
                 {postcodeStatus.state === "fout" && (
-                  <span className="text-slate-400 text-xs">—</span>
-                )}
-                {(postcodeStatus.state === "leeg" || postcodeStatus.state === "typen") && (
-                  <span className="text-slate-400 text-xs">Plaatsnaam verschijnt hier</span>
+                  <p className="text-sm text-rose-600 mt-2">Ongeldige postcode</p>
                 )}
               </div>
-            </div>
-            {postcodeStatus.state === "fout" && (
-              <p className="text-sm text-rose-600 mt-2">Ongeldige postcode</p>
+            ) : (
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                  Plaats (regio van uw werkgebied)
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={regioPlaats}
+                    onChange={(e) => {
+                      setRegioPlaats(e.target.value);
+                      setPlaatsSuggestiesOpen(true);
+                    }}
+                    onFocus={() => setPlaatsSuggestiesOpen(true)}
+                    onBlur={() =>
+                      setTimeout(() => setPlaatsSuggestiesOpen(false), 150)
+                    }
+                    required
+                    placeholder="Begin te typen, bv. Eindhoven"
+                    autoComplete="off"
+                    className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+                  />
+                  {plaatsSuggestiesOpen && plaatsSuggesties.length > 0 && (
+                    <ul className="absolute z-10 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-md max-h-60 overflow-y-auto">
+                      {plaatsSuggesties.map((naam) => (
+                        <li key={naam}>
+                          <button
+                            type="button"
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => {
+                              setRegioPlaats(naam);
+                              setPlaatsSuggesties([]);
+                              setPlaatsSuggestiesOpen(false);
+                            }}
+                            className="w-full text-left px-3 py-2 text-xs hover:bg-emerald-50 hover:text-emerald-800"
+                          >
+                            {naam}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Typ minimaal 2 letters voor suggesties uit de officiële
+                  Nederlandse plaatsnamen-database (PDOK).
+                </p>
+              </div>
             )}
           </div>
 
@@ -517,7 +750,7 @@ export default function RegistrerenVakmanPage() {
             type="submit"
             disabled={
               bezig ||
-              !postcodeGeldig ||
+              !werkgebiedGeldig ||
               (vakmanType === "hobbyist" && !disclaimerAkkoord)
             }
             className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium py-3 rounded-md transition-colors"

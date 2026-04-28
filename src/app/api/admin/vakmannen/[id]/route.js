@@ -132,9 +132,38 @@ export async function PATCH(request, { params }) {
 
   const werkafstand = intOfNull(data.werkafstand);
 
-  const updated = await prisma.user.update({
-    where: { id: vakmanId },
-    data: {
+  // Extra werkgebieden — alleen voor Vakman/Pro. Buurtklussers krijgen
+  // geen extra werkgebieden, hun array wordt geleegd.
+  const werkgebiedenExtraInput = Array.isArray(data.werkgebiedenExtra)
+    ? data.werkgebiedenExtra
+    : [];
+  const werkgebiedenExtra = [];
+  if (type === "professional") {
+    for (const w of werkgebiedenExtraInput) {
+      const wType = w?.type === "plaats" ? "plaats" : "postcode";
+      const wWaarde = trimOfNull(w?.waarde);
+      if (!wWaarde) continue; // skip lege rijen
+      if (wType === "postcode" && !/^\d{4}$/.test(wWaarde)) {
+        return Response.json(
+          { error: "Extra werkgebied: postcode moet exact 4 cijfers zijn." },
+          { status: 400 }
+        );
+      }
+      const wAfstand = intOfNull(w?.werkafstand);
+      if (wAfstand === null || wAfstand < 1 || wAfstand > 500) {
+        return Response.json(
+          { error: "Extra werkgebied: werkafstand moet tussen 1 en 500 km zijn." },
+          { status: 400 }
+        );
+      }
+      werkgebiedenExtra.push({ type: wType, waarde: wWaarde, werkafstand: wAfstand });
+    }
+  }
+
+  const updated = await prisma.$transaction(async (tx) => {
+    const u = await tx.user.update({
+      where: { id: vakmanId },
+      data: {
       email: nieuweEmail,
       naam,
       voornaam,
@@ -156,6 +185,17 @@ export async function PATCH(request, { params }) {
       regioPlaats,
     },
     select: { id: true },
+    });
+    // Vervang extra werkgebieden volledig (delete + create alle nieuwe).
+    // Bij Buurtklusser is werkgebiedenExtra leeg → alle rijen worden
+    // verwijderd.
+    await tx.werkgebiedExtra.deleteMany({ where: { userId: vakmanId } });
+    if (werkgebiedenExtra.length > 0) {
+      await tx.werkgebiedExtra.createMany({
+        data: werkgebiedenExtra.map((w) => ({ ...w, userId: vakmanId })),
+      });
+    }
+    return u;
   });
 
   return Response.json(updated);

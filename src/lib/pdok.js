@@ -41,6 +41,69 @@ export async function searchPlaatsen(query, limit = 7) {
   }
 }
 
+/**
+ * Lookup plaatsnaam bij een 4-cijferige postcode-prefix.
+ * Server-side bedoeld: gebruikt Next.js fetch-cache (24u) zodat we
+ * dezelfde postcode niet steeds opnieuw aan PDOK vragen. Postcodes
+ * verhuizen niet.
+ *
+ * Geeft de plaatsnaam terug, of null als PDOK 'm niet kent of als het
+ * verzoek faalt. Wordt aangeroepen vanuit server-componenten zoals
+ * /vakmannen/[id]/page.js.
+ */
+export async function postcodeNaarPlaats(postcode4) {
+  const p = (postcode4 ?? "").toString().trim();
+  if (!/^\d{4}$/.test(p)) return null;
+  const url = `https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=postcode:${p}&fq=type:postcode&fl=woonplaatsnaam&rows=1`;
+  try {
+    const res = await fetch(url, { next: { revalidate: 86400 } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data?.response?.docs?.[0]?.woonplaatsnaam || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Bouw een gededupliceerde lijst van plaatsnamen uit het werkgebied
+ * van een vakman. Combineert het primaire werkgebied (regioPostcode of
+ * regioPlaats) met de extra-rijen (werkgebiedenExtra). Voor postcode-
+ * entries wordt PDOK aangesproken via postcodeNaarPlaats. Plaatsen
+ * worden case-insensitief gededupliceerd, returnvolgorde = volgorde
+ * van eerste voorkomen.
+ *
+ * @param {object} vakman - { regioPostcode, regioPlaats, werkgebiedenExtra:[{type,waarde}] }
+ * @returns {Promise<string[]>} bv. ["Eindhoven", "Veldhoven"]
+ */
+export async function werkgebiedPlaatsen(vakman) {
+  const entries = [];
+  if (vakman.regioPlaats) entries.push({ type: "plaats", waarde: vakman.regioPlaats });
+  if (vakman.regioPostcode) entries.push({ type: "postcode", waarde: vakman.regioPostcode });
+  for (const w of vakman.werkgebiedenExtra || []) {
+    if (w.waarde) entries.push({ type: w.type, waarde: w.waarde });
+  }
+
+  const namen = await Promise.all(
+    entries.map(async (e) =>
+      e.type === "postcode"
+        ? await postcodeNaarPlaats(e.waarde)
+        : e.waarde.trim()
+    )
+  );
+
+  const uniek = [];
+  const gezien = new Set();
+  for (const n of namen) {
+    if (!n) continue;
+    const sleutel = n.toLowerCase();
+    if (gezien.has(sleutel)) continue;
+    gezien.add(sleutel);
+    uniek.push(n);
+  }
+  return uniek;
+}
+
 export async function fetchAdres(postcode, huisnummer) {
   const url = `https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=postcode:${postcode}+huisnummer:${huisnummer}&fq=type:adres&fl=weergavenaam,straatnaam,huisnummer,woonplaatsnaam,postcode&rows=1`;
   try {

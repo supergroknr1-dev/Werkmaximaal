@@ -6,6 +6,7 @@ import {
   POSTCODE_REGEX,
   fetchAdres,
   searchPlaatsen,
+  postcodeNaarPlaats,
 } from "../../../../../../lib/pdok";
 import {
   useInterventionConfirm,
@@ -200,6 +201,27 @@ export default function BewerkForm({ vakman }) {
       clearTimeout(timer);
     };
   }, [form.regioPlaats, form.regioType]);
+
+  // Live plaats-annotatie naast de regio-postcode zodat admin direct
+  // ziet welke plaats bij de 4 cijfers hoort. Gedebounced + per-postcode
+  // gecached zodat rapid typen niet de PDOK-API floodt.
+  const [postcodePlaats, setPostcodePlaats] = useState(null);
+  useEffect(() => {
+    const p = (form.regioPostcode || "").trim();
+    if (form.regioType !== "postcode" || !/^\d{4}$/.test(p)) {
+      setPostcodePlaats(null);
+      return;
+    }
+    let geannuleerd = false;
+    const t = setTimeout(async () => {
+      const naam = await postcodeNaarPlaats(p);
+      if (!geannuleerd) setPostcodePlaats(naam);
+    }, 250);
+    return () => {
+      geannuleerd = true;
+      clearTimeout(t);
+    };
+  }, [form.regioPostcode, form.regioType]);
 
   async function uploadKvk(e) {
     const file = e.target.files?.[0];
@@ -654,7 +676,11 @@ export default function BewerkForm({ vakman }) {
           {form.regioType === "postcode" ? (
             <Veld
               label="Regio-postcode (4 cijfers)"
-              hint="Centrum van het werkgebied, bv. 5611."
+              hint={
+                postcodePlaats
+                  ? `Centrum van het werkgebied — ${form.regioPostcode} = ${postcodePlaats}`
+                  : "Centrum van het werkgebied, bv. 5611."
+              }
             >
               <input
                 type="text"

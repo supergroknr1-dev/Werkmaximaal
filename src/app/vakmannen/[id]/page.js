@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ShieldCheck, MapPin, Star, Award } from "lucide-react";
 import { prisma } from "../../../lib/prisma";
 import { getCurrentUser } from "../../../lib/auth";
+import { werkgebiedPlaatsen } from "../../../lib/pdok";
 import Lightbox from "./Lightbox";
 import ProfielFotoEditor from "./ProfielFotoEditor";
 
@@ -53,10 +54,32 @@ export async function generateMetadata({ params }) {
   if (Number.isNaN(vakmanId)) return {};
   const v = await prisma.user.findUnique({
     where: { id: vakmanId },
-    select: { naam: true, bedrijfsnaam: true, rol: true },
+    select: {
+      naam: true,
+      bedrijfsnaam: true,
+      rol: true,
+      vakmanType: true,
+      regioPostcode: true,
+      regioPlaats: true,
+      werkgebiedenExtra: { select: { type: true, waarde: true } },
+    },
   });
   if (!v || v.rol !== "vakman") return {};
-  return { title: `${v.bedrijfsnaam || v.naam} — Werkmaximaal` };
+  const naam = v.bedrijfsnaam || v.naam;
+  const namen = await werkgebiedPlaatsen(v);
+  const werkgebied = namen.join(", ");
+  const typeLabel = v.vakmanType === "professional" ? "vakman" : "buurtklusser";
+  const titel = werkgebied
+    ? `${naam} — ${typeLabel} in ${werkgebied} | Werkmaximaal`
+    : `${naam} — Werkmaximaal`;
+  const beschrijving = werkgebied
+    ? `Bekijk het profiel van ${naam}, ${typeLabel} actief in ${werkgebied}. Reviews, vakgebied en gegevens op Werkmaximaal.`
+    : `Bekijk het profiel van ${naam} op Werkmaximaal.`;
+  return {
+    title: titel,
+    description: beschrijving,
+    openGraph: { title: titel, description: beschrijving },
+  };
 }
 
 export default async function VakmanProfielPage({ params }) {
@@ -79,9 +102,18 @@ export default async function VakmanProfielPage({ params }) {
       bio: true,
       aangemaakt: true,
       kvkNummer: true,
+      werkgebiedenExtra: { select: { type: true, waarde: true } },
     },
   });
   if (!vakman || vakman.rol !== "vakman") notFound();
+
+  // Werkgebied weergave: vertaal alle postcode-entries naar plaats-
+  // namen via PDOK, dedupliceer (case-insensitief). Voor de eerste
+  // versie krijgen we 'Eindhoven' i.p.v. '5612'.
+  const werkgebiedNamen = await werkgebiedPlaatsen(vakman);
+  const werkgebiedString = werkgebiedNamen.length
+    ? werkgebiedNamen.join(", ")
+    : "Onbekend";
 
   // Reviews + lead-info ophalen via lead-relatie. We tonen ook de
   // klus-titel/categorie zodat reviews context hebben.
@@ -131,7 +163,8 @@ export default async function VakmanProfielPage({ params }) {
     .slice(0, 2)
     .toUpperCase();
 
-  const werkgebied = vakman.regioPlaats || vakman.regioPostcode || "Onbekend";
+  // Oude lokale variabele vervangen door werkgebiedString hierboven
+  const werkgebied = werkgebiedString;
 
   return (
     <div className="min-h-screen bg-slate-50">

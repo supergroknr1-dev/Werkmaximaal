@@ -2,11 +2,19 @@ import { prisma } from "../../../../../lib/prisma";
 import { getSession } from "../../../../../lib/session";
 import { bedragVoorVakman } from "../../../../../lib/lead-prijs";
 import {
-  emitActivity,
-  EVENT_TYPES,
-  ipFromRequest,
-} from "../../../../../lib/events";
+  maakLeadPayment,
+  MollieNietGeconfigureerdError,
+} from "../../../../../lib/mollie";
 
+/**
+ * Start de iDEAL-checkout voor een lead-aankoop.
+ *
+ * Validatie identiek aan de oude mock-flow (klus open + goedgekeurd,
+ * vakman-rol, type-match, niet eigenaar). Verschil: in plaats van
+ * direct een Lead-rij maken, maken we een Mollie payment aan en geven
+ * we de checkout-URL terug. De Lead wordt pas aangemaakt na betaling
+ * (via /leads/retour of de webhook — zie lib/lead-creatie.js).
+ */
 export async function POST(request, { params }) {
   const { id } = await params;
   const klusId = parseInt(id);
@@ -21,7 +29,14 @@ export async function POST(request, { params }) {
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { id: true, rol: true, vakmanType: true },
+    select: {
+      id: true,
+      rol: true,
+      vakmanType: true,
+      email: true,
+      naam: true,
+      bedrijfsnaam: true,
+    },
   });
   if (!user || user.rol !== "vakman") {
     return Response.json(
@@ -34,6 +49,7 @@ export async function POST(request, { params }) {
     where: { id: klusId },
     select: {
       id: true,
+      titel: true,
       userId: true,
       voorkeurVakmanType: true,
       gesloten: true,
@@ -69,33 +85,40 @@ export async function POST(request, { params }) {
     );
   }
 
-  const bedrag = await bedragVoorVakman(user.vakmanType);
-
-  // upsert: idempotent — opnieuw kopen geeft de bestaande lead terug
-  const bestond = await prisma.lead.findUnique({
+  // Idempotent: al een lead? Geen nieuwe checkout.
+  const bestaande = await prisma.lead.findUnique({
     where: { klusId_vakmanId: { klusId, vakmanId: user.id } },
+    select: { id: true },
   });
-  const lead = await prisma.lead.upsert({
-    where: { klusId_vakmanId: { klusId, vakmanId: user.id } },
-    create: { klusId, vakmanId: user.id, bedrag },
-    update: {},
-  });
-
-  // Alleen event emit bij echte nieuwe lead (niet bij idempotente retry)
-  if (!bestond) {
-    emitActivity({
-      type: EVENT_TYPES.LEAD_GEKOCHT,
-      actor: { id: user.id, rol: user.rol },
-      targetType: "lead",
-      targetId: lead.id,
-      payload: {
-        klusId,
-        bedrag,
-        vakmanType: user.vakmanType,
-      },
-      ipAdres: ipFromRequest(request),
-    });
+  if (bestaande) {
+    return Response.json(
+      { error: "U heeft al een lead voor deze klus." },
+      { status: 409 }
+    );
   }
 
-  return Response.json(lead);
+  const bedrag = await bedragVoorVakman(user.vakmanType);
+
+  try {
+    const { paymentId, checkoutUrl } = await maakLeadPayment({
+      request,
+      klus,
+      vakman: user,
+      bedragInCenten: bedrag,
+    });
+    // Bewaar 't paymentId in de sessie zodat /leads/retour 'm kan
+    // ophalen — Mollie geeft 'm niet mee in de redirect-URL.
+    session.pendingLeadPayment = paymentId;
+    await session.save();
+    return Response.json({ paymentId, checkoutUrl });
+  } catch (err) {
+    if (err instanceof MollieNietGeconfigureerdError) {
+      return Response.json({ error: err.message }, { status: 503 });
+    }
+    console.error("[lead-checkout] Mollie-fout:", err);
+    return Response.json(
+      { error: "Betaling kon niet worden gestart. Probeer later opnieuw." },
+      { status: 502 }
+    );
+  }
 }

@@ -8,6 +8,8 @@ import {
   UserSquare,
   ClipboardList,
   Settings,
+  Activity,
+  ScrollText,
   ArrowLeft,
 } from "lucide-react";
 
@@ -16,6 +18,8 @@ const ITEMS = [
   { href: "/admin/consumenten", label: "Consumenten", icon: UserSquare },
   { href: "/admin/vakmannen", label: "Vakmannen", icon: Users },
   { href: "/admin/klussen", label: "Klussen", icon: ClipboardList },
+  { href: "/admin/activity-feed", label: "Activity feed", icon: Activity },
+  { href: "/admin/audit-log", label: "Audit log", icon: ScrollText },
   { href: "/admin/instellingen", label: "Instellingen", icon: Settings },
 ];
 

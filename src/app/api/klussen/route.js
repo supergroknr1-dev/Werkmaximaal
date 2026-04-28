@@ -1,6 +1,7 @@
 import { prisma } from "../../../lib/prisma";
 import { getSession } from "../../../lib/session";
 import { getInstellingen } from "../../../lib/instellingen";
+import { emitActivity, EVENT_TYPES, ipFromRequest } from "../../../lib/events";
 
 export async function GET() {
   const session = await getSession();
@@ -99,5 +100,20 @@ export async function POST(request) {
       userId: user.id,
     },
   });
+
+  emitActivity({
+    type: EVENT_TYPES.KLUS_AANGEMAAKT,
+    actor: { id: user.id, rol: user.rol },
+    targetType: "klus",
+    targetId: nieuweKlus.id,
+    payload: {
+      categorie: nieuweKlus.categorie,
+      plaats: nieuweKlus.plaats,
+      // Bewust geen straatnaam/huisnummer — privacy-vriendelijk
+      voorkeurVakmanType: nieuweKlus.voorkeurVakmanType,
+    },
+    ipAdres: ipFromRequest(request),
+  });
+
   return Response.json(nieuweKlus);
 }

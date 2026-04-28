@@ -1,5 +1,6 @@
 import { prisma } from "../../../lib/prisma";
 import { getSession } from "../../../lib/session";
+import { emitActivity, EVENT_TYPES, ipFromRequest } from "../../../lib/events";
 
 const WACHTTIJD_DAGEN = 10;
 const MAX_FOTOS = 5;
@@ -105,6 +106,21 @@ export async function POST(request) {
       tekst: tekst || null,
       fotoUrls,
     },
+  });
+
+  emitActivity({
+    type: EVENT_TYPES.REVIEW_GEPLAATST,
+    actor: { id: user.id, rol: user.rol },
+    targetType: "review",
+    targetId: review.id,
+    payload: {
+      leadId: lead.id,
+      vakmanId: lead.vakmanId,
+      score,
+      heeftFotos: fotoUrls.length > 0,
+      heeftTekst: !!tekst,
+    },
+    ipAdres: ipFromRequest(request),
   });
 
   return Response.json(review);

@@ -1,6 +1,11 @@
 import { prisma } from "../../../../../lib/prisma";
 import { getSession } from "../../../../../lib/session";
 import { bedragVoorVakman } from "../../../../../lib/lead-prijs";
+import {
+  emitActivity,
+  EVENT_TYPES,
+  ipFromRequest,
+} from "../../../../../lib/events";
 
 export async function POST(request, { params }) {
   const { id } = await params;
@@ -67,11 +72,30 @@ export async function POST(request, { params }) {
   const bedrag = await bedragVoorVakman(user.vakmanType);
 
   // upsert: idempotent — opnieuw kopen geeft de bestaande lead terug
+  const bestond = await prisma.lead.findUnique({
+    where: { klusId_vakmanId: { klusId, vakmanId: user.id } },
+  });
   const lead = await prisma.lead.upsert({
     where: { klusId_vakmanId: { klusId, vakmanId: user.id } },
     create: { klusId, vakmanId: user.id, bedrag },
     update: {},
   });
+
+  // Alleen event emit bij echte nieuwe lead (niet bij idempotente retry)
+  if (!bestond) {
+    emitActivity({
+      type: EVENT_TYPES.LEAD_GEKOCHT,
+      actor: { id: user.id, rol: user.rol },
+      targetType: "lead",
+      targetId: lead.id,
+      payload: {
+        klusId,
+        bedrag,
+        vakmanType: user.vakmanType,
+      },
+      ipAdres: ipFromRequest(request),
+    });
+  }
 
   return Response.json(lead);
 }

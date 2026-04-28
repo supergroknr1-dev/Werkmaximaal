@@ -3,6 +3,7 @@ import { after } from "next/server";
 import { prisma } from "../../../lib/prisma";
 import { getInstellingen } from "../../../lib/instellingen";
 import { syncVakmanNaarPipedrive } from "../../../lib/pipedrive";
+import { emitActivity, EVENT_TYPES, ipFromRequest } from "../../../lib/events";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const TELEFOON_REGEX = /^(\+31|0)[1-9]\d{8}$/;
@@ -34,6 +35,37 @@ export async function POST(request) {
   }
 
   let extra = {};
+
+  // Voor consumenten nemen we ook voornaam, achternaam en adres-
+  // gegevens over uit de aanvraag. Deze komen bij snel-registratie
+  // vanaf /voltooien automatisch mee uit de klus die de gebruiker
+  // net heeft ingevuld.
+  if (rol === "consument") {
+    const voornaam = (data.voornaam ?? "").trim();
+    const achternaam = (data.achternaam ?? "").trim();
+    const straatnaam = (data.straatnaam ?? "").trim();
+    const huisnummer = (data.huisnummer ?? "").toString().trim();
+    const huisnummerToevoeging = (data.huisnummerToevoeging ?? "")
+      .toString()
+      .trim();
+    const consumentPostcode = (data.postcode ?? "").trim().toUpperCase();
+    const plaats = (data.plaats ?? "").trim();
+    if (consumentPostcode && !POSTCODE_REGEX.test(consumentPostcode)) {
+      return Response.json(
+        { error: "Postcode heeft geen geldig formaat." },
+        { status: 400 }
+      );
+    }
+    extra = {
+      voornaam: voornaam || null,
+      achternaam: achternaam || null,
+      straatnaam: straatnaam || null,
+      huisnummer: huisnummer || null,
+      huisnummerToevoeging: huisnummerToevoeging || null,
+      postcode: consumentPostcode || null,
+      plaats: plaats || null,
+    };
+  }
 
   if (rol === "vakman") {
     const vakmanType = data.vakmanType;
@@ -149,6 +181,19 @@ export async function POST(request) {
         }
       });
     }
+
+    emitActivity({
+      type: EVENT_TYPES.GEBRUIKER_GEREGISTREERD,
+      actor: { id: user.id, rol: user.rol },
+      targetType: "user",
+      targetId: user.id,
+      payload: {
+        rol: user.rol,
+        vakmanType: user.vakmanType ?? null,
+        // Bewust geen email, naam — zit in de User-tabel zelf
+      },
+      ipAdres: ipFromRequest(request),
+    });
 
     return Response.json({
       id: user.id,

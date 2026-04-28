@@ -179,3 +179,55 @@ model Trefwoord {
 
   @@unique([categorie, woord])
 }
+
+// ─────────────────────────────────────────────────────────────────
+// SOVEREIGN GUARDIAN — Foundation tabellen voor admin-monitoring
+// ─────────────────────────────────────────────────────────────────
+
+// ActivityEvent = single source of truth voor alle business-events op
+// het platform. Wordt gevuld door API-routes via lib/events.js.
+// Gebruikt door: live-feed, User Journey Timeline, KPI-aggregaties,
+// anomalie-detectie. Append-only — nooit muteren of verwijderen.
+model ActivityEvent {
+  id          BigInt   @id @default(autoincrement())
+  type        String   // 'klus.aangemaakt' | 'lead.gekocht' | 'review.geplaatst' | 'gebruiker.geregistreerd' | etc.
+  tijdstip    DateTime @default(now())
+  actorId     Int? // wie deed het (userId)
+  actorRol    String? // 'consument' | 'vakman' | 'admin' | null voor system
+  targetType  String? // 'klus' | 'lead' | 'review' | 'user' | etc.
+  targetId    Int?
+  payload     Json // event-specifieke data (zonder PII waar mogelijk)
+  ipHash      String? // SHA256(ip) voor dedup zonder PII
+
+  @@index([tijdstip])
+  @@index([type, tijdstip])
+  @@index([actorId, tijdstip])
+  @@index([targetType, targetId])
+}
+
+// AuditLog = onveranderbaar logboek van admin-acties. Hash-chain
+// zorgt dat manipulatie detecteerbaar is. Database-niveau borging
+// via Postgres-rules tegen UPDATE/DELETE wordt later toegevoegd.
+model AuditLog {
+  id              BigInt    @id @default(autoincrement())
+  tijdstip        DateTime  @default(now())
+  adminId         Int
+  adminNaam       String // gedenormaliseerd voor leesbaarheid bij user-deletie
+  actie           String // 'vakman.frozen' | 'klus.verwijderd' | 'data.bekeken' | etc.
+  actieCategorie  String // 'compliance' | 'pricing' | 'ranking' | 'support' | 'data'
+  targetType      String
+  targetId        Int?
+  payload         Json // before/after state of context
+  reden           String   @db.Text // verplicht ≥ 30 tekens
+  ipAdres         String?
+  userAgent       String?  @db.Text
+  goedgekeurdDoor Int? // 4-ogen-principe — null als niet vereist
+  goedgekeurdOp   DateTime?
+  vorigHash       Bytes? // SHA-256 van vorige rij
+  rijHash         Bytes // SHA-256(deze rij + vorigHash)
+
+  @@index([tijdstip])
+  @@index([adminId, tijdstip])
+  @@index([targetType, targetId])
+  @@index([actieCategorie, tijdstip])
+}

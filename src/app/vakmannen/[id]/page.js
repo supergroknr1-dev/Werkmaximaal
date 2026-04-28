@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ShieldCheck, MapPin, Star, Award } from "lucide-react";
 import { prisma } from "../../../lib/prisma";
+import { getCurrentUser } from "../../../lib/auth";
 import Lightbox from "./Lightbox";
+import ProfielFotoEditor from "./ProfielFotoEditor";
 
 export const dynamic = "force-dynamic";
 
@@ -103,6 +105,13 @@ export default async function VakmanProfielPage({ params }) {
       ? reviews.reduce((s, r) => s + r.score, 0) / aantalReviews
       : 0;
 
+  // Mag de huidige bezoeker de profielfoto bewerken? Eigenaar of admin.
+  const huidigeUser = await getCurrentUser();
+  const magFotoBewerken = !!(
+    huidigeUser &&
+    (huidigeUser.id === vakmanId || huidigeUser.isAdmin)
+  );
+
   // Aantal gekochte leads = ervaring-indicator
   const aantalLeads = await prisma.lead.count({ where: { vakmanId } });
 
@@ -136,7 +145,16 @@ export default async function VakmanProfielPage({ params }) {
 
         <header className="bg-white border border-slate-200 rounded-lg shadow-sm p-6 md:p-8 mb-6">
           <div className="flex items-start gap-4">
-            {vakman.profielFotoUrl ? (
+            {magFotoBewerken ? (
+              <div className="shrink-0">
+                <ProfielFotoEditor
+                  vakmanId={vakman.id}
+                  huidigeFotoUrl={vakman.profielFotoUrl}
+                  initialen={initialen}
+                  alt={`Foto van ${naamWeergave}`}
+                />
+              </div>
+            ) : vakman.profielFotoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={vakman.profielFotoUrl}

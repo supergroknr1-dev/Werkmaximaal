@@ -241,7 +241,16 @@ export default async function KlusDetailPage({ params }) {
                     className="bg-slate-50 border border-slate-200 rounded-md p-4"
                   >
                     <div className="flex justify-between items-baseline mb-1 gap-3">
-                      <p className="text-sm font-semibold text-slate-900">{r.naam}</p>
+                      {r.userId ? (
+                        <Link
+                          href={`/vakmannen/${r.userId}`}
+                          className="text-sm font-semibold text-slate-900 hover:text-slate-700 hover:underline"
+                        >
+                          {r.naam}
+                        </Link>
+                      ) : (
+                        <p className="text-sm font-semibold text-slate-900">{r.naam}</p>
+                      )}
                       <p className="text-xs text-slate-500 shrink-0">
                         {formatDatumTijd(r.aangemaakt)}
                       </p>

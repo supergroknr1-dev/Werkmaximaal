@@ -44,6 +44,8 @@ export default async function ProfielPage() {
       kvkNummer: true,
       regioPostcode: true,
       werkafstand: true,
+      profielFotoUrl: true,
+      bio: true,
       aangemaakt: true,
       naamLaatstGewijzigd: true,
     },

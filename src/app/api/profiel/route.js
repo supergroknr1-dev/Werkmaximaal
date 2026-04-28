@@ -152,6 +152,29 @@ export async function PUT(request) {
       }
       update.bedrijfsnaam = bedrijfsnaam;
     }
+    // Vakman-profiel: foto-URL + bio voor de publieke profielpagina.
+    if (data.profielFotoUrl !== undefined) {
+      const url = (data.profielFotoUrl ?? "").trim();
+      // Alleen Vercel-Blob-URLs accepteren — voorkomt dat iemand
+      // een willekeurige externe URL zet.
+      if (url && !/^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\//i.test(url)) {
+        return Response.json(
+          { error: "Profielfoto-URL is niet geldig. Upload de foto opnieuw." },
+          { status: 400 }
+        );
+      }
+      update.profielFotoUrl = url || null;
+    }
+    if (data.bio !== undefined) {
+      const bio = (data.bio ?? "").toString().trim();
+      if (bio.length > 1000) {
+        return Response.json(
+          { error: "Bio mag maximaal 1000 tekens zijn." },
+          { status: 400 }
+        );
+      }
+      update.bio = bio || null;
+    }
   }
 
   try {

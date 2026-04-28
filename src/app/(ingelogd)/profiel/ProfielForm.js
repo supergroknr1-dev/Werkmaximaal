@@ -71,6 +71,10 @@ export default function ProfielForm({ user }) {
   const [bedrijfsnaam, setBedrijfsnaam] = useState(user.bedrijfsnaam ?? "");
   const [regioPostcode, setRegioPostcode] = useState(user.regioPostcode ?? "");
   const [werkafstand, setWerkafstand] = useState(user.werkafstand ?? "");
+  const [profielFotoUrl, setProfielFotoUrl] = useState(user.profielFotoUrl ?? "");
+  const [bio, setBio] = useState(user.bio ?? "");
+  const [fotoBezig, setFotoBezig] = useState(false);
+  const [fotoFout, setFotoFout] = useState(null);
 
   const [bezig, setBezig] = useState(false);
   const [boodschap, setBoodschap] = useState(null);
@@ -124,6 +128,27 @@ export default function ProfielForm({ user }) {
     };
   }, [postcode, huisnummer, toonPersoonlijkAdres]);
 
+  async function uploadFoto(file) {
+    setFotoBezig(true);
+    setFotoFout(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload/profielfoto", {
+        method: "POST",
+        body: fd,
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setFotoFout(json.error || "Upload mislukt.");
+        return;
+      }
+      setProfielFotoUrl(json.url);
+    } finally {
+      setFotoBezig(false);
+    }
+  }
+
   async function opslaan(e) {
     e.preventDefault();
     setBezig(true);
@@ -160,6 +185,8 @@ export default function ProfielForm({ user }) {
       if (isProfessional) body.bedrijfsnaam = bedrijfsnaam;
       body.regioPostcode = regioPostcode;
       if (werkafstand !== "") body.werkafstand = werkafstand;
+      body.profielFotoUrl = profielFotoUrl;
+      body.bio = bio;
     }
 
     const res = await fetch("/api/profiel", {
@@ -382,6 +409,91 @@ export default function ProfielForm({ user }) {
             KvK-nummer kan niet worden gewijzigd. Neem contact op met de
             administratie als dit nodig is.
           </p>
+        </div>
+      )}
+
+      {isVakman && (
+        <div className="border-t border-slate-200 pt-5">
+          <h2 className="text-base font-semibold text-slate-900 mb-1">
+            Publieke profielpagina
+          </h2>
+          <p className="text-xs text-slate-500 mb-4">
+            Wat klanten zien op{" "}
+            <a
+              href={`/vakmannen/${user.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-700 underline hover:text-slate-900"
+            >
+              /vakmannen/{user.id}
+            </a>
+          </p>
+          <div className="flex items-start gap-4 mb-4">
+            {profielFotoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={profielFotoUrl}
+                alt="Profielfoto"
+                className="w-20 h-20 rounded-full object-cover border border-slate-200 shrink-0"
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-xs text-slate-400 shrink-0">
+                Geen foto
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Profielfoto
+              </label>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) uploadFoto(f);
+                  e.target.value = "";
+                }}
+                disabled={fotoBezig}
+                className="text-xs"
+              />
+              {fotoBezig && (
+                <p className="text-xs text-slate-500 mt-1">Uploaden...</p>
+              )}
+              {fotoFout && (
+                <p className="text-xs text-rose-600 mt-1">{fotoFout}</p>
+              )}
+              {profielFotoUrl && !fotoBezig && (
+                <button
+                  type="button"
+                  onClick={() => setProfielFotoUrl("")}
+                  className="text-xs text-slate-500 hover:text-rose-600 mt-2"
+                >
+                  Foto verwijderen
+                </button>
+              )}
+              <p className="text-[11px] text-slate-400 mt-1">
+                JPG, PNG of WEBP. Max 2 MB.
+              </p>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Bio / over jou
+              <span className="text-slate-400 font-normal text-xs ml-1">
+                (optioneel, max 1000 tekens)
+              </span>
+            </label>
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value.slice(0, 1000))}
+              rows={4}
+              placeholder="Vertel kort wie je bent, welke klussen je doet en waarom een klant voor jou zou moeten kiezen..."
+              className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+            />
+            <p className="text-[11px] text-slate-400 mt-1 text-right">
+              {bio.length}/1000
+            </p>
+          </div>
         </div>
       )}
 

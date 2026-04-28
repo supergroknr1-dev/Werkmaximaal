@@ -67,6 +67,12 @@ model User {
   // PATCH-endpoint maakt de andere leeg.
   regioPostcode  String?
   regioPlaats    String?
+  // Publieke profielfoto (Vercel Blob URL onder pad 'vakman-fotos/').
+  // Vakman vult zelf via /profiel; toont op /vakmannen/[id] en bij
+  // reacties op klus-detail-pagina's.
+  profielFotoUrl String?
+  // Korte introductietekst voor publieke profielpagina.
+  bio            String?
   aangemaakt     DateTime  @default(now())
   klussen        Klus[]
   reacties       Reactie[]

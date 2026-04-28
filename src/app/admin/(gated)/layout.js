@@ -23,9 +23,9 @@ export default async function GatedAdminLayout({ children }) {
   ) {
     redirect(ADMIN_LOGIN_PATH);
   }
-  if (!user.totpEnabled) {
-    redirect("/admin/mfa-setup");
-  }
+  // MFA is opt-in. Admins zonder ingestelde MFA mogen door — ze kunnen
+  // 'm later activeren via /admin/mfa-setup. Wanneer totpEnabled wel
+  // true is, eist /api/management-login alsnog een TOTP-code op login.
 
   return (
     <div className="min-h-screen bg-slate-50">

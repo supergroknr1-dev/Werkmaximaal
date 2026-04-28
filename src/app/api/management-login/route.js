@@ -54,9 +54,9 @@ export async function POST(request) {
   delete session.userId;
 
   if (!user.totpEnabled) {
-    // Eerste login of na admin-reset van MFA: log direct in zodat de
-    // admin de setup-pagina kan bereiken; admin-layout dwingt MFA-setup
-    // af voor élke andere admin-pagina.
+    // MFA is opt-in: zonder ingestelde TOTP loggen we de admin direct
+    // in. De /admin/mfa-setup-pagina blijft bereikbaar voor wie alsnog
+    // wil activeren.
     session.userId = user.id;
     await session.save();
 
@@ -65,11 +65,11 @@ export async function POST(request) {
       actor: { id: user.id, rol: user.rol },
       targetType: "user",
       targetId: user.id,
-      payload: { mfa: "setup-pending" },
+      payload: { mfa: "uit" },
       ipAdres: ipFromRequest(request),
     });
 
-    return Response.json({ ok: true, mfaSetupNodig: true });
+    return Response.json({ ok: true });
   }
 
   // MFA staat aan: alleen pre-login zetten, eindcontrole gebeurt na

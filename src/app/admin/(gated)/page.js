@@ -5,9 +5,14 @@ import {
   TrendingUp,
   ArrowUpRight,
   AlertCircle,
+  ClipboardPlus,
+  UserPlus,
+  ShoppingCart,
+  Star,
 } from "lucide-react";
 import { prisma } from "../../../lib/prisma";
 import { formatBedrag } from "../../../lib/lead-prijs";
+import { EVENT_TYPES } from "../../../lib/events";
 
 function startVanDezeWeek() {
   const nu = new Date();
@@ -17,6 +22,16 @@ function startVanDezeWeek() {
   ma.setDate(nu.getDate() - verschil);
   ma.setHours(0, 0, 0, 0);
   return ma;
+}
+
+// UTC-middernacht van vandaag. Wijkt 1-2u af van NL-middernacht door
+// zomertijd, maar dat is voor 24u-totalen geen probleem — de teller
+// draait gewoon één tot twee uur eerder over.
+function startVanVandaag() {
+  const nu = new Date();
+  return new Date(
+    Date.UTC(nu.getUTCFullYear(), nu.getUTCMonth(), nu.getUTCDate())
+  );
 }
 
 function formatDatum(datum) {
@@ -48,8 +63,39 @@ function StatKaart({ icon: Icon, label, waarde, sub, accent }) {
   );
 }
 
+function MiniKaart({ icon: Icon, label, waarde, accent, href }) {
+  const inhoud = (
+    <>
+      <div
+        className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${accent}`}
+      >
+        <Icon size={15} strokeWidth={2} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] uppercase tracking-wider text-slate-500 font-medium">
+          {label}
+        </p>
+        <p className="text-xl font-semibold text-slate-900 tracking-tight tabular-nums">
+          {waarde}
+        </p>
+      </div>
+    </>
+  );
+  const klassen =
+    "bg-white border border-slate-200 rounded-lg px-4 py-3 shadow-sm flex items-center gap-3";
+  if (href) {
+    return (
+      <Link href={href} className={`${klassen} hover:border-slate-300 transition-colors`}>
+        {inhoud}
+      </Link>
+    );
+  }
+  return <div className={klassen}>{inhoud}</div>;
+}
+
 export default async function AdminOverzicht() {
   const sinds = startVanDezeWeek();
+  const sindsVandaag = startVanVandaag();
 
   const [
     aantalAanmeldingen,
@@ -61,6 +107,7 @@ export default async function AdminOverzicht() {
     leadsDezeWeek,
     recenteVakmannen,
     teKeurenKlussen,
+    eventsVandaag,
   ] = await Promise.all([
     prisma.user.count({ where: { rol: "vakman" } }),
     prisma.user.count({
@@ -96,10 +143,25 @@ export default async function AdminOverzicht() {
         user: { select: { naam: true } },
       },
     }),
+    prisma.activityEvent.groupBy({
+      by: ["type"],
+      where: { tijdstip: { gte: sindsVandaag } },
+      _count: true,
+    }),
   ]);
 
   const omzetDezeWeek = leadsDezeWeek._sum.bedrag ?? 0;
   const aantalLeadsDezeWeek = leadsDezeWeek._count ?? 0;
+
+  // Map ActivityEvent-types → vandaag-tellers. Onbekende types
+  // (admin.ingreep, etc.) negeren we voor de KPI-strook.
+  const vandaag = Object.fromEntries(
+    eventsVandaag.map((e) => [e.type, e._count])
+  );
+  const klussenVandaag = vandaag[EVENT_TYPES.KLUS_AANGEMAAKT] ?? 0;
+  const registratiesVandaag = vandaag[EVENT_TYPES.GEBRUIKER_GEREGISTREERD] ?? 0;
+  const leadsVandaag = vandaag[EVENT_TYPES.LEAD_GEKOCHT] ?? 0;
+  const reviewsVandaag = vandaag[EVENT_TYPES.REVIEW_GEPLAATST] ?? 0;
 
   return (
     <>
@@ -114,6 +176,40 @@ export default async function AdminOverzicht() {
           Realtime statistieken over aanmeldingen, klussen en omzet.
         </p>
       </header>
+
+      <section className="mb-6">
+        <p className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-2">
+          Vandaag
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <MiniKaart
+            icon={ClipboardPlus}
+            label="Klussen"
+            waarde={klussenVandaag}
+            accent="bg-emerald-50 text-emerald-600"
+            href="/admin/klussen"
+          />
+          <MiniKaart
+            icon={UserPlus}
+            label="Registraties"
+            waarde={registratiesVandaag}
+            accent="bg-blue-50 text-blue-600"
+            href="/admin/vakmannen"
+          />
+          <MiniKaart
+            icon={ShoppingCart}
+            label="Leads"
+            waarde={leadsVandaag}
+            accent="bg-amber-50 text-amber-600"
+          />
+          <MiniKaart
+            icon={Star}
+            label="Reviews"
+            waarde={reviewsVandaag}
+            accent="bg-rose-50 text-rose-600"
+          />
+        </div>
+      </section>
 
       {aantalTeKeuren > 0 && (
         <Link

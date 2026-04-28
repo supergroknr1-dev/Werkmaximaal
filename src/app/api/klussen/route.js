@@ -31,6 +31,43 @@ export async function GET() {
     orderBy: { aangemaakt: "desc" },
   });
 
+  // Voor vakmannen: bepaal welke klussen in hun werkgebied vallen.
+  // Match-criteria (zelfde als in lib/match.js): primaire regioPostcode
+  // (4 cijfers) of regioPlaats (case-insensitief), of een van de
+  // werkgebiedExtra-rijen. Postcode-prefix uit de klus zelf gebruiken
+  // we niet aan de client (verborgen om privacy-redenen) — alleen
+  // server-side flag.
+  let inWerkgebied = () => false;
+  if (sessieUser?.rol === "vakman") {
+    const vakman = await prisma.user.findUnique({
+      where: { id: sessieUser.id },
+      select: {
+        regioPostcode: true,
+        regioPlaats: true,
+        werkgebiedenExtra: { select: { type: true, waarde: true } },
+      },
+    });
+    if (vakman) {
+      const primairPostcode = vakman.regioPostcode?.trim() || null;
+      const primairPlaats = vakman.regioPlaats?.trim().toLowerCase() || null;
+      const extras = (vakman.werkgebiedenExtra || []).map((w) => ({
+        type: w.type,
+        waarde: w.waarde?.toLowerCase().trim(),
+      }));
+      inWerkgebied = (k) => {
+        const klusPostcode4 = (k.postcode || "").trim().slice(0, 4);
+        const klusPlaats = (k.plaats || "").trim().toLowerCase();
+        if (primairPostcode && klusPostcode4 === primairPostcode) return true;
+        if (primairPlaats && klusPlaats === primairPlaats) return true;
+        for (const w of extras) {
+          if (w.type === "postcode" && klusPostcode4 === w.waarde) return true;
+          if (w.type === "plaats" && klusPlaats === w.waarde) return true;
+        }
+        return false;
+      };
+    }
+  }
+
   // Adressen zijn alleen zichtbaar voor de eigenaar of een admin.
   // Voor iedereen anders (vakman zonder lead, anoniem) strippen we
   // straatnaam, huisnummer én postcode volledig — alleen plaats blijft
@@ -39,12 +76,14 @@ export async function GET() {
   const veilig = klussen.map((k) => {
     const magVolledig =
       sessieUser?.isAdmin || (sessieUser && k.userId === sessieUser.id);
-    if (magVolledig) return k;
+    const flag = inWerkgebied(k);
+    if (magVolledig) return { ...k, inWerkgebied: flag };
     return {
       ...k,
       straatnaam: null,
       huisnummer: null,
       postcode: null,
+      inWerkgebied: flag,
     };
   });
 

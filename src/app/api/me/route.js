@@ -16,6 +16,9 @@ export async function GET() {
       rol: true,
       isAdmin: true,
       vakmanType: true,
+      regioPostcode: true,
+      regioPlaats: true,
+      _count: { select: { werkgebiedenExtra: true } },
     },
   });
   if (!user) {
@@ -24,5 +27,16 @@ export async function GET() {
     return Response.json({ user: null });
   }
 
-  return Response.json({ user });
+  // heeftWerkgebied = client-flag voor o.a. de werkradius-filter op
+  // de homepage. True als vakman een primair werkgebied of extra-rij
+  // heeft ingesteld.
+  const heeftWerkgebied =
+    user.rol === "vakman" &&
+    (!!user.regioPostcode ||
+      !!user.regioPlaats ||
+      user._count.werkgebiedenExtra > 0);
+
+  return Response.json({
+    user: { ...user, heeftWerkgebied, _count: undefined },
+  });
 }

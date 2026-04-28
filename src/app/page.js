@@ -92,6 +92,7 @@ export default function Home() {
   const [bezig, setBezig] = useState(false);
   const [gekozenPlaats, setGekozenPlaats] = useState("");
   const [gekozenCategorie, setGekozenCategorie] = useState("");
+  const [alleenWerkgebied, setAlleenWerkgebied] = useState(true);
   const [categorieAangeraakt, setCategorieAangeraakt] = useState(false);
   const [stap, setStap] = useState(1);
   const [postcodeStatus, setPostcodeStatus] = useState({ state: "leeg" });
@@ -298,13 +299,16 @@ export default function Home() {
   const uniekeCategorieen = [
     ...new Set(klussen.map((k) => k.categorie).filter(Boolean)),
   ].sort();
+  const isVakman = huidigeUser?.rol === "vakman";
+  const heeftWerkgebied = !!huidigeUser?.heeftWerkgebied;
+  const filterWerkgebiedActief = isVakman && heeftWerkgebied && alleenWerkgebied;
   const gefilterdeKlussen = klussen.filter((k) => {
+    if (filterWerkgebiedActief && !k.inWerkgebied) return false;
     if (gekozenPlaats && k.plaats !== gekozenPlaats) return false;
     if (gekozenCategorie && k.categorie !== gekozenCategorie) return false;
     return true;
   });
 
-  const isVakman = huidigeUser?.rol === "vakman";
   const lijstHeading = isVakman ? "Openstaande opdrachten" : "Mijn klussen";
 
   return (
@@ -641,6 +645,25 @@ export default function Home() {
           <h2 className="text-lg font-semibold text-slate-900 mb-4">
             {lijstHeading} ({gefilterdeKlussen.length})
           </h2>
+
+          {isVakman && heeftWerkgebied && (
+            <label className="flex items-center gap-2 mb-3 text-sm text-slate-700 select-none">
+              <input
+                type="checkbox"
+                checked={alleenWerkgebied}
+                onChange={(e) => setAlleenWerkgebied(e.target.checked)}
+                className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <span>
+                Alleen klussen in mijn werkgebied
+                {filterWerkgebiedActief && (
+                  <span className="ml-1 text-xs text-slate-500">
+                    ({gefilterdeKlussen.length} van {klussen.length})
+                  </span>
+                )}
+              </span>
+            </label>
+          )}
 
           {klussen.length > 0 && (
             <div className="grid gap-3 md:grid-cols-2 mb-4">

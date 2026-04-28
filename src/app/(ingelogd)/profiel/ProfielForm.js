@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Check } from "lucide-react";
+import { Check, Upload, Trash2 } from "lucide-react";
 
 const POSTCODE_REGEX = /^\d{4}[A-Z]{2}$/;
 
@@ -75,6 +75,7 @@ export default function ProfielForm({ user }) {
   const [bio, setBio] = useState(user.bio ?? "");
   const [fotoBezig, setFotoBezig] = useState(false);
   const [fotoFout, setFotoFout] = useState(null);
+  const fotoInputRef = useRef(null);
 
   const [bezig, setBezig] = useState(false);
   const [boodschap, setBoodschap] = useState(null);
@@ -442,10 +443,16 @@ export default function ProfielForm({ user }) {
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Profielfoto
               </label>
+              <p className="text-[11px] text-slate-500 mb-2 leading-snug">
+                <strong>Aanbevolen:</strong> minimaal 400 × 400 pixels (vierkant
+                / 1:1).<br />
+                JPG, PNG of WEBP — max 2 MB.
+              </p>
               <input
+                ref={fotoInputRef}
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 onChange={(e) => {
@@ -454,26 +461,35 @@ export default function ProfielForm({ user }) {
                   e.target.value = "";
                 }}
                 disabled={fotoBezig}
-                className="text-xs"
+                className="hidden"
               />
-              {fotoBezig && (
-                <p className="text-xs text-slate-500 mt-1">Uploaden...</p>
-              )}
-              {fotoFout && (
-                <p className="text-xs text-rose-600 mt-1">{fotoFout}</p>
-              )}
-              {profielFotoUrl && !fotoBezig && (
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setProfielFotoUrl("")}
-                  className="text-xs text-slate-500 hover:text-rose-600 mt-2"
+                  onClick={() => fotoInputRef.current?.click()}
+                  disabled={fotoBezig}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-md bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Foto verwijderen
+                  <Upload size={13} />
+                  {profielFotoUrl ? "Andere foto kiezen" : "Foto kiezen"}
                 </button>
+                {profielFotoUrl && !fotoBezig && (
+                  <button
+                    type="button"
+                    onClick={() => setProfielFotoUrl("")}
+                    className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-rose-600"
+                  >
+                    <Trash2 size={12} />
+                    Verwijderen
+                  </button>
+                )}
+              </div>
+              {fotoBezig && (
+                <p className="text-xs text-slate-500 mt-2">Uploaden...</p>
               )}
-              <p className="text-[11px] text-slate-400 mt-1">
-                JPG, PNG of WEBP. Max 2 MB.
-              </p>
+              {fotoFout && (
+                <p className="text-xs text-rose-600 mt-2">{fotoFout}</p>
+              )}
             </div>
           </div>
           <div>

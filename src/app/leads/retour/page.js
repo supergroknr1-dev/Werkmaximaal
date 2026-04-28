@@ -42,12 +42,11 @@ async function renderRetour({ searchParams }) {
 
   const session = await getSession();
   const paymentId = session.pendingLeadPayment;
-  // Eénmalig consumeren: ook bij fouten wissen we de pending zodat
-  // refresh-loops niet opnieuw verifiëren.
-  if (paymentId) {
-    delete session.pendingLeadPayment;
-    await session.save();
-  }
+  // We wissen pendingLeadPayment NIET hier — Next.js 16 staat geen
+  // cookie-mutatie toe in een page render. verwerkLeadPayment is
+  // idempotent (Lead unique-constraint dedupt), dus refreshen of
+  // her-bezoeken is veilig. Bij volgende checkout wordt 't toch
+  // overschreven.
 
   if (!paymentId) {
     return (

@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { formatBedrag } from "../../../lib/lead-prijs";
+
+// Inline ipv import uit lib/lead-prijs — die file sleept indirect prisma
+// mee de client-bundle in (instellingen.js → prisma.js).
+function formatBedrag(centen) {
+  return `€ ${(centen / 100).toFixed(2).replace(".", ",")}`;
+}
 
 /**
  * Lead-koop knop. Klik → POST naar /api/klussen/{id}/lead → server maakt

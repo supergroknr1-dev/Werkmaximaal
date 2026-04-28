@@ -70,7 +70,14 @@ export async function maakLeadPayment({ request, klus, vakman, bedragInCenten })
     request,
     `/leads/retour?klusId=${klus.id}`
   );
-  const webhookUrl = bouwAbsoluteUrl(request, `/api/leads/mollie-webhook`);
+  // Mollie controleert of de webhookUrl bereikbaar is en weigert
+  // localhost. We sturen de webhookUrl alleen mee als APP_URL expliciet
+  // gezet is (productie/Vercel). Op dev valt de bevestiging op de
+  // redirect-flow — die werkt sowieso prima zonder webhook.
+  const expliciet = process.env.APP_URL;
+  const webhookUrl = expliciet
+    ? new URL("/api/leads/mollie-webhook", expliciet).toString()
+    : null;
 
   const beschrijving = `Lead voor klus #${klus.id}: ${klus.titel.slice(0, 50)}`;
 
@@ -82,10 +89,7 @@ export async function maakLeadPayment({ request, klus, vakman, bedragInCenten })
     description: beschrijving,
     method: "ideal",
     redirectUrl,
-    // Webhook werkt alleen op een publiek bereikbare URL (Vercel ja,
-    // localhost nee). Bij dev faalt Mollie de webhook-call stilletjes,
-    // maar de redirect-flow handelt de lead-creatie alsnog af.
-    webhookUrl,
+    ...(webhookUrl ? { webhookUrl } : {}),
     metadata: {
       klusId: String(klus.id),
       vakmanId: String(vakman.id),

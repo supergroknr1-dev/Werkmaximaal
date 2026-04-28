@@ -227,6 +227,11 @@ export default function Home() {
             titel,
             postcode,
             huisnummer,
+            // Straatnaam en plaats komen uit de PDOK-lookup; we
+            // bewaren ze zodat /voltooien ze kan gebruiken om het
+            // profiel van een nieuwe consument direct te vullen.
+            straatnaam: postcodeStatus.straatnaam || "",
+            plaats: postcodeStatus.plaats || "",
             categorie,
             voorkeurVakmanType,
             stap,
@@ -314,59 +319,7 @@ export default function Home() {
             </div>
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
-              {huidigeUser ? (
-                <>
-                  <span className="inline-flex items-center gap-2">
-                    <span className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[11px] font-semibold text-slate-700">
-                      {(huidigeUser.naam ?? "?").charAt(0).toUpperCase()}
-                    </span>
-                    <span className="text-slate-700">
-                      <span className="font-medium text-slate-900">
-                        {huidigeUser.naam}
-                      </span>
-                      <span
-                        className={`ml-2 inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
-                          huidigeUser.rol === "vakman"
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                            : "bg-blue-50 text-blue-700 border-blue-200"
-                        }`}
-                      >
-                        {huidigeUser.rol}
-                      </span>
-                    </span>
-                  </span>
-
-                  {huidigeUser.rol === "consument" && (
-                    <Link
-                      href="/mijn-klussen"
-                      className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
-                    >
-                      Mijn klussen
-                    </Link>
-                  )}
-                  {huidigeUser.rol === "vakman" && (
-                    <Link
-                      href="/mijn-leads"
-                      className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
-                    >
-                      Mijn leads
-                    </Link>
-                  )}
-                  <Link
-                    href="/profiel"
-                    className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
-                  >
-                    Profiel
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={uitloggen}
-                    className="text-slate-400 hover:text-rose-600 transition-colors"
-                  >
-                    Uitloggen
-                  </button>
-                </>
-              ) : (
+              {!huidigeUser && (
                 <>
                   <Link
                     href="/inloggen"
@@ -409,7 +362,7 @@ export default function Home() {
           </div>
         )}
 
-        {userLoaded && (!huidigeUser || huidigeUser.rol === "consument") && (
+        {userLoaded && !huidigeUser?.isAdmin && (!huidigeUser || huidigeUser.rol === "consument") && (
         <>
         <div className="flex items-center gap-3 mb-6">
           <div className="flex items-center gap-2">

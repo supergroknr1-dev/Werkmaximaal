@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { prisma } from "../../lib/prisma";
-import { getSession } from "../../lib/session";
+import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/session";
 import SluitKnop from "./SluitKnop";
 import BeoordeelKnop from "./BeoordeelKnop";
-import ScoreBadge from "../_components/ScoreBadge";
-import { getVakmanScores } from "../../lib/reviews";
+import ScoreBadge from "@/app/_components/ScoreBadge";
+import { getVakmanScores } from "@/lib/reviews";
 
 function formatDatum(datum) {
   return new Date(datum).toLocaleDateString("nl-NL", {

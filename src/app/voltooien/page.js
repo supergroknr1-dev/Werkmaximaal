@@ -63,6 +63,16 @@ export default function VoltooienPage() {
     setBezig(true);
     try {
       const naam = `${regVoornaam.trim()} ${regAchternaam.trim()}`.trim();
+      // Adres-gegevens uit de klus overnemen in het profiel zodat de
+      // consument deze niet nogmaals hoeft in te vullen.
+      const adres = pendingKlus
+        ? {
+            postcode: pendingKlus.postcode || "",
+            huisnummer: pendingKlus.huisnummer || "",
+            straatnaam: pendingKlus.straatnaam || "",
+            plaats: pendingKlus.plaats || "",
+          }
+        : {};
       const regRes = await fetch("/api/registreren", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -73,6 +83,7 @@ export default function VoltooienPage() {
           naam,
           voornaam: regVoornaam.trim(),
           achternaam: regAchternaam.trim(),
+          ...adres,
         }),
       });
       const regData = await regRes.json();

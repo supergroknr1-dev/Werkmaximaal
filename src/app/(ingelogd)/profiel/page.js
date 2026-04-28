@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { prisma } from "../../lib/prisma";
-import { getSession } from "../../lib/session";
+import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/session";
 import ProfielForm from "./ProfielForm";
 import WachtwoordForm from "./WachtwoordForm";
 

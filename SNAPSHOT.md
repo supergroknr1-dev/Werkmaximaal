@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-04-28 (reviews-feature gepusht naar main)
-**Laatste commit op main:** `cb5246e` — Reviews + sterren-systeem: consument beoordeelt vakman na 10 dagen
+**Laatst bijgewerkt:** 2026-04-28 (admin-bewerk + rebranding gepusht)
+**Laatste commit op main:** `896d525` — Admin vakman bewerken-pagina + Vakman/Buurtklusser-rebranding
 **Live op:** https://werkmaximaal.vercel.app/
 
 ---
@@ -28,10 +28,14 @@ In de laatste sessies (volgorde: oud → nieuw):
 - **Persoonlijk adres** ook beschikbaar voor Hobbyists op `/profiel`
 - **Multi-machine workflow**: `SNAPSHOT.md` + `OPENING_PROMPT.md` in de project-root, plus een feedback-memory-regel die zorgt dat ik SNAPSHOT.md bij sessie-einde automatisch bijwerk
 - **Reviews + sterren-systeem**: consument beoordeelt een vakman 10 dagen na lead-aankoop met score 1–5, optionele toelichting en max 5 foto's (Vercel Blob, pad `review-fotos/`). Gemiddelde score + aantal reviews zichtbaar op `/mijn-klussen` (per gekochte lead) en `/klussen/[id]` (per reactie). Modal met sterren-selectie, tekstvak (max 2000 tekens) en drag-en-drop upload (JPG/PNG/WEBP, max 5 MB per foto). Eigen API: `POST /api/reviews` (validatie: eigenaar-check, 10-dagen-wachttijd, 1 review per lead) en `POST /api/reviews/upload`
+- **Admin vakman bewerken-pagina** (`/admin/vakmannen/[id]/bewerken`) — eigen sectie per blok (Account, Bedrijf, Adres gegevens, Werkgebied), Type als blok-keuze met live verschillen-tabel, Bedrijf-sectie alleen bij Vakman, conditional naam-label (Schermnaam/Bedrijfsnaam), KvK-uittreksel-upload (PDF/JPG/PNG, max 5 MB), wachtwoord-reset door admin (eigen route `/api/admin/vakmannen/[id]/wachtwoord`), PDOK-adres-autofill (postcode+huisnummer → straatnaam+plaats), werkgebied via postcode of plaats (autocomplete via PDOK)
+- **Werk- + Privé-telefoon**: `werkTelefoon` (was `telefoon` via @map = backward-compat) zichtbaar voor klanten + nieuw `priveTelefoon` alleen zichtbaar voor admin
+- **Schermnaam wijzigen 1× per 30 dagen** op `/profiel` voor de vakman/buurtklusser zelf — admin omzeilt regel via PATCH `/api/admin/vakmannen/[id]`. Velden voor- en achternaam zijn disabled tijdens wachttijd, gele waarschuwingsbalk toont datum waarop weer kan
+- **Vakman/Buurtklusser-rebranding** in alle UI: "Professional/Pro" → "Vakman", "Hobbyist/Handige Harry" → "Buurtklusser". DB-waarden (`professional`/`hobbyist`) en Pipedrive CRM-labels onveranderd
 
 ## 🟡 Waar je was gebleven
 
-Reviews + sterren-systeem volledig opgeleverd (Stap A: DB-model + migration `20260427084657_reviews`; Stap B: API + modal-UI op Mijn klussen; Stap C: gemiddelde score + aantal getoond op /mijn-klussen en /klussen/[id]). Code compileert zonder errors of warnings en is **gepusht naar main** (commit `cb5246e`) — Vercel auto-deploy draait. End-to-end-test stond nog open: vereist een consument-account met een lead van ≥10 dagen oud (de laptop-sessie was als vakman/admin ingelogd). **Aanbevolen volgende stap:** kies een feature uit de top-3.
+Admin-bewerken + Vakman/Buurtklusser-rebranding volledig opgeleverd en gepusht (`896d525`). Migrations toegepast: `werk_prive_telefoon`, `naam_laatst_gewijzigd`, `regio_plaats`. Sessie eindigde met openstaande feature-aanvraag van de user: **meerdere werkgebieden per Vakman** (alleen Pro, niet Buurtklusser) + **wijzig-indicator** (geel = niet opgeslagen, kort groen na save, daarna wit). Plan was: hybride aanpak — primair werkgebied blijft op `User` (regioPostcode/regioPlaats/werkafstand) voor backward-compat, nieuwe tabel `WerkgebiedExtra` voor extra rijen. **Volgende sessie:** dit feature bouwen of switchen naar iets uit de top-3.
 
 ## 🔴 Volgende stappen — kies er één om mee te starten
 

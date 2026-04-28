@@ -65,7 +65,11 @@ export default async function VakmanBewerkenPage({ params }) {
       <BewerkForm vakman={JSON.parse(JSON.stringify(vakman))} />
 
       <div className="mt-6 max-w-2xl">
-        <WachtwoordReset vakmanId={vakman.id} />
+        <WachtwoordReset
+          vakmanId={vakman.id}
+          vakmanNaam={vakman.bedrijfsnaam || vakman.naam}
+          vakmanEmail={vakman.email}
+        />
       </div>
     </>
   );

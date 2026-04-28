@@ -4,6 +4,10 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, Trash2, ShieldCheck, ShieldAlert, Pencil } from "lucide-react";
+import {
+  useInterventionConfirm,
+  interventionHeaders,
+} from "../../../lib/intervention-api";
 
 function formatDatum(datum) {
   return new Date(datum).toLocaleDateString("nl-NL", {
@@ -64,6 +68,7 @@ export default function VakmannenTabel({ vakmannen }) {
   const [zoek, setZoek] = useState("");
   const [typeFilter, setTypeFilter] = useState("alle");
   const [bezigId, setBezigId] = useState(null);
+  const { open: bevestigIngreep, modal: ingreepModal } = useInterventionConfirm();
 
   const gefilterd = useMemo(() => {
     const term = zoek.trim().toLowerCase();
@@ -86,20 +91,32 @@ export default function VakmannenTabel({ vakmannen }) {
 
   async function verwijder(v) {
     const naam = v.bedrijfsnaam || v.naam;
-    if (!confirm(`Account "${naam}" definitief verwijderen?`)) return;
-    setBezigId(v.id);
-    const res = await fetch(`/api/admin/vakmannen/${v.id}`, { method: "DELETE" });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      alert(data.error || "Verwijderen is mislukt.");
-      setBezigId(null);
-      return;
-    }
-    router.refresh();
-    setBezigId(null);
+    const ok = await bevestigIngreep({
+      titel: "Account definitief verwijderen",
+      beschrijving: `${naam} (${v.email})`,
+      defaultCategorie: "compliance",
+      bevestigLabel: "Verwijderen",
+      onBevestig: async ({ reden, actieCategorie }) => {
+        setBezigId(v.id);
+        try {
+          const res = await fetch(`/api/admin/vakmannen/${v.id}`, {
+            method: "DELETE",
+            headers: interventionHeaders({ reden, actieCategorie }),
+          });
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || "Verwijderen is mislukt.");
+          }
+        } finally {
+          setBezigId(null);
+        }
+      },
+    });
+    if (ok) router.refresh();
   }
 
   return (
+    <>
     <div className="bg-white border border-slate-200 rounded-lg shadow-sm">
       <div className="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
         <div className="relative flex-1 max-w-md">
@@ -210,5 +227,7 @@ export default function VakmannenTabel({ vakmannen }) {
         </div>
       )}
     </div>
+    {ingreepModal}
+    </>
   );
 }

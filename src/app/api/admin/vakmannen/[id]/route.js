@@ -1,5 +1,6 @@
 import { prisma } from "../../../../../lib/prisma";
 import { getCurrentUser } from "../../../../../lib/auth";
+import { logIntervention, InterventionError } from "../../../../../lib/intervention";
 
 const TOEGESTANE_TYPES = ["professional", "hobbyist"];
 
@@ -215,7 +216,14 @@ export async function DELETE(request, { params }) {
 
   const vakman = await prisma.user.findUnique({
     where: { id: vakmanId },
-    select: { id: true, rol: true },
+    select: {
+      id: true,
+      rol: true,
+      naam: true,
+      email: true,
+      bedrijfsnaam: true,
+      vakmanType: true,
+    },
   });
   if (!vakman) {
     return Response.json({ error: "Vakman niet gevonden." }, { status: 404 });
@@ -231,6 +239,31 @@ export async function DELETE(request, { params }) {
       { error: "Je kunt je eigen account niet verwijderen." },
       { status: 400 }
     );
+  }
+
+  // Audit-log eerst — als de chain-write faalt, verwijderen we niet.
+  // Faalt de delete daarna alsnog, dan staat er een audit-rij die niet
+  // matcht met de DB-realiteit. Dat is bewust afgewogen: liever een
+  // valse positief in de audit dan een delete zonder spoor.
+  try {
+    await logIntervention({
+      request,
+      admin,
+      actie: "vakman.verwijderd",
+      targetType: "user",
+      targetId: vakmanId,
+      payload: {
+        email: vakman.email,
+        naam: vakman.naam,
+        bedrijfsnaam: vakman.bedrijfsnaam,
+        vakmanType: vakman.vakmanType,
+      },
+    });
+  } catch (err) {
+    if (err instanceof InterventionError) {
+      return Response.json({ error: err.message }, { status: err.status });
+    }
+    throw err;
   }
 
   await prisma.user.delete({ where: { id: vakmanId } });

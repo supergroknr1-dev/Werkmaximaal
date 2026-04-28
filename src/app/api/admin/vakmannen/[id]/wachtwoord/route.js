@@ -1,6 +1,10 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "../../../../../../lib/prisma";
 import { getCurrentUser } from "../../../../../../lib/auth";
+import {
+  logIntervention,
+  InterventionError,
+} from "../../../../../../lib/intervention";
 
 const MIN_LENGTE = 8;
 
@@ -34,7 +38,7 @@ export async function POST(request, { params }) {
 
   const vakman = await prisma.user.findUnique({
     where: { id: vakmanId },
-    select: { id: true, rol: true },
+    select: { id: true, rol: true, naam: true, email: true },
   });
   if (!vakman) {
     return Response.json({ error: "Vakman niet gevonden." }, { status: 404 });
@@ -44,6 +48,24 @@ export async function POST(request, { params }) {
       { error: "Alleen vakman-accounts kunnen via deze route worden gereset." },
       { status: 400 }
     );
+  }
+
+  // Audit-log eerst — bij ontbrekende reden krijgt de admin een 400
+  // en gebeurt er niets met het wachtwoord.
+  try {
+    await logIntervention({
+      request,
+      admin,
+      actie: "vakman.wachtwoord.gereset",
+      targetType: "user",
+      targetId: vakmanId,
+      payload: { email: vakman.email, naam: vakman.naam },
+    });
+  } catch (err) {
+    if (err instanceof InterventionError) {
+      return Response.json({ error: err.message }, { status: err.status });
+    }
+    throw err;
   }
 
   const wachtwoordHash = await bcrypt.hash(nieuwWachtwoord, 10);

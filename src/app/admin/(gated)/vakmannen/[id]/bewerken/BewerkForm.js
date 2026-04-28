@@ -7,6 +7,10 @@ import {
   fetchAdres,
   searchPlaatsen,
 } from "../../../../../../lib/pdok";
+import {
+  useInterventionConfirm,
+  interventionHeaders,
+} from "../../../../../../lib/intervention-api";
 
 function AdresStatus({ status }) {
   const map = {
@@ -40,6 +44,7 @@ const inputCls =
 
 export default function BewerkForm({ vakman }) {
   const router = useRouter();
+  const { open: bevestigIngreep, modal: ingreepModal } = useInterventionConfirm();
   const [form, setForm] = useState({
     naam: vakman.naam || "",
     voornaam: vakman.voornaam || "",
@@ -251,40 +256,54 @@ export default function BewerkForm({ vakman }) {
     e.preventDefault();
     setFout(null);
     setSucces(false);
-    setBezig(true);
-    try {
-      const payload = {
-        ...form,
-        werkgebiedenExtra: werkgebiedenExtra.map((w) => ({
-          type: w.type,
-          waarde: w.waarde,
-          werkafstand: parseInt(w.werkafstand, 10) || 0,
-        })),
-      };
-      const res = await fetch(`/api/admin/vakmannen/${vakman.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Opslaan mislukt");
 
-      // Wijzig-indicator: bepaal welke velden afwijken van origineel
-      // (= net opgeslagen) en flash ze 3 seconden groen, daarna wit.
-      const netGewijzigd = Object.keys(origineel).filter(
-        (k) => String(form[k] ?? "") !== String(origineel[k] ?? "")
-      );
-      setNetOpgeslagenVelden(netGewijzigd);
-      setOrigineel({ ...origineel, ...form });
-      setTimeout(() => setNetOpgeslagenVelden([]), 3000);
+    const naamWeergave = form.bedrijfsnaam || form.naam || vakman.email;
+    const ok = await bevestigIngreep({
+      titel: "Vakman-gegevens opslaan",
+      beschrijving: `${naamWeergave} (${vakman.email})`,
+      defaultCategorie: "support",
+      bevestigLabel: "Opslaan",
+      onBevestig: async ({ reden, actieCategorie }) => {
+        setBezig(true);
+        try {
+          const payload = {
+            ...form,
+            werkgebiedenExtra: werkgebiedenExtra.map((w) => ({
+              type: w.type,
+              waarde: w.waarde,
+              werkafstand: parseInt(w.werkafstand, 10) || 0,
+            })),
+          };
+          const res = await fetch(`/api/admin/vakmannen/${vakman.id}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              ...interventionHeaders({ reden, actieCategorie }),
+            },
+            body: JSON.stringify(payload),
+          });
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(json.error || "Opslaan mislukt");
 
-      setSucces(true);
-      router.refresh();
-    } catch (err) {
-      setFout(err.message);
-    } finally {
-      setBezig(false);
-    }
+          // Wijzig-indicator: bepaal welke velden afwijken van origineel
+          // (= net opgeslagen) en flash ze 3 seconden groen, daarna wit.
+          const netGewijzigd = Object.keys(origineel).filter(
+            (k) => String(form[k] ?? "") !== String(origineel[k] ?? "")
+          );
+          setNetOpgeslagenVelden(netGewijzigd);
+          setOrigineel({ ...origineel, ...form });
+          setTimeout(() => setNetOpgeslagenVelden([]), 3000);
+
+          setSucces(true);
+          router.refresh();
+        } finally {
+          setBezig(false);
+        }
+      },
+    });
+    // Modal vangt errors via onBevestig-throw en toont ze daar; bij
+    // annuleren is `ok` false en doen we niets.
+    if (!ok) return;
   }
 
   const isPro = form.vakmanType === "professional";
@@ -299,6 +318,7 @@ export default function BewerkForm({ vakman }) {
     : "Wordt gebruikt als voor-/achternaam leeg zijn.";
 
   return (
+    <>
     <form onSubmit={submit} className="space-y-6 max-w-2xl">
       {/* Account */}
       <section className="bg-white border border-slate-200 rounded-lg shadow-sm p-5">
@@ -839,5 +859,7 @@ export default function BewerkForm({ vakman }) {
         </button>
       </div>
     </form>
+    {ingreepModal}
+    </>
   );
 }

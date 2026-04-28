@@ -12,6 +12,10 @@ import {
   Clock,
   ShieldCheck,
 } from "lucide-react";
+import {
+  useInterventionConfirm,
+  interventionHeaders,
+} from "../../../../lib/intervention-api";
 
 function formatDatum(datum) {
   return new Date(datum).toLocaleDateString("nl-NL", {
@@ -53,6 +57,7 @@ export default function KlussenTabel({ klussen, prijzen, beginFilter = "alle" })
   const [filter, setFilter] = useState(beginFilter);
   const [bezigId, setBezigId] = useState(null);
   const [keurId, setKeurId] = useState(null);
+  const { open: bevestigIngreep, modal: ingreepModal } = useInterventionConfirm();
 
   function leadPrijs(voorkeur) {
     if (voorkeur === "hobbyist") return prijzen.hobbyist;
@@ -90,42 +95,61 @@ export default function KlussenTabel({ klussen, prijzen, beginFilter = "alle" })
   }, [klussen, zoek, filter]);
 
   async function verwijder(k) {
-    if (
-      !confirm(
-        `Klus "${k.titel}" definitief verwijderen? Reacties en leads gaan ook weg.`
-      )
-    )
-      return;
-    setBezigId(k.id);
-    const res = await fetch(`/api/klussen/${k.id}`, { method: "DELETE" });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      alert(data.error || "Verwijderen is mislukt.");
-      setBezigId(null);
-      return;
-    }
-    router.refresh();
-    setBezigId(null);
+    const ok = await bevestigIngreep({
+      titel: "Klus definitief verwijderen",
+      beschrijving: `"${k.titel}" — reacties en leads gaan ook weg`,
+      defaultCategorie: "compliance",
+      bevestigLabel: "Verwijderen",
+      onBevestig: async ({ reden, actieCategorie }) => {
+        setBezigId(k.id);
+        try {
+          const res = await fetch(`/api/klussen/${k.id}`, {
+            method: "DELETE",
+            headers: interventionHeaders({ reden, actieCategorie }),
+          });
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || "Verwijderen is mislukt.");
+          }
+        } finally {
+          setBezigId(null);
+        }
+      },
+    });
+    if (ok) router.refresh();
   }
 
   async function keur(k, goedgekeurd) {
-    setKeurId(k.id);
-    const res = await fetch(`/api/klussen/${k.id}/keuren`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ goedgekeurd }),
+    const ok = await bevestigIngreep({
+      titel: goedgekeurd ? "Klus goedkeuren" : "Klus afkeuren",
+      beschrijving: `"${k.titel}" — ${goedgekeurd ? "wordt zichtbaar voor vakmannen" : "wordt verborgen"}`,
+      defaultCategorie: "compliance",
+      bevestigLabel: goedgekeurd ? "Goedkeuren" : "Afkeuren",
+      onBevestig: async ({ reden, actieCategorie }) => {
+        setKeurId(k.id);
+        try {
+          const res = await fetch(`/api/klussen/${k.id}/keuren`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...interventionHeaders({ reden, actieCategorie }),
+            },
+            body: JSON.stringify({ goedgekeurd }),
+          });
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || "Bijwerken is mislukt.");
+          }
+        } finally {
+          setKeurId(null);
+        }
+      },
     });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      alert(data.error || "Bijwerken is mislukt.");
-      setKeurId(null);
-      return;
-    }
-    router.refresh();
-    setKeurId(null);
+    if (ok) router.refresh();
   }
 
   return (
+    <>
     <div className="bg-white border border-slate-200 rounded-lg shadow-sm">
       <div className="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
         <div className="relative flex-1 max-w-md">
@@ -269,5 +293,7 @@ export default function KlussenTabel({ klussen, prijzen, beginFilter = "alle" })
         </div>
       )}
     </div>
+    {ingreepModal}
+    </>
   );
 }

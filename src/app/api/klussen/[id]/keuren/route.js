@@ -1,5 +1,9 @@
 import { prisma } from "../../../../../lib/prisma";
 import { getCurrentUser } from "../../../../../lib/auth";
+import {
+  logIntervention,
+  InterventionError,
+} from "../../../../../lib/intervention";
 
 export async function POST(request, { params }) {
   const admin = await getCurrentUser();
@@ -19,10 +23,38 @@ export async function POST(request, { params }) {
 
   const klus = await prisma.klus.findUnique({
     where: { id: klusId },
-    select: { id: true },
+    select: {
+      id: true,
+      titel: true,
+      plaats: true,
+      categorie: true,
+      goedgekeurd: true,
+    },
   });
   if (!klus) {
     return Response.json({ error: "Klus niet gevonden." }, { status: 404 });
+  }
+
+  try {
+    await logIntervention({
+      request,
+      admin,
+      actie: goedgekeurd ? "klus.goedgekeurd" : "klus.afgekeurd",
+      targetType: "klus",
+      targetId: klusId,
+      payload: {
+        titel: klus.titel,
+        plaats: klus.plaats,
+        categorie: klus.categorie,
+        van: klus.goedgekeurd,
+        naar: goedgekeurd,
+      },
+    });
+  } catch (err) {
+    if (err instanceof InterventionError) {
+      return Response.json({ error: err.message }, { status: err.status });
+    }
+    throw err;
   }
 
   const bijgewerkt = await prisma.klus.update({

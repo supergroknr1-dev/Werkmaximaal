@@ -25,14 +25,12 @@ export default async function LeadRetourPage({ searchParams }) {
   } catch (err) {
     if (err?.digest?.startsWith?.("NEXT_REDIRECT")) throw err; // redirect() niet vangen
     console.error("[leads-retour] onverwachte fout:", err?.stack || err);
+    // TIJDELIJK: ook in productie de echte fout tonen voor debug.
+    // Verwijder dit zodra de Mollie-flow stabiel is.
     return (
       <Mismatch
         klusId={null}
-        reden={
-          process.env.NODE_ENV === "production"
-            ? "Er ging onverwacht iets mis bij het verwerken van de betaling. Probeer 't opnieuw of neem contact op."
-            : `Onverwachte fout: ${err?.message || String(err)}`
-        }
+        reden={`DEBUG: ${err?.message || String(err)} | ${(err?.stack || "").slice(0, 600)}`}
       />
     );
   }

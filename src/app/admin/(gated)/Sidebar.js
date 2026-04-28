@@ -12,6 +12,7 @@ import {
   ScrollText,
   ArrowLeft,
   LogOut,
+  KeyRound,
 } from "lucide-react";
 import { ADMIN_LOGIN_PATH } from "../../../lib/admin-paths";
 
@@ -76,6 +77,13 @@ export default function Sidebar({ adminNaam }) {
             <span className="text-white font-medium">{adminNaam}</span>
           </p>
         )}
+        <Link
+          href="/admin/wachtwoord"
+          className="flex items-center gap-2 px-2 py-1.5 text-xs text-slate-400 hover:text-white transition-colors"
+        >
+          <KeyRound size={14} />
+          Wachtwoord wijzigen
+        </Link>
         <Link
           href="/"
           className="flex items-center gap-2 px-2 py-1.5 text-xs text-slate-400 hover:text-white transition-colors"

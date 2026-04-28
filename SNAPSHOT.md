@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-04-27 (na reviews-feature, code nog niet gecommit)
-**Laatste commit op main:** `43608cb` — Snapshot bijgewerkt: eind van de dag 2026-04-27
+**Laatst bijgewerkt:** 2026-04-28 (reviews-feature gepusht naar main)
+**Laatste commit op main:** `cb5246e` — Reviews + sterren-systeem: consument beoordeelt vakman na 10 dagen
 **Live op:** https://werkmaximaal.vercel.app/
 
 ---
@@ -31,7 +31,7 @@ In de laatste sessies (volgorde: oud → nieuw):
 
 ## 🟡 Waar je was gebleven
 
-Reviews + sterren-systeem volledig opgeleverd (Stap A: DB-model + migration `20260427084657_reviews`; Stap B: API + modal-UI op Mijn klussen; Stap C: gemiddelde score + aantal getoond op /mijn-klussen en /klussen/[id]). Code compileert zonder errors of warnings, maar is **nog niet gecommit**. End-to-end-test stond nog open: vereist een consument-account met een lead van ≥10 dagen oud (de laptop-sessie was als vakman/admin ingelogd). **Aanbevolen volgende stap:** eerst committen + pushen, daarna kiezen uit de top-3.
+Reviews + sterren-systeem volledig opgeleverd (Stap A: DB-model + migration `20260427084657_reviews`; Stap B: API + modal-UI op Mijn klussen; Stap C: gemiddelde score + aantal getoond op /mijn-klussen en /klussen/[id]). Code compileert zonder errors of warnings en is **gepusht naar main** (commit `cb5246e`) — Vercel auto-deploy draait. End-to-end-test stond nog open: vereist een consument-account met een lead van ≥10 dagen oud (de laptop-sessie was als vakman/admin ingelogd). **Aanbevolen volgende stap:** kies een feature uit de top-3.
 
 ## 🔴 Volgende stappen — kies er één om mee te starten
 

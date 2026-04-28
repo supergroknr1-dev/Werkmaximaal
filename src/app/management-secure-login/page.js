@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
+import WachtwoordVeld from "../../components/WachtwoordVeld";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -107,8 +108,7 @@ export default function AdminLoginPage() {
               <label className="block text-xs font-medium text-slate-300 mb-2 uppercase tracking-wider">
                 Wachtwoord
               </label>
-              <input
-                type="password"
+              <WachtwoordVeld
                 value={wachtwoord}
                 onChange={(e) => setWachtwoord(e.target.value)}
                 required

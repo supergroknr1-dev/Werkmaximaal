@@ -5,6 +5,7 @@ import {
   useInterventionConfirm,
   interventionHeaders,
 } from "../../../../../../lib/intervention-api";
+import WachtwoordVeld from "../../../../../../components/WachtwoordVeld";
 
 const MIN_LENGTE = 8;
 
@@ -102,8 +103,7 @@ export default function WachtwoordReset({ vakmanId, vakmanNaam, vakmanEmail }) {
               <span className="block text-xs font-medium text-slate-700 mb-1.5">
                 Nieuw wachtwoord
               </span>
-              <input
-                type="password"
+              <WachtwoordVeld
                 value={nieuw}
                 onChange={(e) => setNieuw(e.target.value)}
                 className="w-full text-sm border border-slate-300 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
@@ -116,8 +116,7 @@ export default function WachtwoordReset({ vakmanId, vakmanNaam, vakmanEmail }) {
               <span className="block text-xs font-medium text-slate-700 mb-1.5">
                 Bevestig nieuw wachtwoord
               </span>
-              <input
-                type="password"
+              <WachtwoordVeld
                 value={bevestig}
                 onChange={(e) => setBevestig(e.target.value)}
                 className="w-full text-sm border border-slate-300 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"

@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
+import WachtwoordVeld from "../../../../components/WachtwoordVeld";
 
 const MIN_LENGTE = 8;
+const VELD_KLASSEN =
+  "w-full text-sm border border-slate-300 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500";
 
 export default function WachtwoordForm() {
   const [huidig, setHuidig] = useState("");
@@ -61,13 +64,12 @@ export default function WachtwoordForm() {
         <span className="block text-xs font-medium text-slate-700 mb-1.5">
           Huidig wachtwoord
         </span>
-        <input
-          type="password"
+        <WachtwoordVeld
           value={huidig}
           onChange={(e) => setHuidig(e.target.value)}
           required
           autoComplete="current-password"
-          className="w-full text-sm border border-slate-300 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+          className={VELD_KLASSEN}
         />
       </label>
 
@@ -76,14 +78,13 @@ export default function WachtwoordForm() {
           Nieuw wachtwoord
           <span className="text-slate-400 font-normal"> (min. {MIN_LENGTE} tekens)</span>
         </span>
-        <input
-          type="password"
+        <WachtwoordVeld
           value={nieuw}
           onChange={(e) => setNieuw(e.target.value)}
           required
           minLength={MIN_LENGTE}
           autoComplete="new-password"
-          className="w-full text-sm border border-slate-300 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+          className={VELD_KLASSEN}
         />
       </label>
 
@@ -91,14 +92,13 @@ export default function WachtwoordForm() {
         <span className="block text-xs font-medium text-slate-700 mb-1.5">
           Bevestig nieuw wachtwoord
         </span>
-        <input
-          type="password"
+        <WachtwoordVeld
           value={bevestig}
           onChange={(e) => setBevestig(e.target.value)}
           required
           minLength={MIN_LENGTE}
           autoComplete="new-password"
-          className="w-full text-sm border border-slate-300 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+          className={VELD_KLASSEN}
         />
       </label>
 

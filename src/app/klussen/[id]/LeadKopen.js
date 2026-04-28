@@ -13,15 +13,22 @@ function formatBedrag(centen) {
  * een Mollie iDEAL-payment + zet paymentId in de sessie → wij
  * redirecten naar Mollie's checkout-URL. Mollie redirect na betaling
  * terug naar /leads/retour, daar wordt de Lead aangemaakt.
+ *
+ * Robuustheid: sommige browsers / popup-blockers blokkeren
+ * `window.location.href = X` als reactie op een async-fetch. Daarom
+ * tonen we óók een directe link zodra de checkoutUrl binnen is — dan
+ * kan de gebruiker handmatig klikken als de auto-redirect faalt.
  */
 export default function LeadKopen({ klusId, bedragInCenten }) {
   const [bezig, setBezig] = useState(false);
   const [foutmelding, setFoutmelding] = useState("");
+  const [checkoutUrl, setCheckoutUrl] = useState(null);
   const bedragLabel = formatBedrag(bedragInCenten);
 
   async function start() {
     setBezig(true);
     setFoutmelding("");
+    setCheckoutUrl(null);
 
     const res = await fetch(`/api/klussen/${klusId}/lead`, { method: "POST" });
     const data = await res.json().catch(() => ({}));
@@ -38,9 +45,31 @@ export default function LeadKopen({ klusId, bedragInCenten }) {
       return;
     }
 
-    // Hard redirect naar Mollie — daarna handelt /leads/retour de
-    // bevestiging af.
-    window.location.href = data.checkoutUrl;
+    // Toon de URL als klikbare fallback in case auto-redirect faalt
+    setCheckoutUrl(data.checkoutUrl);
+
+    // Probeer auto-redirect
+    try {
+      window.location.assign(data.checkoutUrl);
+    } catch {
+      // Browser blokkeerde — link is al zichtbaar, gebruiker kan klikken
+    }
+  }
+
+  if (checkoutUrl) {
+    return (
+      <div className="space-y-2">
+        <a
+          href={checkoutUrl}
+          className="block w-full text-center bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium py-3 rounded-md transition-colors"
+        >
+          Doorgaan naar iDEAL →
+        </a>
+        <p className="text-[11px] text-slate-500 text-center">
+          Word je niet automatisch doorgestuurd? Klik op de knop hierboven.
+        </p>
+      </div>
+    );
   }
 
   return (

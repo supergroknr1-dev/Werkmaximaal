@@ -1,10 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 export default function InloggenPage() {
+  return (
+    <Suspense fallback={null}>
+      <InloggenContent />
+    </Suspense>
+  );
+}
+
+function InloggenContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const reden = searchParams.get("reden");

@@ -1,5 +1,5 @@
-import { prisma } from "../../../lib/prisma";
-import { getLeadPrijs } from "../../../lib/lead-prijs";
+import { prisma } from "../../../../lib/prisma";
+import { getLeadPrijs } from "../../../../lib/lead-prijs";
 import KlussenTabel from "./KlussenTabel";
 
 export default async function AdminKlussenPage({ searchParams }) {

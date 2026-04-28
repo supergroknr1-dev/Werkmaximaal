@@ -6,7 +6,7 @@ import {
   POSTCODE_REGEX,
   fetchAdres,
   searchPlaatsen,
-} from "../../../../../lib/pdok";
+} from "../../../../../../lib/pdok";
 
 function AdresStatus({ status }) {
   const map = {

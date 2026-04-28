@@ -6,8 +6,8 @@ import {
   ArrowUpRight,
   AlertCircle,
 } from "lucide-react";
-import { prisma } from "../../lib/prisma";
-import { formatBedrag } from "../../lib/lead-prijs";
+import { prisma } from "../../../lib/prisma";
+import { formatBedrag } from "../../../lib/lead-prijs";
 
 function startVanDezeWeek() {
   const nu = new Date();

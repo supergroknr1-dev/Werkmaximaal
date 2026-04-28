@@ -7,7 +7,7 @@ import { Search, Trash2, ShieldCheck, ShieldAlert, Pencil } from "lucide-react";
 import {
   useInterventionConfirm,
   interventionHeaders,
-} from "../../../lib/intervention-api";
+} from "../../../../lib/intervention-api";
 
 function formatDatum(datum) {
   return new Date(datum).toLocaleDateString("nl-NL", {

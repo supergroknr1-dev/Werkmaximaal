@@ -1,17 +1,26 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "../../lib/auth";
-import Sidebar from "./Sidebar";
 
 export const metadata = {
   title: "Admin Center — Werkmaximaal",
 };
 
+/**
+ * Top-level admin-layout: auth + admin-rol-check.
+ *
+ * Geen MFA-gate hier — die zit in `src/app/admin/(gated)/layout.js`
+ * zodat `/admin/mfa-setup` en eventuele andere setup-pagina's
+ * bereikbaar blijven voor een admin die nog geen MFA heeft.
+ *
+ * Geen Sidebar hier — die zit in de (gated)-layout zodat de mfa-setup
+ * pagina een schone, donkere full-screen layout kan gebruiken.
+ */
 export default async function AdminLayout({ children }) {
   const user = await getCurrentUser();
-  if (!user) redirect("/inloggen");
+  if (!user) redirect("/admin-login");
 
-  if (!user.isAdmin) {
+  if (!user.isAdmin || user.rol !== "admin") {
     return (
       <div className="min-h-screen bg-slate-50">
         <div className="max-w-2xl mx-auto px-4 py-16 text-center">
@@ -32,14 +41,5 @@ export default async function AdminLayout({ children }) {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-slate-50">
-      <Sidebar adminNaam={user.naam} />
-      <div className="md:pl-60">
-        <main className="px-6 md:px-10 py-8 md:py-10">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
+  return <>{children}</>;
 }

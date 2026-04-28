@@ -30,8 +30,20 @@ model User {
   huisnummerToevoeging String?
   postcode       String?
   plaats         String?
-  rol            String // "consument" of "vakman"
+  rol            String // "consument" | "vakman" | "admin"
   isAdmin        Boolean   @default(false)
+  // ─── Multi-factor authenticatie (verplicht voor rol="admin") ───
+  // totpSecret = base32 secret voor authenticator-apps. Leeg tot de
+  // eerste setup is voltooid. Wordt nooit terug naar de client gestuurd
+  // behalve eenmalig op de setup-pagina.
+  totpSecret     String?
+  // totpEnabled = true zodra de admin de eerste 6-cijferige code heeft
+  // bevestigd. Zolang false moet de admin de setup-flow afmaken voor
+  // andere admin-pagina's bereikbaar zijn.
+  totpEnabled    Boolean   @default(false)
+  // bcrypt-hashes van 8 eenmalig-bruikbare recovery codes. Hashes
+  // verdwijnen één-voor-één na gebruik (verwijder element uit array).
+  recoveryCodesHash String[]
   // Tijdstip van de laatste wijziging van `naam` (= schermnaam /
   // bedrijfsnaam). Wordt gebruikt om zelf-service-wijzigingen op
   // /profiel te beperken tot 1x per 30 dagen. Admin kan altijd

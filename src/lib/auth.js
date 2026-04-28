@@ -13,6 +13,7 @@ export async function getCurrentUser() {
       rol: true,
       isAdmin: true,
       vakmanType: true,
+      totpEnabled: true,
     },
   });
 }

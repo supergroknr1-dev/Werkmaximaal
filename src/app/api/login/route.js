@@ -32,6 +32,18 @@ export async function POST(request) {
     );
   }
 
+  // Admin-accounts horen niet via deze route binnen te komen — die
+  // gebruiken /admin-login (apart pad, met verplichte 2FA).
+  if (user.rol === "admin" || user.isAdmin) {
+    return Response.json(
+      {
+        error: "Dit account heeft beheerderrechten en moet inloggen via /admin-login.",
+        redirect: "/admin-login",
+      },
+      { status: 403 }
+    );
+  }
+
   const session = await getSession();
   session.userId = user.id;
   await session.save();

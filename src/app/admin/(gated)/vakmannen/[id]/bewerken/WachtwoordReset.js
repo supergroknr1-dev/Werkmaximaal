@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
   useInterventionConfirm,
   interventionHeaders,
-} from "../../../../../lib/intervention-api";
+} from "../../../../../../lib/intervention-api";
 
 const MIN_LENGTE = 8;
 

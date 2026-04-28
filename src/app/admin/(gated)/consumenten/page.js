@@ -1,4 +1,4 @@
-import { prisma } from "../../../lib/prisma";
+import { prisma } from "../../../../lib/prisma";
 import ConsumentenTabel from "./ConsumentenTabel";
 
 export default async function AdminConsumentenPage() {

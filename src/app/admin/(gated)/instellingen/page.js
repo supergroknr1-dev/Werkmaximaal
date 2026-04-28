@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { getInstellingen } from "../../../lib/instellingen";
-import { getLeadPrijs } from "../../../lib/lead-prijs";
+import { getInstellingen } from "../../../../lib/instellingen";
+import { getLeadPrijs } from "../../../../lib/lead-prijs";
 import InstellingToggle from "../InstellingToggle";
 import PrijsForm from "./PrijsForm";
 

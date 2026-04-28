@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import ActivityFeedLive from "./ActivityFeedLive";
 
 export const dynamic = "force-dynamic";
 
@@ -6,46 +7,31 @@ export const metadata = {
   title: "Activity feed — Werkmaximaal Admin",
 };
 
-const TYPE_LABELS = {
-  "klus.aangemaakt": { label: "Klus aangemaakt", icon: "📝", kleur: "slate" },
-  "klus.goedgekeurd": { label: "Klus goedgekeurd", icon: "✅", kleur: "emerald" },
-  "klus.verwijderd": { label: "Klus verwijderd", icon: "🗑", kleur: "rose" },
-  "klus.gesloten": { label: "Klus gesloten", icon: "🔒", kleur: "slate" },
-  "lead.gekocht": { label: "Lead gekocht", icon: "💼", kleur: "emerald" },
-  "review.geplaatst": { label: "Review", icon: "⭐", kleur: "amber" },
-  "reactie.geplaatst": { label: "Reactie", icon: "💬", kleur: "blue" },
-  "gebruiker.geregistreerd": {
-    label: "Nieuwe registratie",
-    icon: "✨",
-    kleur: "blue",
-  },
-  "gebruiker.ingelogd": { label: "Login", icon: "🔓", kleur: "slate" },
-  "admin.ingreep": { label: "Admin-ingreep", icon: "🛡", kleur: "rose" },
+const TYPE_META = {
+  "klus.aangemaakt": { label: "Klus aangemaakt", icon: "📝" },
+  "klus.goedgekeurd": { label: "Klus goedgekeurd", icon: "✅" },
+  "klus.afgekeurd": { label: "Klus afgekeurd", icon: "🚫" },
+  "klus.verwijderd": { label: "Klus verwijderd", icon: "🗑" },
+  "klus.gesloten": { label: "Klus gesloten", icon: "🔒" },
+  "lead.gekocht": { label: "Lead gekocht", icon: "💼" },
+  "review.geplaatst": { label: "Review", icon: "⭐" },
+  "reactie.geplaatst": { label: "Reactie", icon: "💬" },
+  "gebruiker.geregistreerd": { label: "Nieuwe registratie", icon: "✨" },
+  "gebruiker.ingelogd": { label: "Login", icon: "🔓" },
+  "admin.ingreep": { label: "Admin-ingreep", icon: "🛡" },
 };
 
-const KLEUR_KLASSEN = {
-  slate: "bg-slate-50 text-slate-700 border-slate-200",
-  emerald: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  blue: "bg-blue-50 text-blue-700 border-blue-200",
-  amber: "bg-amber-50 text-amber-700 border-amber-200",
-  rose: "bg-rose-50 text-rose-700 border-rose-200",
-};
-
-function formatTijdstip(datum) {
-  const nu = Date.now();
-  const ts = new Date(datum).getTime();
-  const verschil = nu - ts;
-  const minuten = Math.floor(verschil / 60_000);
-  const uren = Math.floor(verschil / 3_600_000);
-  if (minuten < 1) return "zojuist";
-  if (minuten < 60) return `${minuten} min geleden`;
-  if (uren < 24) return `${uren} uur geleden`;
-  return new Date(datum).toLocaleDateString("nl-NL", {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+function serializeEvent(e) {
+  return {
+    id: String(e.id),
+    type: e.type,
+    tijdstip: e.tijdstip.toISOString(),
+    actorId: e.actorId,
+    actorRol: e.actorRol,
+    targetType: e.targetType,
+    targetId: e.targetId,
+    payload: e.payload,
+  };
 }
 
 export default async function ActivityFeedPage({ searchParams }) {
@@ -68,6 +54,9 @@ export default async function ActivityFeedPage({ searchParams }) {
     }),
   ]);
 
+  // BigInt → string voor JSON-serialisatie naar de client
+  const initialEvents = events.map(serializeEvent);
+
   return (
     <>
       <header className="mb-8">
@@ -78,15 +67,8 @@ export default async function ActivityFeedPage({ searchParams }) {
           Activity feed
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          {totaal.toLocaleString("nl-NL")} events vastgelegd. Toont laatste 100
-          {filter !== "alle" && (
-            <>
-              {" "}
-              voor type{" "}
-              <span className="font-mono text-slate-700">{filter}</span>
-            </>
-          )}
-          .
+          {totaal.toLocaleString("nl-NL")} events vastgelegd. Live-stream toont
+          nieuwe events automatisch.
         </p>
       </header>
 
@@ -98,11 +80,7 @@ export default async function ActivityFeedPage({ searchParams }) {
           <div className="flex flex-wrap gap-1.5">
             <FilterPill href="?type=alle" label="Alle" actief={filter === "alle"} />
             {perType.map((t) => {
-              const meta = TYPE_LABELS[t.type] || {
-                label: t.type,
-                icon: "•",
-                kleur: "slate",
-              };
+              const meta = TYPE_META[t.type] || { label: t.type, icon: "•" };
               return (
                 <FilterPill
                   key={t.type}
@@ -116,61 +94,7 @@ export default async function ActivityFeedPage({ searchParams }) {
         </div>
       </div>
 
-      {events.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-lg shadow-sm px-5 py-12 text-center text-sm text-slate-500">
-          Nog geen events vastgelegd voor deze filter.
-        </div>
-      ) : (
-        <div className="bg-white border border-slate-200 rounded-lg shadow-sm divide-y divide-slate-100">
-          {events.map((e) => {
-            const meta = TYPE_LABELS[e.type] || {
-              label: e.type,
-              icon: "•",
-              kleur: "slate",
-            };
-            return (
-              <div key={String(e.id)} className="px-5 py-3 text-sm">
-                <div className="flex items-start gap-3">
-                  <div
-                    className={`shrink-0 w-9 h-9 rounded-md border flex items-center justify-center text-base ${KLEUR_KLASSEN[meta.kleur]}`}
-                  >
-                    {meta.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline justify-between gap-3">
-                      <p className="font-medium text-slate-900 truncate">
-                        {meta.label}
-                      </p>
-                      <p className="text-xs text-slate-500 shrink-0 font-mono">
-                        {formatTijdstip(e.tijdstip)}
-                      </p>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      {e.actorRol && (
-                        <>
-                          door <span className="font-medium">{e.actorRol}</span>{" "}
-                          #{e.actorId}
-                        </>
-                      )}
-                      {e.targetType && e.targetId && (
-                        <>
-                          <span className="mx-1.5">·</span>
-                          target: {e.targetType} #{e.targetId}
-                        </>
-                      )}
-                    </p>
-                    {e.payload && Object.keys(e.payload).length > 0 && (
-                      <pre className="text-[11px] text-slate-500 bg-slate-50 border border-slate-100 rounded px-2 py-1 mt-1.5 overflow-x-auto">
-                        {JSON.stringify(e.payload, null, 2)}
-                      </pre>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <ActivityFeedLive initialEvents={initialEvents} filter={filter} />
     </>
   );
 }

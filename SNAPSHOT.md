@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-04-28 (consument-conversieflow + multi-werkgebied gepusht)
-**Laatste commit op main:** `0b5b3ce` — Conversie-flow voor consumenten + multi-werkgebied + wijzig-indicator
+**Laatst bijgewerkt:** 2026-04-28 (sidebar-layout + Sovereign Guardian Sprint 1.1)
+**Laatste commit op main:** `5ffb924` — Sovereign Guardian — Sprint 1.1 Foundation
 **Live op:** https://werkmaximaal.vercel.app/
 
 ---
@@ -36,10 +36,12 @@ In de laatste sessies (volgorde: oud → nieuw):
 - **Multi-werkgebied per Vakman** (admin-only, alleen Pro): primair blijft op `User`, nieuwe tabel `WerkgebiedExtra` voor extra rijen. UI in admin bewerk-pagina met **+ Werkgebied toevoegen** / **🗑 verwijderen** per rij, postcode/plaats-toggle. Buurtklussers krijgen geen extra werkgebieden — bij type-switch worden alle extras automatisch geleegd in transactie
 - **Wijzig-indicator op admin bewerk-pagina**: geel (amber-50) = ingetikt-niet-opgeslagen, groen (emerald-50) = net opgeslagen (flash 3s, daarna wit). Werkt op alle hoofdvelden (naam, contact, adres, werkgebied)
 - **Registreren als vakman uitgelijnd met admin-bewerk-stijl**: type-cards met 5-punten lijst + kleur-highlight, conditioneel naam-label, werkgebied postcode/plaats-toggle + PDOK-autocomplete, KvK-uittreksel als donkere upload-knop (oude `KvkUpload`-component verwijderd)
+- **Donkere sidebar voor alle ingelogde gebruikers** — uniforme stijl als admin-sidebar, rol-aware nav (Consument/Vakman/Buurtklusser), mobiel hamburger, kleur-badge per rol. Pages verplaatst naar `(ingelogd)/` route-group: dashboard, mijn-klussen, mijn-leads, profiel, plus placeholder berichten + agenda. `GlobalShell` in root layout toont sidebar overal behalve `/admin/*` en auth-pagina's.
+- **Sovereign Guardian — Sprint 1.1 Foundation**: hash-getekend audit-log + ActivityEvent-tabel als single source of truth voor alle business-events. Migration `guardian_foundation`. Helpers `src/lib/audit.js` (appendAudit + verifyAuditChain met SHA-256 hash-chain) en `src/lib/events.js` (emitActivity met `EVENT_TYPES`-constanten, async via `after()`). Bestaande POST-routes (klussen, lead, review, registreren) emitten nu events. Nieuwe admin-pagina's `/admin/activity-feed` (chronologische event-stream met filter per type) en `/admin/audit-log` (categorie-filter + hash-preview + 🔒 Verifieer-knop).
 
 ## 🟡 Waar je was gebleven
 
-Volledige consumenten-conversieflow + admin multi-werkgebied + wijzig-indicator opgeleverd en gepusht (`0b5b3ce`). Migrations toegepast: `werk_prive_telefoon`, `naam_laatst_gewijzigd`, `regio_plaats`, `werkgebied_extra`. End-to-end-test uitstaande punten: (1) reviews aanmaken vereist nog steeds consument-account met lead ≥10 dagen oud; (2) auto-plaats-flow vereist daadwerkelijk doorklikken na registratie. **Aanbevolen volgende stap:** kies een feature uit de top-3.
+Sidebar-layout + Sovereign Guardian Sprint 1.1 (Foundation) opgeleverd en gepusht (`5ffb924`). Migrations live: `werk_prive_telefoon`, `naam_laatst_gewijzigd`, `regio_plaats`, `werkgebied_extra`, `guardian_foundation`. **Volgende sprint (1.2)**: ConfirmInterventionModal-component (reden ≥ 30 tk), `lib/intervention-api.js` wrapper rond elke admin-mutatie, KPI-kaarten op `/admin` (vandaag-stats uit ActivityEvent), live SSE-feed i.p.v. page-reload. **Geschat:** ~10-12u. Of switchen naar groei-features uit de top-3.
 
 ## 🔴 Volgende stappen — kies er één om mee te starten
 

@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-04-27 (eind van de dag)
-**Laatste commit op main:** `ce0c1f8` — Multi-machine workflow: SNAPSHOT.md + opening-prompt
+**Laatst bijgewerkt:** 2026-04-27 (na reviews-feature, code nog niet gecommit)
+**Laatste commit op main:** `43608cb` — Snapshot bijgewerkt: eind van de dag 2026-04-27
 **Live op:** https://werkmaximaal.vercel.app/
 
 ---
@@ -27,21 +27,21 @@ In de laatste sessies (volgorde: oud → nieuw):
 - **Vernieuwde homepage-header** in een witte kaart met emerald → slate accent, avatar-cirkel + rol-badge
 - **Persoonlijk adres** ook beschikbaar voor Hobbyists op `/profiel`
 - **Multi-machine workflow**: `SNAPSHOT.md` + `OPENING_PROMPT.md` in de project-root, plus een feedback-memory-regel die zorgt dat ik SNAPSHOT.md bij sessie-einde automatisch bijwerk
+- **Reviews + sterren-systeem**: consument beoordeelt een vakman 10 dagen na lead-aankoop met score 1–5, optionele toelichting en max 5 foto's (Vercel Blob, pad `review-fotos/`). Gemiddelde score + aantal reviews zichtbaar op `/mijn-klussen` (per gekochte lead) en `/klussen/[id]` (per reactie). Modal met sterren-selectie, tekstvak (max 2000 tekens) en drag-en-drop upload (JPG/PNG/WEBP, max 5 MB per foto). Eigen API: `POST /api/reviews` (validatie: eigenaar-check, 10-dagen-wachttijd, 1 review per lead) en `POST /api/reviews/upload`
 
 ## 🟡 Waar je was gebleven
 
-Eind van de werkdag — multi-machine workflow opgezet zodat je vlot kunt schakelen tussen kantoor en thuis (`SNAPSHOT.md` als bron-van-waarheid, `OPENING_PROMPT.md` als startprompt voor nieuwe sessies). Daarna kort besproken: Dropbox voor de hele projectmap is afgeraden (node_modules + Prisma + git geven conflicten); aanbeveling is git voor code + `vercel env pull` voor `.env` + optioneel Dropbox/OneDrive voor de Claude memory-map. **Aanbevolen volgende stap:** Reviews + sterren-systeem.
+Reviews + sterren-systeem volledig opgeleverd (Stap A: DB-model + migration `20260427084657_reviews`; Stap B: API + modal-UI op Mijn klussen; Stap C: gemiddelde score + aantal getoond op /mijn-klussen en /klussen/[id]). Code compileert zonder errors of warnings, maar is **nog niet gecommit**. End-to-end-test stond nog open: vereist een consument-account met een lead van ≥10 dagen oud (de laptop-sessie was als vakman/admin ingelogd). **Aanbevolen volgende stap:** eerst committen + pushen, daarna kiezen uit de top-3.
 
 ## 🔴 Volgende stappen — kies er één om mee te starten
 
 Top-3 die het meest impact hebben:
-1. **Reviews + sterren-systeem** — consumenten beoordelen vakmannen na lead-aankoop, bouwt vertrouwen op het platform (~2u werk)
-2. **Email-notificaties** — vakmannen krijgen mail bij nieuwe klus in hun werkgebied (~1,5u werk, vereist SMTP-keuze)
-3. **Echte iDEAL-betaling via Mollie** — vervangt de mock-popup zodat hobbyisten écht €25 inschrijfgeld betalen en vakmannen écht voor leads betalen (~3u werk)
+1. **Email-notificaties** — vakmannen krijgen mail bij nieuwe klus in hun werkgebied (~1,5u werk, vereist SMTP-keuze)
+2. **Echte iDEAL-betaling via Mollie** — vervangt de mock-popup zodat hobbyisten écht €25 inschrijfgeld betalen en vakmannen écht voor leads betalen (~3u werk)
+3. **Vakman publieke profielpagina** met foto-upload + alle reviews zichtbaar — logische opvolger van vandaag, daar komen de reviews echt tot hun recht (~2u werk)
 
 Andere openstaande items (zie ook `~/.claude/projects/.../memory/project_werkmaximaal.md`):
 - ID-verificatie via iDIN/Mollie (door user uitgesteld, blijft op de lijst)
-- Vakman publieke profielpagina + foto-upload
 - Chat tussen consument en vakman na lead-aankoop
 - Headers van andere pagina's (Mijn klussen, Mijn leads, Profiel, Admin) ook in de nieuwe witte-kaart-stijl
 - Privacy-pagina + voorwaarden + cookie-banner (juridisch verplicht in NL)

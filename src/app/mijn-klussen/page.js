@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import { prisma } from "../../lib/prisma";
 import { getSession } from "../../lib/session";
 import SluitKnop from "./SluitKnop";
+import BeoordeelKnop from "./BeoordeelKnop";
+import ScoreBadge from "../_components/ScoreBadge";
+import { getVakmanScores } from "../../lib/reviews";
 
 function formatDatum(datum) {
   return new Date(datum).toLocaleDateString("nl-NL", {
@@ -71,6 +74,9 @@ export default async function MijnKlussenPage() {
               vakmanType: true,
             },
           },
+          review: {
+            select: { id: true, score: true },
+          },
         },
       },
     },
@@ -79,6 +85,9 @@ export default async function MijnKlussenPage() {
   const inAfwachting = klussen.filter((k) => !k.gesloten && !k.goedgekeurd);
   const open = klussen.filter((k) => !k.gesloten && k.goedgekeurd);
   const gesloten = klussen.filter((k) => k.gesloten);
+
+  const vakmanIds = klussen.flatMap((k) => k.leads.map((l) => l.vakman.id));
+  const vakmanScores = await getVakmanScores(vakmanIds);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -120,7 +129,7 @@ export default async function MijnKlussenPage() {
             </p>
             <div className="space-y-3">
               {inAfwachting.map((klus) => (
-                <KlusKaart key={klus.id} klus={klus} />
+                <KlusKaart key={klus.id} klus={klus} vakmanScores={vakmanScores} />
               ))}
             </div>
           </section>
@@ -133,7 +142,7 @@ export default async function MijnKlussenPage() {
             </h2>
             <div className="space-y-3">
               {open.map((klus) => (
-                <KlusKaart key={klus.id} klus={klus} />
+                <KlusKaart key={klus.id} klus={klus} vakmanScores={vakmanScores} />
               ))}
             </div>
           </section>
@@ -146,7 +155,7 @@ export default async function MijnKlussenPage() {
             </h2>
             <div className="space-y-3">
               {gesloten.map((klus) => (
-                <KlusKaart key={klus.id} klus={klus} />
+                <KlusKaart key={klus.id} klus={klus} vakmanScores={vakmanScores} />
               ))}
             </div>
           </section>
@@ -156,7 +165,7 @@ export default async function MijnKlussenPage() {
   );
 }
 
-function KlusKaart({ klus }) {
+function KlusKaart({ klus, vakmanScores }) {
   return (
     <div
       className={`bg-white border rounded-md p-5 transition-colors ${
@@ -234,6 +243,9 @@ function KlusKaart({ klus }) {
                       : "Vakman"}
                   </span>
                 </div>
+                <div className="mb-1">
+                  <ScoreBadge score={vakmanScores.get(lead.vakman.id)} />
+                </div>
                 {lead.vakman.bedrijfsnaam && (
                   <p className="text-xs text-slate-500">
                     Contactpersoon: {lead.vakman.naam}
@@ -261,6 +273,21 @@ function KlusKaart({ klus }) {
                 <p className="text-[11px] text-slate-400 mt-1">
                   Lead gekocht {formatDatum(lead.gekochtOp)} · {formatBedrag(lead.bedrag)}
                 </p>
+                {!klus.gesloten && (
+                  <div className="mt-2 pt-2 border-t border-slate-200">
+                    <BeoordeelKnop
+                      lead={{
+                        id: lead.id,
+                        gekochtOp: lead.gekochtOp,
+                        review: lead.review,
+                        vakman: {
+                          naam: lead.vakman.naam,
+                          bedrijfsnaam: lead.vakman.bedrijfsnaam,
+                        },
+                      }}
+                    />
+                  </div>
+                )}
               </li>
             ))}
           </ul>

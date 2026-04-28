@@ -6,6 +6,8 @@ import { bedragVoorVakman } from "../../../lib/lead-prijs";
 import VerwijderKnop from "./VerwijderKnop";
 import ReactieForm from "./ReactieForm";
 import LeadKopen from "./LeadKopen";
+import ScoreBadge from "../../_components/ScoreBadge";
+import { getVakmanScores } from "../../../lib/reviews";
 
 function formatDatumTijd(datum) {
   return new Date(datum).toLocaleDateString("nl-NL", {
@@ -55,6 +57,11 @@ export default async function KlusDetailPage({ params }) {
       where: { klusId_vakmanId: { klusId, vakmanId: sessionUser.id } },
     });
   }
+
+  const reactieUserIds = klus.reacties
+    .map((r) => r.userId)
+    .filter((id) => id !== null);
+  const vakmanScores = await getVakmanScores(reactieUserIds);
 
   // Adressen zijn privé. Alleen de eigenaar, een admin of een vakman
   // die de lead heeft gekocht ziet de volledige info. Andere consumenten
@@ -219,6 +226,11 @@ export default async function KlusDetailPage({ params }) {
                         {formatDatumTijd(r.aangemaakt)}
                       </p>
                     </div>
+                    {r.userId && (
+                      <div className="mb-1.5">
+                        <ScoreBadge score={vakmanScores.get(r.userId)} />
+                      </div>
+                    )}
                     <p className="text-sm text-slate-700 whitespace-pre-line">
                       {r.bericht}
                     </p>

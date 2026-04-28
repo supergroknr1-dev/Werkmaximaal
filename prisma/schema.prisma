@@ -46,6 +46,7 @@ model User {
   reacties       Reactie[]
   resetTokens    WachtwoordResetToken[]
   leads          Lead[]
+  reviews        Review[]
 
   @@index([rol])
 }
@@ -101,10 +102,28 @@ model Lead {
   vakman    User     @relation(fields: [vakmanId], references: [id], onDelete: Cascade)
   bedrag    Int // in centen, 1000 = 10 euro
   gekochtOp DateTime @default(now())
+  review    Review?
 
   @@unique([klusId, vakmanId])
   @@index([klusId])
   @@index([vakmanId])
+}
+
+// Review die een consument schrijft voor een vakman, gekoppeld aan
+// een specifieke lead. Maximaal 1 review per lead (uniek leadId).
+// Mag pas na 10 dagen na lead-aankoop (gekochtOp) — afgedwongen in API.
+model Review {
+  id          Int      @id @default(autoincrement())
+  leadId      Int      @unique
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  consumentId Int
+  consument   User     @relation(fields: [consumentId], references: [id])
+  score       Int // 1 t/m 5
+  tekst       String?
+  fotoUrls    String[] // max 5, afgedwongen in API
+  aangemaakt  DateTime @default(now())
+
+  @@index([consumentId])
 }
 
 model Reactie {

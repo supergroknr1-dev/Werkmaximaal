@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import ProfielForm from "./ProfielForm";
 import WachtwoordForm from "./WachtwoordForm";
+import ShowcaseGalerij from "./ShowcaseGalerij";
 
 export const metadata = {
   title: "Profiel — Werkmaximaal",
@@ -48,6 +49,7 @@ export default async function ProfielPage() {
       bio: true,
       aangemaakt: true,
       naamLaatstGewijzigd: true,
+      _count: { select: { showcaseFotos: true } },
     },
   });
   if (!user) {
@@ -89,6 +91,12 @@ export default async function ProfielPage() {
           </p>
           <ProfielForm user={user} />
         </section>
+
+        {user.rol === "vakman" && (
+          <section className="bg-white border border-slate-200 rounded-md shadow-sm p-6 md:p-8 mb-6">
+            <ShowcaseGalerij vakmanId={user.id} />
+          </section>
+        )}
 
         {user.rol === "vakman" && user.kvkNummer && (
           <section className="bg-white border border-slate-200 rounded-md shadow-sm p-6 md:p-8 mb-6">

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ShieldCheck, MapPin, Star } from "lucide-react";
+import { ShieldCheck, MapPin, Star, Award } from "lucide-react";
 import { prisma } from "../../../lib/prisma";
+import Lightbox from "./Lightbox";
 
 export const dynamic = "force-dynamic";
 
@@ -105,6 +106,14 @@ export default async function VakmanProfielPage({ params }) {
   // Aantal gekochte leads = ervaring-indicator
   const aantalLeads = await prisma.lead.count({ where: { vakmanId } });
 
+  // Showcase-galerij + portfolio-badge bij ≥ 5 foto's
+  const showcaseFotos = await prisma.showcaseFoto.findMany({
+    where: { userId: vakmanId },
+    orderBy: { volgorde: "asc" },
+    select: { id: true, url: true, beschrijving: true },
+  });
+  const portfolioVoltooid = showcaseFotos.length >= 5;
+
   const naamWeergave = vakman.bedrijfsnaam || vakman.naam;
   const initialen = naamWeergave
     .split(" ")
@@ -141,12 +150,21 @@ export default async function VakmanProfielPage({ params }) {
             )}
 
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <TypeBadge type={vakman.vakmanType} />
                 {vakman.kvkNummer && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
                     <ShieldCheck size={11} strokeWidth={2.5} />
                     KvK geverifieerd
+                  </span>
+                )}
+                {portfolioVoltooid && (
+                  <span
+                    className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200"
+                    title="Vakman heeft 5 of meer showcase-foto's"
+                  >
+                    <Award size={11} strokeWidth={2.5} />
+                    Portfolio voltooid
                   </span>
                 )}
               </div>
@@ -206,6 +224,24 @@ export default async function VakmanProfielPage({ params }) {
             </div>
           </div>
         </header>
+
+        {showcaseFotos.length > 0 && (
+          <section className="bg-white border border-slate-200 rounded-lg shadow-sm mb-6">
+            <div className="px-5 py-4 border-b border-slate-100">
+              <h2 className="text-base font-semibold text-slate-900">
+                Showcase-galerij
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {showcaseFotos.length}{" "}
+                {showcaseFotos.length === 1 ? "foto" : "foto's"} van eerder werk —
+                klik om te vergroten
+              </p>
+            </div>
+            <div className="p-5">
+              <Lightbox fotos={showcaseFotos} />
+            </div>
+          </section>
+        )}
 
         <section className="bg-white border border-slate-200 rounded-lg shadow-sm">
           <div className="px-5 py-4 border-b border-slate-100">

@@ -80,6 +80,7 @@ model User {
   leads          Lead[]
   reviews        Review[]
   werkgebiedenExtra WerkgebiedExtra[]
+  showcaseFotos  ShowcaseFoto[]
 
   @@index([rol])
 }
@@ -188,6 +189,22 @@ model WerkgebiedExtra {
   werkafstand Int
 
   @@index([userId])
+}
+
+// Showcase-foto's: portfolio-galerij voor vakmannen op hun publieke
+// profielpagina. Vakman uploadt JPG/PNG/WEBP (client-side geresized
+// vóór upload zodat de lambda klein blijft). Admin kan modereren.
+// Max 20 foto's per vakman afgedwongen in API.
+model ShowcaseFoto {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  url          String   // Vercel Blob, pad 'showcase/{userId}/...'
+  beschrijving String?  @db.Text // optioneel bijschrift
+  volgorde     Int      @default(0) // sortering — laagste eerst
+  aangemaakt   DateTime @default(now())
+
+  @@index([userId, volgorde])
 }
 
 model Trefwoord {

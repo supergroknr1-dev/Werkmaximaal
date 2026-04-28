@@ -10,6 +10,7 @@ import {
   Settings,
   Activity,
   ScrollText,
+  Camera,
   LogOut,
 } from "lucide-react";
 import { ADMIN_LOGIN_PATH } from "../../../lib/admin-paths";
@@ -19,6 +20,7 @@ const ITEMS = [
   { href: "/admin/consumenten", label: "Consumenten", icon: UserSquare },
   { href: "/admin/vakmannen", label: "Vakmannen", icon: Users },
   { href: "/admin/klussen", label: "Klussen", icon: ClipboardList },
+  { href: "/admin/showcase", label: "Showcase", icon: Camera },
   { href: "/admin/activity-feed", label: "Activity feed", icon: Activity },
   { href: "/admin/audit-log", label: "Audit log", icon: ScrollText },
   { href: "/admin/instellingen", label: "Instellingen", icon: Settings },

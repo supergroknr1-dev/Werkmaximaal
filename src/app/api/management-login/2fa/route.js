@@ -18,7 +18,7 @@ export async function POST(request) {
   const preId = session.preMfaUserId;
   if (!preId) {
     return Response.json(
-      { error: "Sessie verlopen. Begin opnieuw bij /admin-login." },
+      { error: "Sessie verlopen. Begin opnieuw bij de admin-login." },
       { status: 401 }
     );
   }

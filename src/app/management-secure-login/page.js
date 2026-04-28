@@ -20,7 +20,7 @@ export default function AdminLoginPage() {
     setBezig(true);
     setFout("");
     try {
-      const res = await fetch("/api/admin-login", {
+      const res = await fetch("/api/management-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, wachtwoord }),
@@ -56,7 +56,7 @@ export default function AdminLoginPage() {
       const body = recoveryModus
         ? { recoveryCode }
         : { code };
-      const res = await fetch("/api/admin-login/2fa", {
+      const res = await fetch("/api/management-login/2fa", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
@@ -11,7 +11,9 @@ import {
   Activity,
   ScrollText,
   ArrowLeft,
+  LogOut,
 } from "lucide-react";
+import { ADMIN_LOGIN_PATH } from "../../../lib/admin-paths";
 
 const ITEMS = [
   { href: "/admin", label: "Overzicht", icon: LayoutDashboard, exact: true },
@@ -25,6 +27,15 @@ const ITEMS = [
 
 export default function Sidebar({ adminNaam }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function uitloggen() {
+    await fetch("/api/logout", { method: "POST" });
+    // Hard redirect naar de admin-login (niet naar /), zodat de admin
+    // direct opnieuw kan inloggen en niet op de publieke homepage belandt.
+    router.push(ADMIN_LOGIN_PATH);
+    router.refresh();
+  }
 
   return (
     <aside className="hidden md:flex md:w-60 md:flex-col md:fixed md:inset-y-0 bg-slate-900 text-slate-100 border-r border-slate-800">
@@ -72,6 +83,14 @@ export default function Sidebar({ adminNaam }) {
           <ArrowLeft size={14} />
           Terug naar site
         </Link>
+        <button
+          type="button"
+          onClick={uitloggen}
+          className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-slate-400 hover:text-rose-300 transition-colors"
+        >
+          <LogOut size={14} />
+          Uitloggen
+        </button>
       </div>
     </aside>
   );

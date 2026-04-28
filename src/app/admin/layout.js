@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "../../lib/auth";
+import { ADMIN_LOGIN_PATH, isToegestaneAdminEmail } from "../../lib/admin-paths";
 
 export const metadata = {
   title: "Admin Center — Werkmaximaal",
@@ -18,9 +19,16 @@ export const metadata = {
  */
 export default async function AdminLayout({ children }) {
   const user = await getCurrentUser();
-  if (!user) redirect("/admin-login");
+  if (!user) redirect(ADMIN_LOGIN_PATH);
 
-  if (!user.isAdmin || user.rol !== "admin") {
+  // Drie checks tegelijk: rol, isAdmin-vlag, én e-mail-allowlist.
+  // De allowlist is de hardste lijn — zelfs als rol/isAdmin per ongeluk
+  // op true staan voor een ander account, weigeren we toegang.
+  if (
+    !user.isAdmin ||
+    user.rol !== "admin" ||
+    !isToegestaneAdminEmail(user.email)
+  ) {
     return (
       <div className="min-h-screen bg-slate-50">
         <div className="max-w-2xl mx-auto px-4 py-16 text-center">

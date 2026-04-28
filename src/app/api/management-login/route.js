@@ -15,7 +15,7 @@ import { emitActivity, EVENT_TYPES, ipFromRequest } from "../../../lib/events";
  *     wordt naar /admin/mfa-setup gestuurd zodat de admin de
  *     verplichte MFA inricht voordat hij verder kan.
  *   * totpEnabled = true → session.preMfaUserId gezet, frontend
- *     vraagt vervolgens om een 6-cijferige code via /api/admin-login/2fa.
+ *     vraagt vervolgens om een 6-cijferige code via /api/management-login/2fa.
  */
 export async function POST(request) {
   const data = await request.json();

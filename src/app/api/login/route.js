@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "../../../lib/prisma";
 import { getSession } from "../../../lib/session";
+import { ADMIN_LOGIN_PATH } from "../../../lib/admin-paths";
 
 export async function POST(request) {
   const data = await request.json();
@@ -33,12 +34,14 @@ export async function POST(request) {
   }
 
   // Admin-accounts horen niet via deze route binnen te komen — die
-  // gebruiken /admin-login (apart pad, met verplichte 2FA).
+  // gebruiken een apart, niet-publiek-bekend pad met verplichte 2FA.
+  // We geven géén URL terug aan onbekende callers (security by obscurity);
+  // de error-tekst is voldoende voor onze eigen UI.
   if (user.rol === "admin" || user.isAdmin) {
     return Response.json(
       {
-        error: "Dit account heeft beheerderrechten en moet inloggen via /admin-login.",
-        redirect: "/admin-login",
+        error: "Dit account heeft beheerderrechten en kan hier niet inloggen.",
+        redirect: ADMIN_LOGIN_PATH,
       },
       { status: 403 }
     );

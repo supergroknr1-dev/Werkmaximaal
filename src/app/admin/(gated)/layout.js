@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "../../../lib/auth";
+import { ADMIN_LOGIN_PATH, isToegestaneAdminEmail } from "../../../lib/admin-paths";
 import Sidebar from "./Sidebar";
 
 /**
@@ -14,8 +15,13 @@ export default async function GatedAdminLayout({ children }) {
   // Bovenliggende layout heeft auth+isAdmin al gecheckt; we komen hier
   // alleen voor een echte admin. Maar getCurrentUser opnieuw aanroepen
   // is goedkoop en geeft ons totpEnabled — dat hebben we hier nodig.
-  if (!user || user.rol !== "admin") {
-    redirect("/admin-login");
+  if (
+    !user ||
+    user.rol !== "admin" ||
+    !user.isAdmin ||
+    !isToegestaneAdminEmail(user.email)
+  ) {
+    redirect(ADMIN_LOGIN_PATH);
   }
   if (!user.totpEnabled) {
     redirect("/admin/mfa-setup");

@@ -3,6 +3,10 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Search, Trash2, ShieldAlert } from "lucide-react";
+import {
+  useInterventionConfirm,
+  interventionHeaders,
+} from "../../../../lib/intervention-api";
 
 function formatDatum(datum) {
   return new Date(datum).toLocaleDateString("nl-NL", {
@@ -24,6 +28,7 @@ export default function ConsumentenTabel({ consumenten }) {
   const [zoek, setZoek] = useState("");
   const [filter, setFilter] = useState("alle");
   const [bezigId, setBezigId] = useState(null);
+  const { open: bevestigIngreep, modal: ingreepModal } = useInterventionConfirm();
 
   const gefilterd = useMemo(() => {
     const term = zoek.trim().toLowerCase();
@@ -52,25 +57,35 @@ export default function ConsumentenTabel({ consumenten }) {
   async function verwijder(c) {
     const naam = weergaveNaam(c);
     const heeftKlussen = c.klussenCount > 0;
-    const waarschuwing = heeftKlussen
-      ? `Account "${naam}" verwijderen? Dit verwijdert ook ${c.klussenCount} klus${
-          c.klussenCount === 1 ? "" : "sen"
-        } en alle bijbehorende reacties.`
-      : `Account "${naam}" definitief verwijderen?`;
-    if (!confirm(waarschuwing)) return;
-    setBezigId(c.id);
-    const res = await fetch(`/api/admin/consumenten/${c.id}`, { method: "DELETE" });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      alert(data.error || "Verwijderen is mislukt.");
-      setBezigId(null);
-      return;
-    }
-    router.refresh();
-    setBezigId(null);
+    const beschrijving = heeftKlussen
+      ? `${naam} (${c.email}) — ${c.klussenCount} klus${c.klussenCount === 1 ? "" : "sen"} + reacties gaan ook weg`
+      : `${naam} (${c.email})`;
+    const ok = await bevestigIngreep({
+      titel: "Consument-account verwijderen",
+      beschrijving,
+      defaultCategorie: "compliance",
+      bevestigLabel: "Verwijderen",
+      onBevestig: async ({ reden, actieCategorie }) => {
+        setBezigId(c.id);
+        try {
+          const res = await fetch(`/api/admin/consumenten/${c.id}`, {
+            method: "DELETE",
+            headers: interventionHeaders({ reden, actieCategorie }),
+          });
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || "Verwijderen is mislukt.");
+          }
+        } finally {
+          setBezigId(null);
+        }
+      },
+    });
+    if (ok) router.refresh();
   }
 
   return (
+    <>
     <div className="bg-white border border-slate-200 rounded-lg shadow-sm">
       <div className="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
         <div className="relative flex-1 max-w-md">
@@ -236,5 +251,7 @@ export default function ConsumentenTabel({ consumenten }) {
         </div>
       )}
     </div>
+    {ingreepModal}
+    </>
   );
 }

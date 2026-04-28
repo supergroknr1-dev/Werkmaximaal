@@ -10,9 +10,7 @@ import {
   Settings,
   Activity,
   ScrollText,
-  ArrowLeft,
   LogOut,
-  KeyRound,
 } from "lucide-react";
 import { ADMIN_LOGIN_PATH } from "../../../lib/admin-paths";
 
@@ -41,10 +39,29 @@ export default function Sidebar({ adminNaam }) {
   return (
     <aside className="hidden md:flex md:w-60 md:flex-col md:fixed md:inset-y-0 bg-slate-900 text-slate-100 border-r border-slate-800">
       <div className="px-5 py-5 border-b border-slate-800">
-        <p className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">
-          Werkmaximaal
-        </p>
-        <p className="text-base font-semibold mt-0.5">Admin Center</p>
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">
+              Werkmaximaal
+            </p>
+            <p className="text-base font-semibold mt-0.5">Admin Center</p>
+          </div>
+          <button
+            type="button"
+            onClick={uitloggen}
+            title="Uitloggen"
+            className="shrink-0 p-1.5 rounded-md text-slate-400 hover:text-rose-300 hover:bg-slate-800 transition-colors"
+          >
+            <LogOut size={15} />
+            <span className="sr-only">Uitloggen</span>
+          </button>
+        </div>
+        {adminNaam && (
+          <p className="text-[11px] text-slate-500 mt-2">
+            Ingelogd als{" "}
+            <span className="text-slate-300">{adminNaam}</span>
+          </p>
+        )}
       </div>
 
       <nav className="flex-1 px-2 py-4 space-y-0.5">
@@ -69,37 +86,6 @@ export default function Sidebar({ adminNaam }) {
           );
         })}
       </nav>
-
-      <div className="px-3 py-4 border-t border-slate-800 space-y-2">
-        {adminNaam && (
-          <p className="text-xs text-slate-400 px-2">
-            Ingelogd als{" "}
-            <span className="text-white font-medium">{adminNaam}</span>
-          </p>
-        )}
-        <Link
-          href="/admin/wachtwoord"
-          className="flex items-center gap-2 px-2 py-1.5 text-xs text-slate-400 hover:text-white transition-colors"
-        >
-          <KeyRound size={14} />
-          Wachtwoord wijzigen
-        </Link>
-        <Link
-          href="/"
-          className="flex items-center gap-2 px-2 py-1.5 text-xs text-slate-400 hover:text-white transition-colors"
-        >
-          <ArrowLeft size={14} />
-          Terug naar site
-        </Link>
-        <button
-          type="button"
-          onClick={uitloggen}
-          className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-slate-400 hover:text-rose-300 transition-colors"
-        >
-          <LogOut size={14} />
-          Uitloggen
-        </button>
-      </div>
     </aside>
   );
 }

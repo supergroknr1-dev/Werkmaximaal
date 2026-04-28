@@ -4,6 +4,7 @@ import { getInstellingen } from "../../../../lib/instellingen";
 import { getLeadPrijs } from "../../../../lib/lead-prijs";
 import InstellingToggle from "../InstellingToggle";
 import PrijsForm from "./PrijsForm";
+import WachtwoordForm from "./WachtwoordForm";
 
 export default async function AdminInstellingenPage() {
   const [instellingen, prijzen] = await Promise.all([
@@ -57,6 +58,21 @@ export default async function AdminInstellingenPage() {
           </div>
           <div className="p-5">
             <PrijsForm basisCenten={prijzen.pro} />
+          </div>
+        </section>
+
+        <section className="bg-white border border-slate-200 rounded-lg shadow-sm">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <h2 className="text-base font-semibold text-slate-900">
+              Wachtwoord wijzigen
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Stel een nieuw wachtwoord in voor je admin-account. Je MFA blijft
+              hetzelfde.
+            </p>
+          </div>
+          <div className="p-5">
+            <WachtwoordForm />
           </div>
         </section>
 

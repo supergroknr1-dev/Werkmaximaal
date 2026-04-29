@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Upload, X, ImagePlus, ChevronRight, ChevronLeft, Check } from "lucide-react";
+import { Upload, X, ImagePlus, ChevronRight, ChevronLeft, ChevronDown, Check, ArrowLeftRight } from "lucide-react";
+import VoorNaTegel from "../../../components/VoorNaTegel";
 
 const TOEGESTANE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_DIM = 1600;
@@ -39,6 +40,10 @@ export default function ShowcaseGalerij({ vakmanId }) {
   const [stap, setStap] = useState("upload"); // 'upload' | 'beschrijven'
   const [beschrijvingen, setBeschrijvingen] = useState({}); // { fotoId: tekst }
   const [publishing, setPublishing] = useState(false);
+  const [paarOpen, setPaarOpen] = useState(false);
+  const [voorFile, setVoorFile] = useState(null);
+  const [naFile, setNaFile] = useState(null);
+  const [paarBezig, setPaarBezig] = useState(false);
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -99,6 +104,56 @@ export default function ShowcaseGalerij({ vakmanId }) {
       setFout(`${file.name}: ${err.message}`);
     } finally {
       setBezig((p) => p.filter((b) => b.tempId !== tempId));
+    }
+  }
+
+  async function uploadPaar() {
+    if (!voorFile || !naFile) return;
+    setPaarBezig(true);
+    setFout(null);
+    try {
+      if (!TOEGESTANE_TYPES.includes(voorFile.type)) {
+        throw new Error("Voor-foto: alleen JPG, PNG of WEBP toegestaan.");
+      }
+      if (!TOEGESTANE_TYPES.includes(naFile.type)) {
+        throw new Error("Na-foto: alleen JPG, PNG of WEBP toegestaan.");
+      }
+      const ruimte = MAX_FOTOS - bestaande.length - nieuwe.length - bezig.length;
+      if (ruimte <= 0) {
+        throw new Error(`Maximum bereikt: ${MAX_FOTOS} foto's per vakman.`);
+      }
+
+      const voorBlob = await resizeNaarBlob(voorFile);
+      const naBlob = await resizeNaarBlob(naFile);
+
+      const fd = new FormData();
+      fd.append(
+        "file",
+        new File([voorBlob], voorFile.name.replace(/\.[^.]+$/, "") + ".webp", {
+          type: "image/webp",
+        })
+      );
+      fd.append(
+        "fileNa",
+        new File([naBlob], naFile.name.replace(/\.[^.]+$/, "") + ".webp", {
+          type: "image/webp",
+        })
+      );
+      const res = await fetch("/api/profiel/showcase", {
+        method: "POST",
+        body: fd,
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || "Upload mislukt");
+
+      setNieuwe((p) => [...p, json]);
+      setVoorFile(null);
+      setNaFile(null);
+      setPaarOpen(false);
+    } catch (err) {
+      setFout(err.message);
+    } finally {
+      setPaarBezig(false);
     }
   }
 
@@ -275,6 +330,42 @@ export default function ShowcaseGalerij({ vakmanId }) {
             />
           </div>
 
+          {/* VOOR/NA-PAAR — uitklapbaar paneel onder de drop-zone */}
+          <div className="mt-3">
+            <button
+              type="button"
+              onClick={() => setPaarOpen((o) => !o)}
+              className="text-xs font-medium text-emerald-700 hover:text-emerald-800 inline-flex items-center gap-1.5"
+            >
+              <ChevronDown
+                size={14}
+                className={`transition-transform ${paarOpen ? "" : "-rotate-90"}`}
+              />
+              <ArrowLeftRight size={14} />
+              Voor/Na-paar toevoegen
+            </button>
+
+            {paarOpen && (
+              <div className="mt-2 border border-slate-200 rounded-md p-4 bg-slate-50">
+                <p className="text-xs text-slate-600 mb-3">
+                  Twee foto's van dezelfde klus — situatie vóór jij begon, en het eindresultaat. Ze worden samen getoond als één paar op je profiel.
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <SlotKiezer label="Voor" file={voorFile} onPick={setVoorFile} />
+                  <SlotKiezer label="Na" file={naFile} onPick={setNaFile} />
+                </div>
+                <button
+                  type="button"
+                  onClick={uploadPaar}
+                  disabled={!voorFile || !naFile || paarBezig}
+                  className="mt-3 w-full inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2 rounded-md transition-colors"
+                >
+                  {paarBezig ? "Uploaden..." : "Voor/Na-paar uploaden"}
+                </button>
+              </div>
+            )}
+          </div>
+
           {fout && <p className="text-xs text-rose-600 mt-3">{fout}</p>}
 
           {(nieuwe.length > 0 || bezig.length > 0) && (
@@ -405,13 +496,17 @@ export default function ShowcaseGalerij({ vakmanId }) {
 function FotoTegel({ foto, onVerwijder, hoek }) {
   return (
     <div className="relative aspect-square rounded overflow-hidden border border-slate-200 bg-slate-100 group">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={foto.url}
-        alt={foto.beschrijving || "Showcase foto"}
-        loading="lazy"
-        className="w-full h-full object-cover"
-      />
+      {foto.urlNa ? (
+        <VoorNaTegel urlVoor={foto.url} urlNa={foto.urlNa} alt={foto.beschrijving} />
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={foto.url}
+          alt={foto.beschrijving || "Showcase foto"}
+          loading="lazy"
+          className="w-full h-full object-cover"
+        />
+      )}
       {hoek === "nieuw" && (
         <span className="absolute top-1 left-1 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-600 text-white">
           Nieuw
@@ -443,6 +538,64 @@ function StickyActieBalk({ zichtbaar, sub, children }) {
         <p className="text-xs text-slate-500 mb-2 sm:mb-0 sm:mr-auto">{sub}</p>
       )}
       <div className="flex items-center justify-end gap-2">{children}</div>
+    </div>
+  );
+}
+
+/**
+ * File-pick slot voor één foto van een Voor/Na-paar. Toont preview
+ * (object-URL, opgeruimd op unmount) of een placeholder. Klikken opent
+ * de file-picker; "Wissen" reset de selectie.
+ */
+function SlotKiezer({ label, file, onPick }) {
+  const inputRef = useRef(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+
+  useEffect(() => {
+    if (!file) {
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  return (
+    <div>
+      <p className="text-xs font-semibold text-slate-700 mb-1">{label}</p>
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        className="w-full aspect-square border-2 border-dashed border-slate-300 rounded-md bg-white hover:bg-slate-100 hover:border-slate-400 flex items-center justify-center overflow-hidden transition-colors"
+      >
+        {previewUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={previewUrl} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <ImagePlus size={28} className="text-slate-400" />
+        )}
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onPick(f);
+          e.target.value = "";
+        }}
+      />
+      {file && (
+        <button
+          type="button"
+          onClick={() => onPick(null)}
+          className="text-[11px] text-slate-500 hover:text-rose-600 mt-1 underline"
+        >
+          Wissen
+        </button>
+      )}
     </div>
   );
 }

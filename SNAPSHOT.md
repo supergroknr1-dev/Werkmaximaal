@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-04-29 (sessie tot diep in de avond)
-**Laatste commit op main:** `3c9a6ba` — Profielfoto-knop verbeterd
+**Laatst bijgewerkt:** 2026-04-29 (avond — Voor/Na-paren toegevoegd)
+**Laatste commit op main:** Voor/Na-paren in showcase + Vercel Blob fix (zie `git log -1`)
 **Live op:** https://werkmaximaal.vercel.app/
 
 ---
@@ -40,21 +40,31 @@ Sessie 2026-04-29 (vandaag, voortzetting):
 - **Werkgebied: postcode → plaatsnaam** via PDOK Locatieserver (gratis NL-overheid). Profielpagina toont nu "Eindhoven" i.p.v. "5612". Multi-postcode-werkgebied wordt gededupliceerd ("Amsterdam" 1× ondanks 4 postcodes). SEO-metadata bevat plaatsnaam: `vakman in Eindhoven`. Admin bewerk-form toont live `5612 = Eindhoven`-hint onder regio-postcode.
 - **Profielfoto-upload-knop** (op /profiel) opgewaardeerd: native input vervangen door styled "Foto kiezen"-knop (donker, met upload-icoon). Pixel-specs duidelijker: "Aanbevolen: minimaal 400 × 400 pixels (vierkant / 1:1)".
 
+Sessie 2026-04-29 (avond, Voor/Na-feature):
+- **Voor/Na-paren in showcase** — `urlNa String?` toegevoegd aan ShowcaseFoto-model (1 rij = 1 paar, geen aparte tabel). Migratie `add_voor_na_paar`. API `/api/profiel/showcase` accepteert optioneel een tweede file `fileNa`; uploadt beide naar Vercel Blob als één DB-rij.
+- **UI uitklap-paneel** "Voor/Na-paar toevoegen" onder de gewone drop-zone op `/profiel` (collapsible). Twee `SlotKiezer`-slots (Voor + Na) met preview en wis-knop. Knop disabled tot beide gekozen + niet-bezig.
+- **Split-view tegel** (`src/components/VoorNaTegel.js`, gedeeld component): in elke aspect-square tegel 2 helften met `object-cover`, dunne witte scheidingslijn, kleine zwarte VOOR / NA labels. Gebruikt op `/profiel`, `/vakmannen/[id]` én `/admin/showcase`.
+- **Lightbox-slider** in `Lightbox.js` voor publieke profiel: drag/klik horizontaal om Voor↔Na te vergelijken via `clipPath: inset(0 X% 0 0)` op de bovenliggende Voor-foto. Pointer Events (muis + touch). Aspect 4:3 container zodat beide foto's op exact dezelfde coördinaten liggen.
+- **Admin moderation-tegel** krijgt naast de split-view aparte "Open Voor" / "Open Na" knoppen + `↔ Voor/Na-paar` badge zodat admin elke foto los kan beoordelen.
+- **Bug-fix:** `urlNa` was niet geselecteerd in de DB-query op `/vakmannen/[id]/page.js` → eerst toonde de publieke pagina alleen Voor; na fix split-view zichtbaar.
+
+**Vercel Blob: oude store gemigreerd** — bij testen lokaal kwam de fout "Cannot use public access on a private store". De originele `werkmaximaal-uploads`-store was als private aangemaakt (Vercel default sinds @vercel/blob v2). Geen foto's in store (Blob Count = 0), dus probleemloos verwijderd via `vercel blob delete-store` en opnieuw aangemaakt als public via `vercel blob create-store werkmaximaal-uploads --access public --region cdg1 --yes`. Nieuwe ID: `store_uMQMwxXf37csAdAO`. Token automatisch ververst op Vercel én lokaal.
+
 ## 🟡 Waar je was gebleven
 
-Alles van Sprint 1.2 + de top-3 groei-features (email + Mollie + publiek profiel) staat live, plus een berg UX/security/legal-fixes. Niets halverwege blijven liggen — laatste push `3c9a6ba` is een afgerond knopje.
+Voor/Na-paren in showcase volledig live: vakman uploadt 2 foto's, beide opgeslagen in 1 DB-rij, getoond als split-view tegel + drag-slider in lightbox. Plus een belangrijke infra-fix: Blob-store omgezet van private naar public (was nooit gelukt om iets te uploaden, ook productie niet — nu wel). Niets halverwege.
 
 ## 🔴 Volgende stappen — top-3 voor morgen
 
 Beste opties (vraag morgen welke):
 1. **Chat tussen consument en vakman na lead-aankoop** (~3u) — grote feature, eigen DB-tabel + Realtime via SSE of polling. Productief gezien meest impactvol voor het marketplace-model.
-2. **Showcase Voor/Na-paren + watermerk** (~1,5u) — directe doorbouw op vandaag. Voor/Na = aparte UI-flow voor 2 gekoppelde foto's. Watermerk client-side via canvas (klein logo rechtsonder vóór upload).
+2. **Watermerk op showcase-foto's** (~45 min) — losse helft van wat oorspronkelijk een combo-feature was. Klein logo rechtsonder, client-side via canvas vóór upload (bundle-vriendelijk).
 3. **Headers van overige pagina's in nieuwe witte-kaart-stijl** (~1u) — Mijn klussen, Mijn leads, Profiel, Admin headers krijgen dezelfde witte-kaart-met-emerald-accent als de homepage. Visuele consistency.
 
 Alternatieven:
 - **Pre-flight live-mode op Mollie** (KvK-verificatie + Live API key + production-test). Niet bouwen, alleen config + testflight.
 - **Cloudflare Turnstile config** (account aanmaken + 2 env-vars). Spam-helper is al klaar; dit is enkel wat insteek-werk.
-- **Watermerk los**: server-side via sharp óf client-side via canvas-overlay vóór upload. Sharp heeft 30 MB bundle-impact, canvas heeft compatibiliteits-issues op oude Safari. Open vraag.
+- **Foto-ordering met drag** tussen showcase-foto's (volgorde-veld bestaat al in DB).
 
 Andere openstaande items:
 - ID-verificatie via iDIN/Mollie (door user uitgesteld)
@@ -104,3 +114,5 @@ Optioneel:
 - **Resend test-mode** kan alleen mailen naar het account-email + Gmail-aliases (`+iets@gmail.com`)
 - **Cross-origin redirects in Claude Code preview** worden geblokkeerd ("only localhost") — Mollie / externe URLs alleen testen in echte browser
 - **Tijdelijk wachtwoord voor s.ozkara09@gmail.com:** `TempE2E_2026!` (gezet voor E2E-tests; vervang via /admin/instellingen of /wachtwoord-vergeten)
+- **Nieuwe Vercel Blob-stores zijn default private** sinds @vercel/blob v2 — dit faalt hard bij `put({access:"public", ...})`. Maak nieuwe stores altijd met `vercel blob create-store NAAM --access public --region cdg1 --yes`.
+- **`vercel env pull` schrijft ALTIJD ook naar `.env.local`** (los van het filename-argument), wat voorrang heeft op `.env` in Next.js. Verwijder/hernoem `.env.local` als je een gemerged `.env` gebruikt — anders worden je handmatige edits gemaskeerd.

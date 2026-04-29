@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, ArrowLeftRight } from "lucide-react";
 import { prisma } from "../../../../lib/prisma";
+import VoorNaTegel from "../../../../components/VoorNaTegel";
 import VerwijderFotoKnop from "./VerwijderFotoKnop";
 
 export const dynamic = "force-dynamic";
@@ -63,20 +64,46 @@ export default async function ShowcaseModerationPage() {
               key={f.id}
               className="bg-white border border-slate-200 rounded-md overflow-hidden shadow-sm flex flex-col"
             >
-              <a
-                href={f.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block aspect-square bg-slate-100"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={f.url}
-                  alt={f.beschrijving || ""}
-                  loading="lazy"
-                  className="w-full h-full object-cover hover:opacity-90 transition-opacity"
-                />
-              </a>
+              {f.urlNa ? (
+                <div className="block aspect-square bg-slate-100 relative">
+                  <VoorNaTegel urlVoor={f.url} urlNa={f.urlNa} alt={f.beschrijving} />
+                  {/* Twee aparte tab-links onder de tegel zodat admin elke
+                      foto los kan openen voor moderatie */}
+                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
+                    <a
+                      href={f.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/90 text-slate-700 hover:bg-white"
+                    >
+                      Open Voor
+                    </a>
+                    <a
+                      href={f.urlNa}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/90 text-slate-700 hover:bg-white"
+                    >
+                      Open Na
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <a
+                  href={f.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block aspect-square bg-slate-100"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={f.url}
+                    alt={f.beschrijving || ""}
+                    loading="lazy"
+                    className="w-full h-full object-cover hover:opacity-90 transition-opacity"
+                  />
+                </a>
+              )}
               <div className="p-3 flex-1 flex flex-col">
                 <Link
                   href={`/vakmannen/${f.user.id}`}
@@ -88,6 +115,12 @@ export default async function ShowcaseModerationPage() {
                 <p className="text-[11px] text-slate-500 truncate">
                   {f.user.email}
                 </p>
+                {f.urlNa && (
+                  <p className="text-[10px] mt-1 inline-flex items-center gap-0.5 text-purple-700 font-semibold uppercase tracking-wider">
+                    <ArrowLeftRight size={10} />
+                    Voor/Na-paar
+                  </p>
+                )}
                 {f.beschrijving && (
                   <p className="text-xs text-slate-700 mt-2 line-clamp-3">
                     {f.beschrijving}

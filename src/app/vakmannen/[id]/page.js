@@ -151,7 +151,7 @@ export default async function VakmanProfielPage({ params }) {
   const showcaseFotos = await prisma.showcaseFoto.findMany({
     where: { userId: vakmanId },
     orderBy: { volgorde: "asc" },
-    select: { id: true, url: true, beschrijving: true },
+    select: { id: true, url: true, urlNa: true, beschrijving: true },
   });
   const portfolioVoltooid = showcaseFotos.length >= 5;
 

@@ -51,6 +51,7 @@ export async function POST(request) {
     return Response.json({ error: "Ongeldige upload." }, { status: 400 });
   }
   const file = formData.get("file");
+  const fileNa = formData.get("fileNa"); // optioneel — als gevuld: Voor/Na-paar (1 rij, 2 URLs)
   const beschrijving = formData.get("beschrijving");
 
   if (!file || typeof file === "string") {
@@ -69,11 +70,37 @@ export async function POST(request) {
     );
   }
 
+  const heeftPaar = fileNa && typeof fileNa !== "string";
+  if (heeftPaar) {
+    if (!TOEGESTANE_TYPES.includes(fileNa.type)) {
+      return Response.json(
+        { error: "Na-foto: alleen JPG, PNG of WEBP toegestaan." },
+        { status: 400 }
+      );
+    }
+    if (fileNa.size > MAX_BYTES) {
+      return Response.json(
+        { error: "Na-foto mag (na resize) maximaal 5 MB zijn." },
+        { status: 400 }
+      );
+    }
+  }
+
   const blob = await put(`showcase/${user.id}/${file.name}`, file, {
     access: "public",
     addRandomSuffix: true,
     token: process.env.BLOB_READ_WRITE_TOKEN,
   });
+
+  let urlNaValue = null;
+  if (heeftPaar) {
+    const blobNa = await put(`showcase/${user.id}/${fileNa.name}`, fileNa, {
+      access: "public",
+      addRandomSuffix: true,
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    });
+    urlNaValue = blobNa.url;
+  }
 
   // Volgorde = max + 1 zodat nieuwe foto's onderaan komen, en
   // herordenen later kan zonder gaten in de nummering.
@@ -88,6 +115,7 @@ export async function POST(request) {
     data: {
       userId: user.id,
       url: blob.url,
+      urlNa: urlNaValue,
       beschrijving:
         typeof beschrijving === "string" && beschrijving.trim()
           ? beschrijving.trim().slice(0, 200)

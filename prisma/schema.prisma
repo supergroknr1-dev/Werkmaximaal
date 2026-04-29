@@ -199,7 +199,8 @@ model ShowcaseFoto {
   id           Int      @id @default(autoincrement())
   userId       Int
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  url          String   // Vercel Blob, pad 'showcase/{userId}/...'
+  url          String   // Vercel Blob, pad 'showcase/{userId}/...' — Voor-foto als urlNa gevuld is
+  urlNa        String?  // Vercel Blob — als gevuld: dit is een Voor/Na-paar (url = Voor, urlNa = Na)
   beschrijving String?  @db.Text // optioneel bijschrift
   volgorde     Int      @default(0) // sortering — laagste eerst
   aangemaakt   DateTime @default(now())

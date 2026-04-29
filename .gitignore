@@ -44,3 +44,9 @@ next-env.d.ts
 
 # lokale database-backups
 /backups/
+
+.vercel
+.env*.local
+
+# lokale claude code config
+.claude/

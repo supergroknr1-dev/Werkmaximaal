@@ -12,6 +12,7 @@ import {
   ScrollText,
   Camera,
   CreditCard,
+  Map as MapIcon,
 } from "lucide-react";
 
 const ITEMS = [
@@ -20,6 +21,7 @@ const ITEMS = [
   { href: "/admin/vakmannen", label: "Vakmannen", icon: Users },
   { href: "/admin/klussen", label: "Klussen", icon: ClipboardList },
   { href: "/admin/showcase", label: "Showcase", icon: Camera },
+  { href: "/admin/live-monitor", label: "Live monitor", icon: MapIcon },
   { href: "/admin/activity-feed", label: "Activity feed", icon: Activity },
   { href: "/admin/audit-log", label: "Audit log", icon: ScrollText },
   { href: "/admin/mollie", label: "Mollie", icon: CreditCard },

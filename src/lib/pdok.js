@@ -104,6 +104,30 @@ export async function werkgebiedPlaatsen(vakman) {
   return uniek;
 }
 
+/**
+ * Lookup lat/lon (centroïde) bij een 6-tekens postcode (bv. "5612AB").
+ * Server-side bedoeld; cached 7 dagen via Next.js fetch-cache. Geeft
+ * `null` als PDOK 'm niet kent. Gebruikt voor de admin-kaart.
+ */
+export async function postcodeNaarCoords(postcode6) {
+  const p = (postcode6 ?? "").toString().trim().toUpperCase();
+  if (!POSTCODE_REGEX.test(p)) return null;
+  const url = `https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=postcode:${p}&fq=type:postcode&fl=centroide_ll&rows=1`;
+  try {
+    const res = await fetch(url, { next: { revalidate: 604800 } }); // 7 dagen
+    if (!res.ok) return null;
+    const data = await res.json();
+    const ll = data?.response?.docs?.[0]?.centroide_ll;
+    if (!ll) return null;
+    // Format: "POINT(5.4789 51.4419)" — eerst lon, dan lat
+    const m = ll.match(/POINT\(([-\d.]+)\s+([-\d.]+)\)/);
+    if (!m) return null;
+    return { lat: parseFloat(m[2]), lon: parseFloat(m[1]) };
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchAdres(postcode, huisnummer) {
   const url = `https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=postcode:${postcode}+huisnummer:${huisnummer}&fq=type:adres&fl=weergavenaam,straatnaam,huisnummer,woonplaatsnaam,postcode&rows=1`;
   try {

@@ -1,6 +1,6 @@
 import { Map as MapIcon } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { postcodeNaarCoords, POSTCODE_REGEX } from "@/lib/pdok";
+import { postcodeNaarCoords } from "@/lib/pdok";
 import LiveKaart from "./LiveKaart";
 import AutoRefresh from "./AutoRefresh";
 
@@ -64,12 +64,11 @@ export default async function LiveMonitorPage() {
     orderBy: { aangemaakt: "desc" },
   });
 
-  // Filter op geldige NL-postcode + geocode parallel
+  // Geocode alle klussen parallel — postcodes die PDOK niet kent
+  // worden later gefilterd via .filter(Boolean).
   const punten = (
     await Promise.all(
-      klussen
-        .filter((k) => POSTCODE_REGEX.test(k.postcode.toUpperCase()))
-        .map(async (k) => {
+      klussen.map(async (k) => {
           const coords = await postcodeNaarCoords(k.postcode);
           if (!coords) return null;
 
@@ -119,7 +118,7 @@ export default async function LiveMonitorPage() {
           Live monitor
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          Totaal actieve klussen in NL:{" "}
+          Totaal actieve klussen:{" "}
           <span className="font-semibold text-slate-900 tabular-nums">
             {totaalActief}
           </span>

@@ -53,28 +53,17 @@ export default function LiveKaart({ punten }) {
     []
   );
 
-  // Begrenzing op het Nederlandse grondgebied — voorkomt pannen naar
-  // BelgiÃ«, Duitsland of de oceaan. Hoekpunten met kleine padding.
-  const NL_BOUNDS = [
-    [50.5, 3.0], // zuidwest
-    [53.8, 7.5], // noordoost
-  ];
-
   return (
     <div className="h-[70vh] min-h-[500px] rounded-md overflow-hidden border border-slate-200 shadow-sm">
       <MapContainer
         center={[52.1326, 5.2913]}
         zoom={7}
-        minZoom={6}
-        maxZoom={18}
         scrollWheelZoom={true}
-        maxBounds={NL_BOUNDS}
-        maxBoundsViscosity={1.0}
         className="h-full w-full"
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.kadaster.nl">Kadaster / PDOK</a>'
-          url="https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0/standaard/EPSG:3857/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {punten.map((p) => (
           <Marker

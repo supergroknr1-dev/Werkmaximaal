@@ -5,9 +5,12 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-04-29 (avond — Voor/Na-paren toegevoegd)
-**Laatste commit op main:** Voor/Na-paren in showcase + Vercel Blob fix (zie `git log -1`)
+**Laatst bijgewerkt:** 2026-04-29 (late avond — chat-feature + DB-wipe)
+**Laatste commit op main:** Chat tussen vakman en consument na lead-aankoop + DB-wipe
 **Live op:** https://werkmaximaal.vercel.app/
+
+> **Database is leeg gewist op 2026-04-29.** Alleen admin-account (`s.ozkara09@gmail.com`)
+> is bewaard. Trefwoorden-config staat nog. Site is dus klaar voor productie-launch.
 
 ---
 
@@ -50,21 +53,32 @@ Sessie 2026-04-29 (avond, Voor/Na-feature):
 
 **Vercel Blob: oude store gemigreerd** — bij testen lokaal kwam de fout "Cannot use public access on a private store". De originele `werkmaximaal-uploads`-store was als private aangemaakt (Vercel default sinds @vercel/blob v2). Geen foto's in store (Blob Count = 0), dus probleemloos verwijderd via `vercel blob delete-store` en opnieuw aangemaakt als public via `vercel blob create-store werkmaximaal-uploads --access public --region cdg1 --yes`. Nieuwe ID: `store_uMQMwxXf37csAdAO`. Token automatisch ververst op Vercel én lokaal.
 
+Sessie 2026-04-29 (late avond, chat-feature):
+- **Chat tussen vakman en consument** na lead-aankoop. Nieuwe `ChatBericht`-tabel (1 rij per bericht, gekoppeld aan `Lead`). Eén lead = één gesprek-thread tussen die specifieke vakman en de consument-eigenaar van de klus.
+- **Auth-regels** in API: alleen `lead.vakmanId` of `klus.userId` mag GET/POST. **Eerste bericht moet van de vakman komen** (afgedwongen via DB-check).
+- **GET-endpoint markeert wederpartij-berichten direct als gelezen**, dus openen van de chat reset de unread-counter voor de wederpartij.
+- **Gedeelde `LeadChat`-component** in `src/components/`: uitklapbaar paneel met groen-rechts (eigen) / grijs-links (wederpartij) bubble-style berichten, datum-groepering, polling elke 5 sec, auto-scroll naar onder, max 2000 tekens per bericht.
+- **Vakman-kant** op `/mijn-leads`: chat-paneel onder elke `LeadKaart` met "Chat met klant"-label.
+- **Consument-kant** op `/mijn-klussen`: chat-paneel per gekochte vakman onder de lead-li met "Chat met {bedrijfsnaam}"-label.
+- **Unread-counter** server-side: `_count` op `chatBerichten` met filter `vanUserId != mij AND gelezen = false`, getoond als groene badge naast de toggle-knop.
+- **Email-notificatie via Resend** bij elk nieuw bericht: fire-and-forget via `after()` zodat de API niet wacht op SMTP. Onderwerp `Nieuw bericht van {afzender} over {klustitel}`, deeplink naar `/mijn-leads` of `/mijn-klussen` afhankelijk van rol.
+- **Database-wipe** uitgevoerd: alle testdata weg (4 → 1 user, 8 → 0 klussen, 5 → 0 leads, 47 → 0 activityEvents). Alleen admin (`s.ozkara09@gmail.com`) bewaard. Trefwoorden-config blijft staan.
+
 ## 🟡 Waar je was gebleven
 
-Voor/Na-paren in showcase volledig live: vakman uploadt 2 foto's, beide opgeslagen in 1 DB-rij, getoond als split-view tegel + drag-slider in lightbox. Plus een belangrijke infra-fix: Blob-store omgezet van private naar public (was nooit gelukt om iets te uploaden, ook productie niet — nu wel). Niets halverwege.
+Chat-feature volledig live: vakman + consument kunnen op `/mijn-leads` resp. `/mijn-klussen` direct met elkaar chatten per gekochte lead, met polling, unread-badge en email-notificatie. DB is helemaal gewist — site staat klaar voor de echte launch met alleen admin-account erin.
 
 ## 🔴 Volgende stappen — top-3 voor morgen
 
 Beste opties (vraag morgen welke):
-1. **Chat tussen consument en vakman na lead-aankoop** (~3u) — grote feature, eigen DB-tabel + Realtime via SSE of polling. Productief gezien meest impactvol voor het marketplace-model.
-2. **Watermerk op showcase-foto's** (~45 min) — losse helft van wat oorspronkelijk een combo-feature was. Klein logo rechtsonder, client-side via canvas vóór upload (bundle-vriendelijk).
-3. **Headers van overige pagina's in nieuwe witte-kaart-stijl** (~1u) — Mijn klussen, Mijn leads, Profiel, Admin headers krijgen dezelfde witte-kaart-met-emerald-accent als de homepage. Visuele consistency.
+1. **Pre-flight live-mode op Mollie** (~30 min config + testflight) — KvK-verificatie indienen, Live API key zetten op Vercel, één echte iDEAL-betaling testen om zeker te weten dat de productie-flow werkt. Logisch nu de DB leeg is.
+2. **`/berichten` unified inbox** (~45 min) — er staat een placeholder-pagina die naar de chat verwijst. Vervangen door een overzicht van alle gesprekken (alle leads waar berichten op zitten, gesorteerd op meest recent), zodat user niet via /mijn-klussen of /mijn-leads hoeft te bladeren om unread te checken.
+3. **Watermerk op showcase-foto's** (~45 min) — klein logo rechtsonder, client-side via canvas vóór upload.
 
 Alternatieven:
-- **Pre-flight live-mode op Mollie** (KvK-verificatie + Live API key + production-test). Niet bouwen, alleen config + testflight.
 - **Cloudflare Turnstile config** (account aanmaken + 2 env-vars). Spam-helper is al klaar; dit is enkel wat insteek-werk.
 - **Foto-ordering met drag** tussen showcase-foto's (volgorde-veld bestaat al in DB).
+- **Headers in nieuwe witte-kaart-stijl** (~1u) — visuele consistency over alle pagina's.
 
 Andere openstaande items:
 - ID-verificatie via iDIN/Mollie (door user uitgesteld)

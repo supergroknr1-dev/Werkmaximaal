@@ -81,6 +81,7 @@ model User {
   reviews        Review[]
   werkgebiedenExtra WerkgebiedExtra[]
   showcaseFotos  ShowcaseFoto[]
+  chatBerichten  ChatBericht[]
 
   @@index([rol])
 }
@@ -137,6 +138,7 @@ model Lead {
   bedrag    Int // in centen, 1000 = 10 euro
   gekochtOp DateTime @default(now())
   review    Review?
+  chatBerichten ChatBericht[]
 
   @@unique([klusId, vakmanId])
   @@index([klusId])
@@ -266,4 +268,23 @@ model AuditLog {
   @@index([adminId, tijdstip])
   @@index([targetType, targetId])
   @@index([actieCategorie, tijdstip])
+}
+
+// Chat tussen vakman en consument na lead-aankoop. Eén lead = één
+// gesprek-thread tussen die specifieke vakman en de consument-eigenaar
+// van de klus. Vakman moet altijd het eerste bericht sturen
+// (afgedwongen in API). 'gelezen' wordt true zodra de wederpartij de
+// chat opent.
+model ChatBericht {
+  id          Int      @id @default(autoincrement())
+  leadId      Int
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  vanUserId   Int
+  vanUser     User     @relation(fields: [vanUserId], references: [id], onDelete: Cascade)
+  tekst       String   @db.Text
+  gelezen     Boolean  @default(false)
+  aangemaakt  DateTime @default(now())
+
+  @@index([leadId, aangemaakt])
+  @@index([vanUserId])
 }

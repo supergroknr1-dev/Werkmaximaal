@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import LeadChat from "@/components/LeadChat";
 
 export const metadata = {
   title: "Mijn leads — Werkmaximaal",
@@ -96,6 +97,13 @@ export default async function MijnLeadsPage() {
           reacties: { select: { id: true } },
         },
       },
+      _count: {
+        select: {
+          chatBerichten: {
+            where: { vanUserId: { not: user.id }, gelezen: false },
+          },
+        },
+      },
     },
   });
 
@@ -170,7 +178,7 @@ export default async function MijnLeadsPage() {
             </h2>
             <div className="space-y-3">
               {open.map((lead) => (
-                <LeadKaart key={lead.id} lead={lead} />
+                <LeadKaart key={lead.id} lead={lead} eigenUserId={user.id} />
               ))}
             </div>
           </section>
@@ -183,7 +191,7 @@ export default async function MijnLeadsPage() {
             </h2>
             <div className="space-y-3">
               {afgerond.map((lead) => (
-                <LeadKaart key={lead.id} lead={lead} />
+                <LeadKaart key={lead.id} lead={lead} eigenUserId={user.id} />
               ))}
             </div>
           </section>
@@ -193,7 +201,7 @@ export default async function MijnLeadsPage() {
   );
 }
 
-function LeadKaart({ lead }) {
+function LeadKaart({ lead, eigenUserId }) {
   const klus = lead.klus;
   const klant = klus.user;
 
@@ -281,6 +289,12 @@ function LeadKaart({ lead }) {
           </div>
         </dl>
       </div>
+
+      <LeadChat
+        leadId={lead.id}
+        eigenUserId={eigenUserId}
+        initialUnread={lead._count?.chatBerichten ?? 0}
+      />
 
       <div className="mt-3 flex items-center gap-3 text-xs text-slate-500">
         <span>Lead gekocht {formatDatumTijd(lead.gekochtOp)}</span>

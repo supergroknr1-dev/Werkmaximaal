@@ -6,6 +6,7 @@ import SluitKnop from "./SluitKnop";
 import BeoordeelKnop from "./BeoordeelKnop";
 import ScoreBadge from "@/app/_components/ScoreBadge";
 import { getVakmanScores } from "@/lib/reviews";
+import LeadChat from "@/components/LeadChat";
 
 function formatDatum(datum) {
   return new Date(datum).toLocaleDateString("nl-NL", {
@@ -77,6 +78,13 @@ export default async function MijnKlussenPage() {
           review: {
             select: { id: true, score: true },
           },
+          _count: {
+            select: {
+              chatBerichten: {
+                where: { vanUserId: { not: user.id }, gelezen: false },
+              },
+            },
+          },
         },
       },
     },
@@ -129,7 +137,7 @@ export default async function MijnKlussenPage() {
             </p>
             <div className="space-y-3">
               {inAfwachting.map((klus) => (
-                <KlusKaart key={klus.id} klus={klus} vakmanScores={vakmanScores} />
+                <KlusKaart key={klus.id} klus={klus} vakmanScores={vakmanScores} eigenUserId={user.id} />
               ))}
             </div>
           </section>
@@ -142,7 +150,7 @@ export default async function MijnKlussenPage() {
             </h2>
             <div className="space-y-3">
               {open.map((klus) => (
-                <KlusKaart key={klus.id} klus={klus} vakmanScores={vakmanScores} />
+                <KlusKaart key={klus.id} klus={klus} vakmanScores={vakmanScores} eigenUserId={user.id} />
               ))}
             </div>
           </section>
@@ -155,7 +163,7 @@ export default async function MijnKlussenPage() {
             </h2>
             <div className="space-y-3">
               {gesloten.map((klus) => (
-                <KlusKaart key={klus.id} klus={klus} vakmanScores={vakmanScores} />
+                <KlusKaart key={klus.id} klus={klus} vakmanScores={vakmanScores} eigenUserId={user.id} />
               ))}
             </div>
           </section>
@@ -165,7 +173,7 @@ export default async function MijnKlussenPage() {
   );
 }
 
-function KlusKaart({ klus, vakmanScores }) {
+function KlusKaart({ klus, vakmanScores, eigenUserId }) {
   return (
     <div
       className={`bg-white border rounded-md p-5 transition-colors ${
@@ -273,6 +281,12 @@ function KlusKaart({ klus, vakmanScores }) {
                 <p className="text-[11px] text-slate-400 mt-1">
                   Lead gekocht {formatDatum(lead.gekochtOp)} · {formatBedrag(lead.bedrag)}
                 </p>
+                <LeadChat
+                  leadId={lead.id}
+                  eigenUserId={eigenUserId}
+                  initialUnread={lead._count?.chatBerichten ?? 0}
+                  label={`Chat met ${lead.vakman.bedrijfsnaam || lead.vakman.naam}`}
+                />
                 {!klus.gesloten && (
                   <div className="mt-2 pt-2 border-t border-slate-200">
                     <BeoordeelKnop

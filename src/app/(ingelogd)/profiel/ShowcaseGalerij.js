@@ -69,6 +69,7 @@ export default function ShowcaseGalerij({ vakmanId }) {
       canvas.height = h;
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, w, h);
+      tekenWatermerk(ctx, w, h);
       return await new Promise((resolve, reject) => {
         canvas.toBlob(
           (b) => (b ? resolve(b) : reject(new Error("toBlob mislukt"))),
@@ -540,6 +541,55 @@ function StickyActieBalk({ zichtbaar, sub, children }) {
       <div className="flex items-center justify-end gap-2">{children}</div>
     </div>
   );
+}
+
+/**
+ * Tekent een Werkmaximaal-watermerk rechtsonder op het canvas.
+ * Schaalt mee met de foto (4% van de hoogte, geclamped tussen 24-48 px).
+ * Pill met half-transparant zwarte achtergrond, kleine W-badge en de
+ * tekst "Werkmaximaal". Wordt aangeroepen ná drawImage en vóór toBlob.
+ */
+function tekenWatermerk(ctx, w, h) {
+  const hoogte = Math.max(24, Math.min(48, Math.round(h * 0.045)));
+  const padding = Math.round(hoogte * 0.4);
+  const fontSize = Math.round(hoogte * 0.5);
+  const tekst = "Werkmaximaal";
+  const fontStack =
+    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif";
+
+  ctx.font = `600 ${fontSize}px ${fontStack}`;
+  const tekstW = ctx.measureText(tekst).width;
+  const badgeSize = hoogte * 0.7;
+  const breedte = badgeSize + padding * 2 + tekstW + padding;
+  const x = w - breedte - padding;
+  const y = h - hoogte - padding;
+
+  // Pill-achtergrond
+  ctx.fillStyle = "rgba(15, 23, 42, 0.65)"; // slate-900 @ 65%
+  ctx.beginPath();
+  ctx.roundRect(x, y, breedte, hoogte, hoogte / 4);
+  ctx.fill();
+
+  // W-badge (afgeronde witte highlight)
+  const badgeX = x + padding;
+  const badgeY = y + (hoogte - badgeSize) / 2;
+  ctx.fillStyle = "rgba(255, 255, 255, 0.18)";
+  ctx.beginPath();
+  ctx.roundRect(badgeX, badgeY, badgeSize, badgeSize, badgeSize / 5);
+  ctx.fill();
+
+  ctx.fillStyle = "white";
+  ctx.font = `700 ${Math.round(badgeSize * 0.65)}px ${fontStack}`;
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "center";
+  ctx.fillText("W", badgeX + badgeSize / 2, badgeY + badgeSize / 2 + 1);
+
+  // Werkmaximaal-tekst
+  ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+  ctx.font = `600 ${fontSize}px ${fontStack}`;
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "left";
+  ctx.fillText(tekst, badgeX + badgeSize + padding * 0.6, y + hoogte / 2);
 }
 
 /**

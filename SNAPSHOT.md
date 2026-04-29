@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-04-29 (late avond — chat + inbox + DB-wipe + Mollie diagnose)
-**Laatste commit op main:** Mollie diagnose-pagina + stappenplan voor live-mode
+**Laatst bijgewerkt:** 2026-04-29 (diepe nacht — chat + inbox + Mollie diagnose + watermerk)
+**Laatste commit op main:** Watermerk op showcase-foto's via canvas vóór upload
 **Live op:** https://werkmaximaal.vercel.app/
 
 > **Database is leeg gewist op 2026-04-29.** Alleen admin-account (`s.ozkara09@gmail.com`)
@@ -65,6 +65,7 @@ Sessie 2026-04-29 (late avond, chat-feature):
 - **Database-wipe** uitgevoerd: alle testdata weg (4 → 1 user, 8 → 0 klussen, 5 → 0 leads, 47 → 0 activityEvents). Alleen admin (`s.ozkara09@gmail.com`) bewaard. Trefwoorden-config blijft staan.
 - **`/berichten` unified inbox**: placeholder-pagina vervangen door echte verzamel-inbox. Lijst alle leads met ≥1 chat-bericht, gesorteerd op meest recente activiteit, met avatar (foto of initialen-fallback), klustitel, laatste-bericht-preview ("Jij: ..." prefix bij eigen bericht), relatieve tijd ("5 min", "2 u", "3 d"), unread-badge. Klik → opent `/mijn-leads?chat=X` of `/mijn-klussen?chat=X` met die specifieke chat al uitgeklapt via nieuwe `initialOpen`-prop op LeadChat.
 - **`/admin/mollie` diagnose-pagina**: pre-flight check vóór live-mode swap. Toont config-status (API key gezet?, mode test/live, APP_URL, webhook-URL), een live API-connectivity-check (lijst recente payments) en een 5-stappen-plan voor de overgang van test naar live (KvK-verificatie, live-key kopiëren, Vercel env-var bijwerken, productie-test, webhook-bevestiging). Sidebar-link "Mollie" toegevoegd.
+- **Watermerk op showcase-foto's** (canvas-side, vóór upload): donker semi-transparant pill rechtsonder met "W"-badge en "Werkmaximaal"-tekst. Schaalt op `h * 0.045` (24-48 px). Geen bundle-impact (geen sharp / extra deps), werkt in alle moderne browsers via `ctx.roundRect()`. Toegepast in `resizeNaarBlob` dus geldt voor enkele foto's én Voor/Na-paren.
 
 ## 🟡 Waar je was gebleven
 
@@ -73,9 +74,9 @@ Chat-feature volledig live: vakman + consument kunnen op `/mijn-leads` resp. `/m
 ## 🔴 Volgende stappen — top-3 voor morgen
 
 Beste opties (vraag morgen welke):
-1. **Pre-flight live-mode op Mollie** (~30 min config + testflight) — KvK-verificatie indienen, Live API key zetten op Vercel, één echte iDEAL-betaling testen om zeker te weten dat de productie-flow werkt. Logisch nu de DB leeg is.
-2. **Watermerk op showcase-foto's** (~45 min) — klein logo rechtsonder, client-side via canvas vóór upload.
-3. **Headers in nieuwe witte-kaart-stijl** (~1u) — Mijn klussen, Mijn leads, Profiel, Admin headers krijgen dezelfde witte-kaart-met-emerald-accent als de homepage.
+1. **KvK-verificatie indienen bij Mollie** (handmatig, 5 min + 1-3 werkdagen wachten) — zie `/admin/mollie` voor het stappenplan. Kan vandaag al, vóór de start van de werksessie morgen.
+2. **Headers in nieuwe witte-kaart-stijl** (~1u) — Mijn klussen, Mijn leads, Profiel, Admin headers krijgen dezelfde witte-kaart-met-emerald-accent als de homepage.
+3. **Foto-ordering met drag** tussen showcase-foto's (volgorde-veld bestaat al in DB). ~45 min.
 
 Alternatieven:
 - **Cloudflare Turnstile config** (account aanmaken + 2 env-vars). Spam-helper is al klaar; dit is enkel wat insteek-werk.

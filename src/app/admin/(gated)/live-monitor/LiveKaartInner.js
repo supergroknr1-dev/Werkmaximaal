@@ -24,11 +24,12 @@ const STATUS_LABEL = {
  * direct kleur-controle.
  */
 function maakIcon(kleur) {
+  // 28×28 px = ruim 44×44 hit-target (popup-tap-area is groter dan icoon)
   return L.divIcon({
     className: "live-kaart-marker",
-    html: `<div style="width:18px;height:18px;background:${kleur};border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.35);"></div>`,
-    iconSize: [18, 18],
-    iconAnchor: [9, 9],
+    html: `<div style="width:28px;height:28px;background:${kleur};border:4px solid white;border-radius:50%;box-shadow:0 3px 8px rgba(0,0,0,0.35);"></div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
   });
 }
 

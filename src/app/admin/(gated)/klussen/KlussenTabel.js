@@ -195,7 +195,80 @@ export default function KlussenTabel({ klussen, prijzen, beginFilter = "alle" })
           Geen klussen gevonden.
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <>
+        {/* Mobiele kaart-weergave */}
+        <ul className="md:hidden divide-y divide-slate-100">
+          {gefilterd.map((k) => (
+            <li key={k.id} className="px-4 py-4">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="min-w-0 flex-1">
+                  <Link
+                    href={`/klussen/${k.id}`}
+                    className="font-medium text-slate-900 hover:underline inline-flex items-center gap-1"
+                  >
+                    <span className="truncate">{k.titel}</span>
+                    <ExternalLink size={12} className="text-slate-400 shrink-0" />
+                  </Link>
+                  <p className="text-xs text-slate-500 truncate">
+                    {k.categorie || "Geen categorie"} · {formatDatum(k.aangemaakt)}
+                  </p>
+                  <p className="text-xs text-slate-500 truncate">
+                    {k.eigenaarNaam || "—"} · {k.postcode || ""} {k.plaats}
+                  </p>
+                </div>
+                <div className="shrink-0 flex flex-col items-end gap-1">
+                  {k.gesloten ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                      <CircleCheck size={11} />
+                      Gesloten
+                    </span>
+                  ) : !k.goedgekeurd ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-amber-600">
+                      <Clock size={11} />
+                      Te keuren
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
+                      <CircleDot size={11} />
+                      Live
+                    </span>
+                  )}
+                  <VoorkeurBadge voorkeur={k.voorkeurVakmanType} />
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 text-[11px] text-slate-500">
+                <span>Reacties/leads: <span className="text-slate-700">{k.reactiesCount} / {k.leadsCount}</span></span>
+                <span>Lead-prijs: <span className="text-slate-700 tabular-nums">{formatBedrag(leadPrijs(k.voorkeurVakmanType))}</span></span>
+                <span>Omzet: <span className="text-slate-900 font-medium tabular-nums">{formatBedrag(potentieleOmzet(k))}</span></span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {!k.goedgekeurd && !k.gesloten && (
+                  <button
+                    type="button"
+                    onClick={() => keur(k, true)}
+                    disabled={keurId === k.id}
+                    className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-3 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-md border border-emerald-200 disabled:opacity-50"
+                  >
+                    <ShieldCheck size={13} />
+                    {keurId === k.id ? "..." : "Goedkeuren"}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => verwijder(k)}
+                  disabled={bezigId === k.id}
+                  className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-3 text-xs font-medium text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-md border border-rose-200 disabled:opacity-50"
+                >
+                  <Trash2 size={13} />
+                  {bezigId === k.id ? "..." : "Verwijderen"}
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        {/* Desktop tabel-weergave */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-xs uppercase tracking-wider text-slate-500 font-medium">
@@ -291,6 +364,7 @@ export default function KlussenTabel({ klussen, prijzen, beginFilter = "alle" })
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
     {ingreepModal}

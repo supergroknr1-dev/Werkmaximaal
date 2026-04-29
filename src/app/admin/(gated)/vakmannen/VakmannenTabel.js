@@ -189,7 +189,74 @@ export default function VakmannenTabel({ vakmannen }) {
           Geen vakmannen gevonden.
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <>
+        {/* Mobiele kaart-weergave: één kaart per vakman, alle info verticaal gestapeld */}
+        <ul className="md:hidden divide-y divide-slate-100">
+          {gefilterd.map((v) => (
+            <li key={v.id} className="px-4 py-4">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="min-w-0">
+                  <p className="font-medium text-slate-900 truncate">
+                    {v.bedrijfsnaam || v.naam}
+                  </p>
+                  {v.bedrijfsnaam && (
+                    <p className="text-xs text-slate-500 truncate">{v.naam}</p>
+                  )}
+                  <p className="text-xs text-slate-500 truncate">{v.email}</p>
+                </div>
+                <TypeBadge type={v.vakmanType} />
+              </div>
+              <div className="flex flex-wrap items-center gap-2 mb-3 text-[11px] text-slate-500">
+                <KvkBadge vakman={v} />
+                {v.kvkNummer && (
+                  <span className="font-mono">{v.kvkNummer}</span>
+                )}
+                {v.regioPostcode && (
+                  <span className="font-mono">{v.regioPostcode}</span>
+                )}
+                <span>{formatDatum(v.aangemaakt)}</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={`/vakmannen/${v.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-3 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-md border border-slate-200"
+                >
+                  <ExternalLink size={13} />
+                  Profiel
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => shadowStart(v)}
+                  className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-3 text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-md border border-amber-200"
+                >
+                  <UserCog size={13} />
+                  Bekijk als
+                </button>
+                <Link
+                  href={`/admin/vakmannen/${v.id}/bewerken`}
+                  className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-3 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-md border border-slate-200"
+                >
+                  <Pencil size={13} />
+                  Bewerken
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => verwijder(v)}
+                  disabled={bezigId === v.id}
+                  className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-3 text-xs font-medium text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-md border border-rose-200 disabled:opacity-50"
+                >
+                  <Trash2 size={13} />
+                  {bezigId === v.id ? "..." : "Verwijderen"}
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        {/* Desktop tabel-weergave */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-xs uppercase tracking-wider text-slate-500 font-medium">
@@ -274,6 +341,7 @@ export default function VakmannenTabel({ vakmannen }) {
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
     {ingreepModal}

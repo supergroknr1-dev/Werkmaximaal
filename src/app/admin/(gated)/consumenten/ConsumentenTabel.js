@@ -128,7 +128,74 @@ export default function ConsumentenTabel({ consumenten }) {
           Geen consumenten gevonden.
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <>
+        {/* Mobiele kaart-weergave */}
+        <ul className="md:hidden divide-y divide-slate-100">
+          {gefilterd.map((c) => (
+            <li key={c.id} className="px-4 py-4">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-slate-900 truncate inline-flex items-center gap-1.5">
+                    {weergaveNaam(c)}
+                    {c.isAdmin && (
+                      <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-900 text-white">
+                        <ShieldAlert size={9} />
+                        Admin
+                      </span>
+                    )}
+                  </p>
+                  <a href={`mailto:${c.email}`} className="text-xs text-slate-600 hover:underline truncate block">
+                    {c.email}
+                  </a>
+                  {c.telefoon && (
+                    <a href={`tel:${c.telefoon}`} className="text-xs text-slate-600 hover:underline font-mono">
+                      {c.telefoon}
+                    </a>
+                  )}
+                </div>
+                <span className={`text-sm tabular-nums shrink-0 ${
+                  c.klussenCount > 0 ? "text-slate-900 font-semibold" : "text-slate-400"
+                }`}>
+                  {c.klussenCount} klus{c.klussenCount === 1 ? "" : "sen"}
+                </span>
+              </div>
+              {(c.adres || c.postcode || c.plaats) && (
+                <p className="text-[11px] text-slate-500 mb-2">
+                  {[c.adres, c.postcode, c.plaats].filter(Boolean).join(" · ")}
+                </p>
+              )}
+              {c.categorieen?.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {c.categorieen.map((cat) => (
+                    <span
+                      key={cat}
+                      className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200"
+                    >
+                      {cat}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] text-slate-400">
+                  Aangemeld {formatDatum(c.aangemaakt)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => verwijder(c)}
+                  disabled={bezigId === c.id || c.isAdmin}
+                  className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-3 text-xs font-medium text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-md border border-rose-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <Trash2 size={13} />
+                  {bezigId === c.id ? "..." : "Verwijderen"}
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        {/* Desktop tabel-weergave */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-[11px] uppercase tracking-wider text-slate-500 font-medium bg-slate-50 border-b border-slate-100">
@@ -249,6 +316,7 @@ export default function ConsumentenTabel({ consumenten }) {
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
     {ingreepModal}

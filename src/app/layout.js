@@ -74,21 +74,23 @@ async function detecteerAdminInfo() {
 
 export default async function RootLayout({ children }) {
   const user = await getCurrentUser();
-  const sidebarUser =
-    user && (user.rol === "consument" || user.rol === "vakman")
-      ? {
-          rol: user.rol,
-          vakmanType: user.vakmanType,
-          naam: user.naam,
-        }
-      : null;
+  // Doorgeven aan GlobalShell: alle info nodig voor zowel sidebar
+  // (alleen consument/vakman) als topbalk (alle ingelogde rollen).
+  const shellUser = user
+    ? {
+        rol: user.rol,
+        vakmanType: user.vakmanType,
+        naam: user.naam,
+        voornaam: user.voornaam,
+      }
+    : null;
 
   const adminInfo = await detecteerAdminInfo();
 
   return (
     <html lang="nl" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans">
-        <GlobalShell user={sidebarUser} adminInfo={adminInfo}>
+        <GlobalShell user={shellUser} adminInfo={adminInfo}>
           {children}
         </GlobalShell>
       </body>

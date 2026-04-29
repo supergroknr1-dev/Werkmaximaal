@@ -41,8 +41,19 @@ export default function ProfielForm({ user }) {
   // (privépersonen zonder KvK).
   const toonPersoonlijkAdres = isConsument || isHobbyist;
 
-  const [voornaam, setVoornaam] = useState(user.voornaam ?? "");
-  const [achternaam, setAchternaam] = useState(user.achternaam ?? "");
+  // Fallback voor users die zich registreerden vóór de aparte
+  // voornaam/achternaam-velden bestonden: splits dan op de eerste spatie
+  // van user.naam zodat ze niet leeg blijven.
+  const initVoornaam =
+    user.voornaam ??
+    (user.naam ? user.naam.split(/\s+/)[0] : "") ??
+    "";
+  const initAchternaam =
+    user.achternaam ??
+    (user.naam ? user.naam.split(/\s+/).slice(1).join(" ") : "") ??
+    "";
+  const [voornaam, setVoornaam] = useState(initVoornaam);
+  const [achternaam, setAchternaam] = useState(initAchternaam);
 
   // 30-dagen-regel voor schermnaam (= naam, samengesteld uit voornaam+
   // achternaam). Berekent of er nog wachttijd is.

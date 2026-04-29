@@ -6,7 +6,8 @@ import WachtwoordVeld from "../../../components/WachtwoordVeld";
 import SpamVelden, { useSpamVelden } from "../../../components/SpamVelden";
 
 export default function RegistrerenConsumentPage() {
-  const [naam, setNaam] = useState("");
+  const [voornaam, setVoornaam] = useState("");
+  const [achternaam, setAchternaam] = useState("");
   const [email, setEmail] = useState("");
   const [wachtwoord, setWachtwoord] = useState("");
   const [bezig, setBezig] = useState(false);
@@ -19,12 +20,16 @@ export default function RegistrerenConsumentPage() {
     setBezig(true);
     setFoutmelding("");
 
+    const naam = `${voornaam.trim()} ${achternaam.trim()}`.trim();
+
     const res = await fetch("/api/registreren", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         rol: "consument",
         naam,
+        voornaam,
+        achternaam,
         email,
         wachtwoord,
         ...spam.body(),
@@ -102,18 +107,33 @@ export default function RegistrerenConsumentPage() {
           onSubmit={registreer}
           className="bg-white border border-slate-200 rounded-md shadow-sm p-6 md:p-8 space-y-5"
         >
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Volledige naam
-            </label>
-            <input
-              type="text"
-              value={naam}
-              onChange={(e) => setNaam(e.target.value)}
-              required
-              autoComplete="name"
-              className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Voornaam
+              </label>
+              <input
+                type="text"
+                value={voornaam}
+                onChange={(e) => setVoornaam(e.target.value)}
+                required
+                autoComplete="given-name"
+                className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Achternaam
+              </label>
+              <input
+                type="text"
+                value={achternaam}
+                onChange={(e) => setAchternaam(e.target.value)}
+                required
+                autoComplete="family-name"
+                className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+              />
+            </div>
           </div>
 
           <div>

@@ -28,6 +28,11 @@ const TABELLEN = [
   },
   { naam: "Reactie", query: () => prisma.reactie.findMany() },
   { naam: "Lead", query: () => prisma.lead.findMany() },
+  { naam: "Review", query: () => prisma.review.findMany() },
+  { naam: "ShowcaseFoto", query: () => prisma.showcaseFoto.findMany() },
+  { naam: "WerkgebiedExtra", query: () => prisma.werkgebiedExtra.findMany() },
+  { naam: "ChatBericht", query: () => prisma.chatBericht.findMany() },
+  { naam: "ActivityEvent", query: () => prisma.activityEvent.findMany() },
 ];
 
 function veiligeTimestamp() {
@@ -52,7 +57,21 @@ async function main() {
     process.stdout.write(`  ${t.naam.padEnd(22)} ... `);
     const rijen = await t.query();
     const bestand = path.join(doelmap, `${t.naam}.json`);
-    fs.writeFileSync(bestand, JSON.stringify(rijen, null, 2));
+    // BigInt (bv. ActivityEvent.id-counters) en Bytes (audit-log hashes)
+    // moeten handmatig serialized worden — JSON kent ze niet standaard.
+    fs.writeFileSync(
+      bestand,
+      JSON.stringify(
+        rijen,
+        (_, v) =>
+          typeof v === "bigint"
+            ? `__bigint__${v.toString()}`
+            : v instanceof Uint8Array
+            ? `__bytes_base64__${Buffer.from(v).toString("base64")}`
+            : v,
+        2
+      )
+    );
     manifest.tabellen[t.naam] = rijen.length;
     console.log(`${rijen.length} rij${rijen.length === 1 ? "" : "en"}`);
   }

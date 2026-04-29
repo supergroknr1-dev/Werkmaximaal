@@ -30,9 +30,12 @@ function formatBedrag(centen) {
   return `€ ${(centen / 100).toFixed(2).replace(".", ",")}`;
 }
 
-export default async function MijnLeadsPage() {
+export default async function MijnLeadsPage({ searchParams }) {
   const session = await getSession();
   if (!session.userId) redirect("/inloggen");
+
+  const sp = (await searchParams) ?? {};
+  const openChatLeadId = sp.chat ? parseInt(sp.chat) : null;
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
@@ -178,7 +181,7 @@ export default async function MijnLeadsPage() {
             </h2>
             <div className="space-y-3">
               {open.map((lead) => (
-                <LeadKaart key={lead.id} lead={lead} eigenUserId={user.id} />
+                <LeadKaart key={lead.id} lead={lead} eigenUserId={user.id} openChat={lead.id === openChatLeadId} />
               ))}
             </div>
           </section>
@@ -191,7 +194,7 @@ export default async function MijnLeadsPage() {
             </h2>
             <div className="space-y-3">
               {afgerond.map((lead) => (
-                <LeadKaart key={lead.id} lead={lead} eigenUserId={user.id} />
+                <LeadKaart key={lead.id} lead={lead} eigenUserId={user.id} openChat={lead.id === openChatLeadId} />
               ))}
             </div>
           </section>
@@ -201,7 +204,7 @@ export default async function MijnLeadsPage() {
   );
 }
 
-function LeadKaart({ lead, eigenUserId }) {
+function LeadKaart({ lead, eigenUserId, openChat }) {
   const klus = lead.klus;
   const klant = klus.user;
 
@@ -294,6 +297,7 @@ function LeadKaart({ lead, eigenUserId }) {
         leadId={lead.id}
         eigenUserId={eigenUserId}
         initialUnread={lead._count?.chatBerichten ?? 0}
+        initialOpen={openChat}
       />
 
       <div className="mt-3 flex items-center gap-3 text-xs text-slate-500">

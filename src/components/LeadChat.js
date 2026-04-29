@@ -23,8 +23,9 @@ export default function LeadChat({
   eigenUserId,
   initialUnread = 0,
   label = "Chat met klant",
+  initialOpen = false,
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(initialOpen);
   const [berichten, setBerichten] = useState([]);
   const [unread, setUnread] = useState(initialUnread);
   const [tekst, setTekst] = useState("");

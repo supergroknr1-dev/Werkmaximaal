@@ -20,11 +20,14 @@ function formatBedrag(centen) {
   return `€ ${(centen / 100).toFixed(2).replace(".", ",")}`;
 }
 
-export default async function MijnKlussenPage() {
+export default async function MijnKlussenPage({ searchParams }) {
   const session = await getSession();
   if (!session.userId) {
     redirect("/inloggen");
   }
+
+  const sp = (await searchParams) ?? {};
+  const openChatLeadId = sp.chat ? parseInt(sp.chat) : null;
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
@@ -137,7 +140,7 @@ export default async function MijnKlussenPage() {
             </p>
             <div className="space-y-3">
               {inAfwachting.map((klus) => (
-                <KlusKaart key={klus.id} klus={klus} vakmanScores={vakmanScores} eigenUserId={user.id} />
+                <KlusKaart key={klus.id} klus={klus} vakmanScores={vakmanScores} eigenUserId={user.id} openChatLeadId={openChatLeadId} />
               ))}
             </div>
           </section>
@@ -150,7 +153,7 @@ export default async function MijnKlussenPage() {
             </h2>
             <div className="space-y-3">
               {open.map((klus) => (
-                <KlusKaart key={klus.id} klus={klus} vakmanScores={vakmanScores} eigenUserId={user.id} />
+                <KlusKaart key={klus.id} klus={klus} vakmanScores={vakmanScores} eigenUserId={user.id} openChatLeadId={openChatLeadId} />
               ))}
             </div>
           </section>
@@ -163,7 +166,7 @@ export default async function MijnKlussenPage() {
             </h2>
             <div className="space-y-3">
               {gesloten.map((klus) => (
-                <KlusKaart key={klus.id} klus={klus} vakmanScores={vakmanScores} eigenUserId={user.id} />
+                <KlusKaart key={klus.id} klus={klus} vakmanScores={vakmanScores} eigenUserId={user.id} openChatLeadId={openChatLeadId} />
               ))}
             </div>
           </section>
@@ -173,7 +176,7 @@ export default async function MijnKlussenPage() {
   );
 }
 
-function KlusKaart({ klus, vakmanScores, eigenUserId }) {
+function KlusKaart({ klus, vakmanScores, eigenUserId, openChatLeadId }) {
   return (
     <div
       className={`bg-white border rounded-md p-5 transition-colors ${
@@ -286,6 +289,7 @@ function KlusKaart({ klus, vakmanScores, eigenUserId }) {
                   eigenUserId={eigenUserId}
                   initialUnread={lead._count?.chatBerichten ?? 0}
                   label={`Chat met ${lead.vakman.bedrijfsnaam || lead.vakman.naam}`}
+                  initialOpen={lead.id === openChatLeadId}
                 />
                 {!klus.gesloten && (
                   <div className="mt-2 pt-2 border-t border-slate-200">

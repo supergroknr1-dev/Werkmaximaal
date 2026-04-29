@@ -119,6 +119,9 @@ model Klus {
   // die zonder account zijn aangemaakt.
   userId       Int?
   user         User?     @relation(fields: [userId], references: [id])
+  // Auto-bijgewerkt door Prisma bij elke wijziging — gebruikt door de
+  // admin live-monitor om "recent gesloten" klussen op te pikken.
+  bijgewerktOp DateTime  @default(now()) @updatedAt
 
   @@index([userId])
 }

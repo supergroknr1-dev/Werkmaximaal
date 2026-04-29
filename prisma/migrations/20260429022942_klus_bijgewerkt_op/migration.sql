@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "public"."Klus" ADD COLUMN     "bijgewerktOp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

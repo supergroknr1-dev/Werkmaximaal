@@ -8,13 +8,13 @@ import "leaflet/dist/leaflet.css";
 const KLEUREN = {
   nieuw: "#3b82f6", // blue-500
   "chat-actief": "#f97316", // orange-500
-  wachtend: "#94a3b8", // slate-400
+  afgehandeld: "#10b981", // emerald-500
 };
 
 const STATUS_LABEL = {
   nieuw: "Nieuw",
   "chat-actief": "Chat actief",
-  wachtend: "Wachtend",
+  afgehandeld: "Afgehandeld",
 };
 
 /**
@@ -48,7 +48,7 @@ export default function LiveKaart({ punten }) {
     () => ({
       nieuw: maakIcon(KLEUREN.nieuw),
       "chat-actief": maakIcon(KLEUREN["chat-actief"]),
-      wachtend: maakIcon(KLEUREN.wachtend),
+      afgehandeld: maakIcon(KLEUREN.afgehandeld),
     }),
     []
   );
@@ -63,7 +63,7 @@ export default function LiveKaart({ punten }) {
   return (
     <div className="h-[70vh] min-h-[500px] rounded-md overflow-hidden border border-slate-200 shadow-sm">
       <MapContainer
-        center={[52.15, 5.3]}
+        center={[52.1326, 5.2913]}
         zoom={7}
         minZoom={6}
         maxZoom={18}

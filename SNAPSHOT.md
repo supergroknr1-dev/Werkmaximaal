@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-04-29 (diepe nacht — chat + inbox + Mollie diagnose + watermerk)
-**Laatste commit op main:** Watermerk op showcase-foto's via canvas vóór upload
+**Laatst bijgewerkt:** 2026-04-29 (diepe nacht — chat + inbox + Mollie diagnose + watermerk + uniform topbalk)
+**Laatste commit op main:** Uniforme topbalk met begroeting + uitlog-icoon op admin én ingelogde pagina's
 **Live op:** https://werkmaximaal.vercel.app/
 
 > **Database is leeg gewist op 2026-04-29.** Alleen admin-account (`s.ozkara09@gmail.com`)
@@ -66,6 +66,7 @@ Sessie 2026-04-29 (late avond, chat-feature):
 - **`/berichten` unified inbox**: placeholder-pagina vervangen door echte verzamel-inbox. Lijst alle leads met ≥1 chat-bericht, gesorteerd op meest recente activiteit, met avatar (foto of initialen-fallback), klustitel, laatste-bericht-preview ("Jij: ..." prefix bij eigen bericht), relatieve tijd ("5 min", "2 u", "3 d"), unread-badge. Klik → opent `/mijn-leads?chat=X` of `/mijn-klussen?chat=X` met die specifieke chat al uitgeklapt via nieuwe `initialOpen`-prop op LeadChat.
 - **`/admin/mollie` diagnose-pagina**: pre-flight check vóór live-mode swap. Toont config-status (API key gezet?, mode test/live, APP_URL, webhook-URL), een live API-connectivity-check (lijst recente payments) en een 5-stappen-plan voor de overgang van test naar live (KvK-verificatie, live-key kopiëren, Vercel env-var bijwerken, productie-test, webhook-bevestiging). Sidebar-link "Mollie" toegevoegd.
 - **Watermerk op showcase-foto's** (canvas-side, vóór upload): donker semi-transparant pill rechtsonder met "W"-badge en "Werkmaximaal"-tekst. Schaalt op `h * 0.045` (24-48 px). Geen bundle-impact (geen sharp / extra deps), werkt in alle moderne browsers via `ctx.roundRect()`. Toegepast in `resizeNaarBlob` dus geldt voor enkele foto's én Voor/Na-paren.
+- **Uniforme topbalk met begroeting + uitlog-icoon** op alle ingelogde pagina's. Sticky donkere balk (slate-900) toont rechts "Hoi, [Voornaam]" + LogOut-icoon. Mobile: alleen icoon, geen naam (ruimte). Gemount in zowel `(ingelogd)/layout.js` als `admin/(gated)/layout.js` met dezelfde component (`IngelogdTopBar`). Duplicate uitlog-knoppen uit beide zijbalken weggehaald. Admin gaat na uitloggen naar `/management-secure-login`, vakman/consument naar `/`. `getCurrentUser` selecteert nu ook `voornaam`.
 
 ## 🟡 Waar je was gebleven
 

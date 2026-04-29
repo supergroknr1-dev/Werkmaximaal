@@ -10,6 +10,7 @@ export async function getCurrentUser() {
       id: true,
       email: true,
       naam: true,
+      voornaam: true,
       rol: true,
       isAdmin: true,
       vakmanType: true,

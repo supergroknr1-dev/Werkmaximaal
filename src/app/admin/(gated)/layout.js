@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "../../../lib/auth";
 import { ADMIN_LOGIN_PATH, isToegestaneAdminEmail } from "../../../lib/admin-paths";
+import IngelogdTopBar from "../../../components/IngelogdTopBar";
 import Sidebar from "./Sidebar";
 
 /**
@@ -31,6 +32,11 @@ export default async function GatedAdminLayout({ children }) {
     <div className="min-h-screen bg-slate-50">
       <Sidebar adminNaam={user.naam} />
       <div className="md:pl-60">
+        <IngelogdTopBar
+          naam={user.naam}
+          voornaam={user.voornaam}
+          redirectNa={ADMIN_LOGIN_PATH}
+        />
         <main className="px-6 md:px-10 py-8 md:py-10">{children}</main>
       </div>
     </div>

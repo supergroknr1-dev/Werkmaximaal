@@ -106,18 +106,9 @@ function Header({ rol, vakmanType }) {
   );
 }
 
-function Voet({ naam }) {
-  async function uitloggen() {
-    await fetch("/api/logout", { method: "POST" });
-    window.location.href = "/";
-  }
+function Voet() {
   return (
-    <div className="px-3 py-4 border-t border-slate-800 space-y-2">
-      {naam && (
-        <p className="text-xs text-slate-400 px-2">
-          Ingelogd als <span className="text-white font-medium">{naam}</span>
-        </p>
-      )}
+    <div className="px-3 py-4 border-t border-slate-800">
       <Link
         href="/"
         className="flex items-center gap-2 px-2 py-1.5 text-xs text-slate-400 hover:text-white transition-colors"
@@ -125,13 +116,6 @@ function Voet({ naam }) {
         <ArrowLeft size={14} />
         Terug naar site
       </Link>
-      <button
-        type="button"
-        onClick={uitloggen}
-        className="w-full text-left px-2 py-1.5 text-xs text-slate-400 hover:text-white transition-colors"
-      >
-        Uitloggen
-      </button>
     </div>
   );
 }
@@ -167,7 +151,7 @@ export default function IngelogdSidebar({ rol, vakmanType, naam }) {
       <aside className="hidden md:flex md:w-60 md:flex-col md:fixed md:inset-y-0 bg-slate-900 text-slate-100 border-r border-slate-800 z-20">
         <Header rol={rol} vakmanType={vakmanType} />
         <NavLijst items={items} pathname={pathname} />
-        <Voet naam={naam} />
+        <Voet />
       </aside>
 
       {/* Mobiele drawer-overlay */}
@@ -192,7 +176,7 @@ export default function IngelogdSidebar({ rol, vakmanType, naam }) {
               pathname={pathname}
               onNavigeer={() => setMobielOpen(false)}
             />
-            <Voet naam={naam} />
+            <Voet />
           </aside>
         </div>
       )}

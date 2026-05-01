@@ -3,9 +3,16 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Hammer, ClipboardCheck } from "lucide-react";
 
 const PENDING_KEY = "werkmaximaal_pending_klus";
 const AUTO_PLAATSEN_KEY = "werkmaximaal_auto_plaatsen";
+
+// Drempels voor de social-proof-sectie. Sectie is verborgen tot
+// beide tellers boven hun drempel zitten — zo voorkomen we dat
+// "1 vakman · 0 klussen" als vertrouwens-claim wordt getoond.
+const STATS_DREMPEL_VAKMANNEN = 25;
+const STATS_DREMPEL_KLUSSEN = 10;
 
 function tijdGeleden(datumString) {
   const verschilSeconden = Math.floor((Date.now() - new Date(datumString).getTime()) / 1000);
@@ -100,6 +107,7 @@ export default function Home() {
   const [huidigeUser, setHuidigeUser] = useState(null);
   const [userLoaded, setUserLoaded] = useState(false);
   const [hobbyistInschakeld, setHobbyistInschakeld] = useState(true);
+  const [stats, setStats] = useState(null);
 
   useEffect(() => {
     haalKlussenOp();
@@ -108,6 +116,10 @@ export default function Home() {
     fetch("/api/instellingen")
       .then((r) => r.json())
       .then((d) => setHobbyistInschakeld(d.hobbyistInschakeld !== false))
+      .catch(() => {});
+    fetch("/api/stats")
+      .then((r) => r.json())
+      .then((d) => setStats(d))
       .catch(() => {});
     // Herstel een onafgemaakte klus uit sessionStorage (gebruiker ging
     // eerst inloggen/registreren). Velden worden gevuld; gebruiker
@@ -376,6 +388,37 @@ export default function Home() {
             </div>
           </section>
         )}
+
+        {stats &&
+          stats.vakmannen >= STATS_DREMPEL_VAKMANNEN &&
+          stats.klussen >= STATS_DREMPEL_KLUSSEN && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+              <div className="bg-white rounded-lg p-8 shadow-md text-center">
+                <Hammer
+                  className="w-10 h-10 text-orange-600 mx-auto mb-4"
+                  strokeWidth={1.5}
+                />
+                <p className="text-5xl md:text-6xl font-bold text-orange-600 tracking-tight tabular-nums mb-3">
+                  {stats.vakmannen.toLocaleString("nl-NL")}
+                </p>
+                <p className="text-sm font-medium text-slate-900">
+                  Geverifieerde Vaklieden &amp; Buurthelden
+                </p>
+              </div>
+              <div className="bg-white rounded-lg p-8 shadow-sm text-center border-t-4 border-orange-600">
+                <ClipboardCheck
+                  className="w-10 h-10 text-orange-600 mx-auto mb-4"
+                  strokeWidth={1.5}
+                />
+                <p className="text-5xl md:text-6xl font-bold text-slate-900 tracking-tight tabular-nums mb-3">
+                  {stats.klussen.toLocaleString("nl-NL")}+
+                </p>
+                <p className="text-sm font-medium text-slate-900">
+                  Succesvolle Klussen
+                </p>
+              </div>
+            </div>
+          )}
 
         {userLoaded && huidigeUser?.rol === "vakman" && (
           <div className="bg-white border border-slate-200 rounded-md shadow-sm p-6 md:p-8 mb-10">

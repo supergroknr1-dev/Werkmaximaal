@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-05-01 (kantoor — witte-kaart-headers + z-index-fix mobiel admin-menu)
-**Laatste commit op main:** Mobiel admin-menu boven Leaflet-kaart op Live monitor (z-index fix)
+**Laatst bijgewerkt:** 2026-05-01 (kantoor — Pro-Link-pilot op homepage)
+**Laatste commit op main:** Pro-Link-pilot homepage: charcoal hero + oranje stappenbalk en CTA's
 **Live op:** https://werkmaximaal.vercel.app/
 
 > **Database is leeg gewist op 2026-04-29.** Alleen admin-account (`s.ozkara09@gmail.com`)
@@ -74,6 +74,7 @@ Sessie 2026-04-29 (late avond, chat-feature):
 Sessie 2026-05-01 (kantoor):
 - **Uniforme witte-kaart-stijl headers** op `/mijn-klussen`, `/mijn-leads`, `/profiel` en `/admin`. Bestaande eyebrow + h1 + subtitel zit nu in een witte kaart met `border border-slate-200 rounded-lg shadow-sm overflow-hidden` plus een `h-1 bg-gradient-to-r from-emerald-500 via-emerald-600 to-slate-900`-strip bovenaan — dezelfde look als de homepage-header. Inhoud van de headers ongewijzigd, alleen wrapper.
 - **Z-index-fix mobiel admin-menu** op `/admin/live-monitor`. Leaflet zet zijn panes vast op z-index 200–700 en controls op 1000; admin-Sidebar drawer stond op `z-50`, hamburger op `z-40` — beide vielen onder de kaart op mobiel. Beide opgehoogd naar `z-[1100]` zodat het menu altijd bovenop de kaart ligt.
+- **Pro-Link-pilot op homepage** ("Pro-Link Interface" design-concept). Strikt afgebakende kleur-pilot: alleen op `/` is een charcoal hero-sectie (slate-900 bg, witte kop "Vind de juiste vakman voor elke klus", oranje "Klus plaatsen"-CTA met `#klus-plaatsen`-anchor) toegevoegd boven de stappenbalk; stap-cirkels en de twee primary form-CTA's ("Volgende", "Plaats klus") van slate-900 → orange-600. Alle andere pagina's, status-badges en de witte-kaart-header met emerald-strip blijven ongewijzigd. Bedoeling: zien hoe charcoal/oranje qua merk voelt vóór een eventuele globale switch (optie B).
 
 ## 🟡 Waar je was gebleven
 

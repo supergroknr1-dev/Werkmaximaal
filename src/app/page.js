@@ -358,6 +358,25 @@ export default function Home() {
           </div>
         </header>
 
+        {userLoaded && !huidigeUser?.isAdmin && (!huidigeUser || huidigeUser.rol === "consument") && (
+          <section className="mb-10 bg-slate-900 rounded-lg overflow-hidden shadow-sm">
+            <div className="px-6 py-10 md:px-10 md:py-14 text-center">
+              <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight mb-3">
+                Vind de juiste vakman voor elke klus
+              </h2>
+              <p className="text-sm md:text-base text-slate-300 mb-6 max-w-md mx-auto">
+                Plaats uw klus gratis en ontvang reacties van geschikte vakmensen in uw buurt.
+              </p>
+              <a
+                href="#klus-plaatsen"
+                className="inline-block bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold px-6 py-3 rounded-md transition-colors"
+              >
+                Klus plaatsen
+              </a>
+            </div>
+          </section>
+        )}
+
         {userLoaded && huidigeUser?.rol === "vakman" && (
           <div className="bg-white border border-slate-200 rounded-md shadow-sm p-6 md:p-8 mb-10">
             <p className="text-xs uppercase tracking-wider text-slate-500 font-medium mb-2">
@@ -375,11 +394,11 @@ export default function Home() {
 
         {userLoaded && !huidigeUser?.isAdmin && (!huidigeUser || huidigeUser.rol === "consument") && (
         <>
-        <div className="flex items-center gap-3 mb-6">
+        <div id="klus-plaatsen" className="flex items-center gap-3 mb-6 scroll-mt-4">
           <div className="flex items-center gap-2">
             <span
               className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
-                stap >= 1 ? "bg-slate-900 text-white" : "bg-slate-200 text-slate-500"
+                stap >= 1 ? "bg-orange-600 text-white" : "bg-slate-200 text-slate-500"
               }`}
             >
               1
@@ -392,7 +411,7 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <span
               className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
-                stap >= 2 ? "bg-slate-900 text-white" : "bg-slate-200 text-slate-500"
+                stap >= 2 ? "bg-orange-600 text-white" : "bg-slate-200 text-slate-500"
               }`}
             >
               2
@@ -500,7 +519,7 @@ export default function Home() {
                 type="button"
                 onClick={() => setStap(2)}
                 disabled={!stap1Geldig}
-                className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-sm font-medium py-3 rounded-md transition-colors"
+                className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-sm font-medium py-3 rounded-md transition-colors"
               >
                 Volgende
               </button>
@@ -629,7 +648,7 @@ export default function Home() {
                 <button
                   type="submit"
                   disabled={bezig}
-                  className="flex-1 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white text-sm font-medium py-3 rounded-md transition-colors"
+                  className="flex-1 bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 text-white text-sm font-medium py-3 rounded-md transition-colors"
                 >
                   {bezig ? "Bezig..." : "Plaats klus"}
                 </button>

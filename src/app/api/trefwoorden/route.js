@@ -16,27 +16,56 @@ export async function POST(request) {
 
   const data = await request.json();
   const categorie = (data.categorie ?? "").trim();
-  const woord = (data.woord ?? "").trim().toLowerCase();
 
-  if (!categorie || !woord) {
+  if (!categorie) {
+    return Response.json({ error: "Categorie is verplicht." }, { status: 400 });
+  }
+
+  // Accepteer ofwel `woord` (single) of `woorden` (array). De multi-input
+  // in /beheer splitst op komma's of newlines en stuurt het als array.
+  let inputWoorden = [];
+  if (Array.isArray(data.woorden)) {
+    inputWoorden = data.woorden;
+  } else if (typeof data.woord === "string") {
+    inputWoorden = [data.woord];
+  }
+
+  const schoneWoorden = [
+    ...new Set(
+      inputWoorden
+        .map((w) => (typeof w === "string" ? w.trim().toLowerCase() : ""))
+        .filter(Boolean)
+    ),
+  ];
+
+  if (schoneWoorden.length === 0) {
     return Response.json(
-      { error: "Categorie en woord zijn verplicht." },
+      { error: "Geef minimaal één trefwoord op." },
       { status: 400 }
     );
   }
 
-  try {
-    const nieuw = await prisma.trefwoord.create({
-      data: { categorie, woord },
+  // Idempotent insert via upsert — bestaande (categorie,woord) blijft
+  // staan en wordt niet als fout gemeld.
+  const toegevoegd = [];
+  let bestaand = 0;
+  for (const w of schoneWoorden) {
+    const al = await prisma.trefwoord.findUnique({
+      where: { categorie_woord: { categorie, woord: w } },
     });
-    return Response.json(nieuw);
-  } catch (e) {
-    if (e.code === "P2002") {
-      return Response.json(
-        { error: "Dit trefwoord bestaat al in deze categorie." },
-        { status: 409 }
-      );
+    if (al) {
+      bestaand++;
+      continue;
     }
-    throw e;
+    const nieuw = await prisma.trefwoord.create({
+      data: { categorie, woord: w },
+    });
+    toegevoegd.push(nieuw);
   }
+
+  return Response.json({
+    toegevoegd,
+    aantalToegevoegd: toegevoegd.length,
+    aantalBestaand: bestaand,
+  });
 }

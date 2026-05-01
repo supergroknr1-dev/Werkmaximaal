@@ -18,6 +18,7 @@ import {
   Clock,
   Sparkles,
 } from "lucide-react";
+import { detectCategorie } from "@/lib/categorie-detect";
 
 const PENDING_KEY = "werkmaximaal_pending_klus";
 const AUTO_PLAATSEN_KEY = "werkmaximaal_auto_plaatsen";
@@ -58,17 +59,6 @@ const CATEGORIEEN = [
   "Stratenmaker",
   "Anders",
 ];
-
-function detectCategorie(tekst, trefwoorden) {
-  if (!tekst || !trefwoorden || trefwoorden.length === 0) return null;
-  const lager = tekst.toLowerCase();
-  for (const t of trefwoorden) {
-    if (lager.includes(t.woord)) {
-      return t.categorie;
-    }
-  }
-  return null;
-}
 
 const POSTCODE_REGEX = /^\d{4}[A-Z]{2}$/;
 

@@ -74,7 +74,7 @@ export default function PrijsForm({ basisCenten }) {
         <div
           className={`flex items-center gap-2 text-xs px-3 py-2 rounded-md ${
             boodschap.type === "ok"
-              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+              ? "bg-orange-50 text-orange-700 border border-orange-200"
               : "bg-rose-50 text-rose-700 border border-rose-200"
           }`}
         >
@@ -90,7 +90,7 @@ export default function PrijsForm({ basisCenten }) {
       <button
         type="submit"
         disabled={bezig || !isAangepast}
-        className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2 rounded-md transition-colors"
+        className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2 rounded-md transition-colors"
       >
         <Save size={14} />
         {bezig ? "Opslaan..." : "Opslaan"}

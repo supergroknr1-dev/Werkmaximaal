@@ -223,7 +223,7 @@ export default function VoltooienPage() {
                   <button
                     type="submit"
                     disabled={bezig || !pendingKlus}
-                    className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium py-2.5 rounded-md transition-colors"
+                    className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium py-2.5 rounded-md transition-colors"
                   >
                     {bezig && modus === "inloggen"
                       ? "Bezig..."
@@ -247,7 +247,7 @@ export default function VoltooienPage() {
             className={`bg-white border rounded-md shadow-sm transition-all ${
               modus === "inloggen"
                 ? "border-slate-200 opacity-60"
-                : "border-emerald-200 ring-1 ring-emerald-100"
+                : "border-orange-200 ring-1 ring-orange-100"
             }`}
           >
             <div className="p-5">
@@ -329,7 +329,7 @@ export default function VoltooienPage() {
                   <button
                     type="submit"
                     disabled={bezig || !pendingKlus}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium py-2.5 rounded-md transition-colors"
+                    className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium py-2.5 rounded-md transition-colors"
                   >
                     {bezig && modus === "registreren"
                       ? "Bezig..."

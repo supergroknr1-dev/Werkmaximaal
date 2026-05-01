@@ -44,7 +44,7 @@ function rolBadgeText(rol, vakmanType) {
 function rolBadgeKleur(rol, vakmanType) {
   if (rol === "consument") return "bg-amber-500/20 text-amber-200 border-amber-500/30";
   if (vakmanType === "hobbyist") return "bg-blue-500/20 text-blue-200 border-blue-500/30";
-  return "bg-emerald-500/20 text-emerald-200 border-emerald-500/30";
+  return "bg-orange-500/20 text-orange-200 border-orange-500/30";
 }
 
 function NavLijst({ items, pathname, onNavigeer }) {
@@ -67,7 +67,7 @@ function NavLijst({ items, pathname, onNavigeer }) {
             }`}
           >
             {actief && (
-              <span className="absolute left-0 top-2 bottom-2 w-0.5 bg-emerald-500 rounded-r" />
+              <span className="absolute left-0 top-2 bottom-2 w-0.5 bg-orange-500 rounded-r" />
             )}
             <Icon size={16} strokeWidth={2} />
             {item.label}

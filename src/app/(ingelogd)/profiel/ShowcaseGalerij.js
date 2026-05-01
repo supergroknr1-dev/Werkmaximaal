@@ -300,7 +300,7 @@ export default function ShowcaseGalerij({ vakmanId }) {
             onDrop={onDrop}
             className={`border-2 border-dashed rounded-md p-6 text-center transition-colors ${
               drag
-                ? "border-emerald-500 bg-emerald-50"
+                ? "border-orange-500 bg-orange-50"
                 : "border-slate-300 bg-slate-50"
             }`}
           >
@@ -310,7 +310,7 @@ export default function ShowcaseGalerij({ vakmanId }) {
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
-                className="text-emerald-700 underline hover:text-emerald-800"
+                className="text-orange-700 underline hover:text-orange-800"
               >
                 kies bestanden
               </button>
@@ -336,7 +336,7 @@ export default function ShowcaseGalerij({ vakmanId }) {
             <button
               type="button"
               onClick={() => setPaarOpen((o) => !o)}
-              className="text-xs font-medium text-emerald-700 hover:text-emerald-800 inline-flex items-center gap-1.5"
+              className="text-xs font-medium text-orange-700 hover:text-orange-800 inline-flex items-center gap-1.5"
             >
               <ChevronDown
                 size={14}
@@ -359,7 +359,7 @@ export default function ShowcaseGalerij({ vakmanId }) {
                   type="button"
                   onClick={uploadPaar}
                   disabled={!voorFile || !naFile || paarBezig}
-                  className="mt-3 w-full inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2 rounded-md transition-colors"
+                  className="mt-3 w-full inline-flex items-center justify-center gap-1.5 bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2 rounded-md transition-colors"
                 >
                   {paarBezig ? "Uploaden..." : "Voor/Na-paar uploaden"}
                 </button>
@@ -404,7 +404,7 @@ export default function ShowcaseGalerij({ vakmanId }) {
               type="button"
               onClick={() => setStap("beschrijven")}
               disabled={!kanGaDoor}
-              className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
+              className="inline-flex items-center gap-1.5 bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
             >
               Ga door
               <ChevronRight size={16} />
@@ -447,7 +447,7 @@ export default function ShowcaseGalerij({ vakmanId }) {
                     placeholder="Bijv: Badkamer-renovatie Eindhoven"
                     rows={2}
                     maxLength={200}
-                    className="w-full text-sm border border-slate-300 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+                    className="w-full text-sm border border-slate-300 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
                   />
                   <p className="text-[10px] text-slate-400 text-right mt-0.5">
                     {(beschrijvingen[f.id] || "").length}/200
@@ -476,7 +476,7 @@ export default function ShowcaseGalerij({ vakmanId }) {
               type="button"
               onClick={publiceer}
               disabled={publishing}
-              className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
+              className="inline-flex items-center gap-1.5 bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
             >
               {publishing ? (
                 "Publiceren..."
@@ -509,7 +509,7 @@ function FotoTegel({ foto, onVerwijder, hoek }) {
         />
       )}
       {hoek === "nieuw" && (
-        <span className="absolute top-1 left-1 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-600 text-white">
+        <span className="absolute top-1 left-1 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-600 text-white">
           Nieuw
         </span>
       )}

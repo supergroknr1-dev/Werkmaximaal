@@ -64,11 +64,11 @@ function InloggenContent() {
         </header>
 
         {reden === "plaats-klus" && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-md px-4 py-3 mb-6 text-sm text-emerald-900">
+          <div className="bg-orange-50 border border-orange-200 rounded-md px-4 py-3 mb-6 text-sm text-orange-900">
             Log in om uw klus te plaatsen. Nog geen account?{" "}
             <Link
               href="/registreren?reden=plaats-klus"
-              className="font-semibold underline hover:text-emerald-700"
+              className="font-semibold underline hover:text-orange-700"
             >
               Maak er nu een aan
             </Link>
@@ -114,7 +114,7 @@ function InloggenContent() {
           <button
             type="submit"
             disabled={bezig}
-            className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium py-3 rounded-md transition-colors"
+            className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium py-3 rounded-md transition-colors"
           >
             {bezig ? "Bezig met inloggen..." : "Inloggen"}
           </button>

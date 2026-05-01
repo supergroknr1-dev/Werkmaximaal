@@ -61,7 +61,7 @@ export default function LeadKopen({ klusId, bedragInCenten }) {
       <div className="space-y-2">
         <a
           href={checkoutUrl}
-          className="block w-full text-center bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium py-3 rounded-md transition-colors"
+          className="block w-full text-center bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium py-3 rounded-md transition-colors"
         >
           Doorgaan naar iDEAL →
         </a>
@@ -78,7 +78,7 @@ export default function LeadKopen({ klusId, bedragInCenten }) {
         type="button"
         onClick={start}
         disabled={bezig}
-        className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium py-3 rounded-md transition-colors"
+        className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium py-3 rounded-md transition-colors"
       >
         {bezig
           ? "Doorsturen naar iDEAL..."

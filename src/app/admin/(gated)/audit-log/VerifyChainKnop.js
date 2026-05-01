@@ -33,7 +33,7 @@ export default function VerifyChainKnop() {
       {resultaat && (
         <p
           className={`text-[11px] mt-1.5 ${
-            resultaat.ok ? "text-emerald-700" : "text-rose-700"
+            resultaat.ok ? "text-orange-700" : "text-rose-700"
           }`}
         >
           {resultaat.ok

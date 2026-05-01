@@ -138,7 +138,7 @@ export default function LeadChat({
           <MessageSquare size={16} className="text-slate-500" />
           {label}
           {unread > 0 && (
-            <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold rounded-full bg-emerald-600 text-white">
+            <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold rounded-full bg-orange-600 text-white">
               {unread}
             </span>
           )}
@@ -172,14 +172,14 @@ export default function LeadChat({
                         <div
                           className={`max-w-[80%] px-3 py-2 rounded-lg text-sm whitespace-pre-wrap break-words ${
                             vanMij
-                              ? "bg-emerald-600 text-white"
+                              ? "bg-orange-600 text-white"
                               : "bg-slate-100 text-slate-900"
                           }`}
                         >
                           {m.tekst}
                           <p
                             className={`text-[10px] mt-1 ${
-                              vanMij ? "text-emerald-100" : "text-slate-500"
+                              vanMij ? "text-orange-100" : "text-slate-500"
                             }`}
                           >
                             {formatTijd(m.aangemaakt)}
@@ -210,12 +210,12 @@ export default function LeadChat({
                   verstuur();
                 }
               }}
-              className="flex-1 resize-none text-sm border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+              className="flex-1 resize-none text-sm border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
             />
             <button
               type="submit"
               disabled={!tekst.trim() || bezig}
-              className="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-md w-10 h-10 transition-colors shrink-0"
+              className="inline-flex items-center justify-center bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-md w-10 h-10 transition-colors shrink-0"
               aria-label="Verstuur"
             >
               <Send size={16} />

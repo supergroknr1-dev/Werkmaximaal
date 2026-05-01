@@ -392,7 +392,7 @@ export default function ProfielForm({ user }) {
               </p>
             )}
             {adresStatus === "ok" && (
-              <p className="text-xs text-emerald-700 inline-flex items-center gap-1">
+              <p className="text-xs text-orange-700 inline-flex items-center gap-1">
                 <Check size={13} strokeWidth={2.5} />
                 Adres gevonden
               </p>
@@ -560,7 +560,7 @@ export default function ProfielForm({ user }) {
       {boodschap && !succesAnimatie && (
         <p
           className={`text-sm ${
-            boodschap.type === "ok" ? "text-emerald-700" : "text-rose-600"
+            boodschap.type === "ok" ? "text-orange-700" : "text-rose-600"
           }`}
         >
           {boodschap.tekst}
@@ -571,15 +571,15 @@ export default function ProfielForm({ user }) {
         <button
           type="submit"
           disabled={bezig}
-          className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
+          className="bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
         >
           {bezig ? "Opslaan..." : "Wijzigingen opslaan"}
         </button>
 
         {succesAnimatie && (
-          <span className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 animate-[fadeIn_0.3s_ease-out]">
-            <span className="w-7 h-7 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center animate-[pop_0.4s_cubic-bezier(0.34,1.56,0.64,1)]">
-              <Check size={16} strokeWidth={3} className="text-emerald-700" />
+          <span className="inline-flex items-center gap-2 text-sm font-medium text-orange-700 animate-[fadeIn_0.3s_ease-out]">
+            <span className="w-7 h-7 rounded-full bg-orange-100 border border-orange-300 flex items-center justify-center animate-[pop_0.4s_cubic-bezier(0.34,1.56,0.64,1)]">
+              <Check size={16} strokeWidth={3} className="text-orange-700" />
             </span>
             Opgeslagen!
           </span>

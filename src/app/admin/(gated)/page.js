@@ -166,7 +166,7 @@ export default async function AdminOverzicht() {
   return (
     <>
       <header className="mb-8 bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-        <div className="h-1 bg-gradient-to-r from-emerald-500 via-emerald-600 to-slate-900" />
+        <div className="h-1 bg-gradient-to-r from-orange-500 via-orange-600 to-slate-900" />
         <div className="px-6 py-5">
           <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">
             Admin Center
@@ -189,7 +189,7 @@ export default async function AdminOverzicht() {
             icon={ClipboardPlus}
             label="Klussen"
             waarde={klussenVandaag}
-            accent="bg-emerald-50 text-emerald-600"
+            accent="bg-orange-50 text-orange-600"
             href="/admin/klussen"
           />
           <MiniKaart
@@ -254,7 +254,7 @@ export default async function AdminOverzicht() {
               ? `${aantalGeslotenKlussen} gesloten`
               : "Geen gesloten klussen"
           }
-          accent="bg-emerald-50 text-emerald-600"
+          accent="bg-orange-50 text-orange-600"
         />
         <StatKaart
           icon={TrendingUp}
@@ -305,7 +305,7 @@ export default async function AdminOverzicht() {
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   {v.vakmanType === "professional" ? (
-                    <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-orange-50 text-orange-700 border border-orange-200">
                       Vakman
                     </span>
                   ) : (

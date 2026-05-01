@@ -168,7 +168,7 @@ export default async function KlusDetailPage({ params }) {
               </dl>
 
               {isVakman && leadGekocht && (
-                <div className="bg-emerald-50 border border-emerald-200 rounded-md p-3 mb-6 text-sm text-emerald-900">
+                <div className="bg-orange-50 border border-orange-200 rounded-md p-3 mb-6 text-sm text-orange-900">
                   ✓ Lead gekocht op {formatDatumTijd(leadGekocht.gekochtOp)}
                 </div>
               )}

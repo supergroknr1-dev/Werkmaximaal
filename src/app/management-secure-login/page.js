@@ -101,7 +101,7 @@ export default function AdminLoginPage() {
                 required
                 autoComplete="email"
                 autoFocus
-                className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 transition-colors text-sm"
+                className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-orange-500 transition-colors text-sm"
               />
             </div>
             <div>
@@ -113,7 +113,7 @@ export default function AdminLoginPage() {
                 onChange={(e) => setWachtwoord(e.target.value)}
                 required
                 autoComplete="current-password"
-                className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded text-slate-100 focus:outline-none focus:border-emerald-500 transition-colors text-sm"
+                className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded text-slate-100 focus:outline-none focus:border-orange-500 transition-colors text-sm"
               />
             </div>
 
@@ -122,7 +122,7 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={bezig}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:cursor-not-allowed text-white text-sm font-medium py-2.5 rounded transition-colors"
+              className="w-full bg-orange-600 hover:bg-orange-500 disabled:bg-slate-700 disabled:cursor-not-allowed text-white text-sm font-medium py-2.5 rounded transition-colors"
             >
               {bezig ? "Bezig..." : "Volgende →"}
             </button>
@@ -156,7 +156,7 @@ export default function AdminLoginPage() {
                   required
                   autoFocus
                   placeholder="123456"
-                  className="w-full px-3 py-3 bg-slate-800 border border-slate-700 rounded text-slate-100 text-center text-xl tracking-[0.4em] font-mono focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full px-3 py-3 bg-slate-800 border border-slate-700 rounded text-slate-100 text-center text-xl tracking-[0.4em] font-mono focus:outline-none focus:border-orange-500 transition-colors"
                 />
               ) : (
                 <input
@@ -166,7 +166,7 @@ export default function AdminLoginPage() {
                   required
                   autoFocus
                   placeholder="ABCDE-12345"
-                  className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded text-slate-100 text-center font-mono uppercase focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded text-slate-100 text-center font-mono uppercase focus:outline-none focus:border-orange-500 transition-colors"
                 />
               )}
             </div>
@@ -176,7 +176,7 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={bezig}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:cursor-not-allowed text-white text-sm font-medium py-2.5 rounded transition-colors"
+              className="w-full bg-orange-600 hover:bg-orange-500 disabled:bg-slate-700 disabled:cursor-not-allowed text-white text-sm font-medium py-2.5 rounded transition-colors"
             >
               {bezig ? "Bezig..." : "Verifiëren →"}
             </button>

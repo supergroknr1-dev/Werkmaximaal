@@ -52,9 +52,9 @@ export default function RegistrerenConsumentPage() {
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-md mx-auto px-4 py-12 md:py-16">
           <div className="bg-white border border-slate-200 rounded-md shadow-sm p-6 md:p-8 text-center">
-            <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
-                className="w-6 h-6 text-emerald-600"
+                className="w-6 h-6 text-orange-600"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -71,7 +71,7 @@ export default function RegistrerenConsumentPage() {
             </p>
             <Link
               href="/inloggen"
-              className="inline-block bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
+              className="inline-block bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
             >
               Naar inloggen
             </Link>
@@ -174,7 +174,7 @@ export default function RegistrerenConsumentPage() {
           <button
             type="submit"
             disabled={bezig}
-            className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium py-3 rounded-md transition-colors"
+            className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium py-3 rounded-md transition-colors"
           >
             {bezig ? "Bezig met registreren..." : "Account aanmaken"}
           </button>

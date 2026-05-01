@@ -68,7 +68,7 @@ export default async function ProfielPage() {
         </Link>
 
         <header className="mb-8 bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-emerald-500 via-emerald-600 to-slate-900" />
+          <div className="h-1 bg-gradient-to-r from-orange-500 via-orange-600 to-slate-900" />
           <div className="px-6 py-5">
             <p className="text-xs uppercase tracking-wider text-slate-500 font-medium mb-1">
               {rolLabel(user.rol, user.vakmanType)}

@@ -125,7 +125,7 @@ export default async function MijnLeadsPage({ searchParams }) {
         </Link>
 
         <header className="mb-8 bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-emerald-500 via-emerald-600 to-slate-900" />
+          <div className="h-1 bg-gradient-to-r from-orange-500 via-orange-600 to-slate-900" />
           <div className="px-6 py-5">
             <p className="text-xs uppercase tracking-wider text-slate-500 font-medium mb-1">
               {user.vakmanType === "professional" ? "Vakman" : "Buurtklusser"}
@@ -153,7 +153,7 @@ export default async function MijnLeadsPage({ searchParams }) {
               <p className="text-xs uppercase tracking-wider text-slate-500 font-medium mb-1">
                 Open klussen
               </p>
-              <p className="text-xl font-semibold text-emerald-700 tabular-nums">
+              <p className="text-xl font-semibold text-orange-700 tabular-nums">
                 {open.length}
               </p>
             </div>
@@ -244,7 +244,7 @@ function LeadKaart({ lead, eigenUserId, openChat }) {
               Gesloten
             </span>
           ) : (
-            <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-orange-50 text-orange-700 border border-orange-200">
               Open
             </span>
           )}

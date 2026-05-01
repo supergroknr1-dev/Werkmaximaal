@@ -154,7 +154,7 @@ export default async function MollieDiagnosePage() {
                 href="https://www.mollie.com/dashboard/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-emerald-700 hover:underline inline-flex items-center gap-0.5"
+                className="text-orange-700 hover:underline inline-flex items-center gap-0.5"
               >
                 mollie.com/dashboard
                 <ExternalLink size={11} />
@@ -179,7 +179,7 @@ export default async function MollieDiagnosePage() {
                 href="https://vercel.com/supergroknr1-2675s-projects/werkmaximaal/settings/environment-variables"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-emerald-700 hover:underline inline-flex items-center gap-0.5"
+                className="text-orange-700 hover:underline inline-flex items-center gap-0.5"
               >
                 vercel.com → Settings → Environment Variables
                 <ExternalLink size={11} />
@@ -228,7 +228,7 @@ function Rij({ label, ok, waarde, kleinetekst }) {
     <div className="flex items-start gap-3">
       <div className="shrink-0 mt-0.5">
         {ok ? (
-          <Check size={16} className="text-emerald-600" />
+          <Check size={16} className="text-orange-600" />
         ) : (
           <X size={16} className="text-rose-600" />
         )}
@@ -249,7 +249,7 @@ function Rij({ label, ok, waarde, kleinetekst }) {
 function statusKleur(status) {
   switch (status) {
     case "paid":
-      return "bg-emerald-50 text-emerald-700 border border-emerald-200";
+      return "bg-orange-50 text-orange-700 border border-orange-200";
     case "open":
     case "pending":
     case "authorized":

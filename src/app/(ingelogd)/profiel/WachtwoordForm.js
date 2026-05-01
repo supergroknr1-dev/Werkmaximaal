@@ -97,7 +97,7 @@ export default function WachtwoordForm() {
       {boodschap && (
         <p
           className={`text-sm ${
-            boodschap.type === "ok" ? "text-emerald-700" : "text-rose-600"
+            boodschap.type === "ok" ? "text-orange-700" : "text-rose-600"
           }`}
         >
           {boodschap.tekst}
@@ -107,7 +107,7 @@ export default function WachtwoordForm() {
       <button
         type="submit"
         disabled={bezig}
-        className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
+        className="bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
       >
         {bezig ? "Wijzigen..." : "Wachtwoord wijzigen"}
       </button>

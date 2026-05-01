@@ -173,7 +173,7 @@ export default async function BerichtenPage() {
                     </p>
                   </div>
                   {unread > 0 && (
-                    <span className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 text-[11px] font-bold rounded-full bg-emerald-600 text-white shrink-0 mt-1">
+                    <span className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 text-[11px] font-bold rounded-full bg-orange-600 text-white shrink-0 mt-1">
                       {unread}
                     </span>
                   )}

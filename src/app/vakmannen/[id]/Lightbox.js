@@ -43,7 +43,7 @@ export default function Lightbox({ fotos }) {
             key={f.id}
             type="button"
             onClick={() => setOpen(i)}
-            className="block aspect-square rounded overflow-hidden border border-slate-200 bg-slate-100 group focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="block aspect-square rounded overflow-hidden border border-slate-200 bg-slate-100 group focus:outline-none focus:ring-2 focus:ring-orange-500"
           >
             {f.urlNa ? (
               <VoorNaTegel urlVoor={f.url} urlNa={f.urlNa} alt={f.beschrijving} />

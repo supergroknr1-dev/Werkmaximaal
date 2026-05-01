@@ -127,7 +127,7 @@ export default function ProfielFotoEditor({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="absolute inset-0 rounded-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          className="absolute inset-0 rounded-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-orange-500"
           aria-label="Foto uploaden"
         >
           <span
@@ -223,7 +223,7 @@ function PreviewModal({ previewUrl, fout, bezig, onAnnuleer, onBevestig }) {
             type="button"
             onClick={onBevestig}
             disabled={bezig}
-            className="text-xs px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+            className="text-xs px-4 py-2 rounded bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50"
           >
             {bezig ? "Bezig..." : "Ga door"}
           </button>

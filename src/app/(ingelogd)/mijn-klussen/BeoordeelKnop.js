@@ -123,7 +123,7 @@ export default function BeoordeelKnop({ lead }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-xs font-medium text-emerald-700 hover:text-emerald-800 hover:underline"
+        className="text-xs font-medium text-orange-700 hover:text-orange-800 hover:underline"
       >
         Beoordeel vakman →
       </button>
@@ -167,7 +167,7 @@ export default function BeoordeelKnop({ lead }) {
                 onChange={(e) => setTekst(e.target.value)}
                 maxLength={2000}
                 rows={4}
-                className="w-full text-sm border border-slate-300 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+                className="w-full text-sm border border-slate-300 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
                 placeholder="Hoe ging het met deze vakman?"
               />
               <p className="text-[11px] text-slate-400 mt-1">
@@ -223,7 +223,7 @@ export default function BeoordeelKnop({ lead }) {
                 type="button"
                 onClick={submit}
                 disabled={bezig || score < 1}
-                className="text-xs px-3 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+                className="text-xs px-3 py-1.5 rounded bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50"
               >
                 {bezig ? "Bezig..." : "Plaats review"}
               </button>

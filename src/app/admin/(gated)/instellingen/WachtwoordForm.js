@@ -6,7 +6,7 @@ import WachtwoordVeld from "../../../../components/WachtwoordVeld";
 
 const MIN_LENGTE = 8;
 const VELD_KLASSEN =
-  "w-full text-sm border border-slate-300 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500";
+  "w-full text-sm border border-slate-300 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500";
 
 export default function WachtwoordForm() {
   const [huidig, setHuidig] = useState("");
@@ -108,8 +108,8 @@ export default function WachtwoordForm() {
         </p>
       )}
       {succes && (
-        <p className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded px-3 py-2 flex items-center gap-2">
-          <CheckCircle2 size={14} className="text-emerald-600" />
+        <p className="text-xs text-orange-800 bg-orange-50 border border-orange-200 rounded px-3 py-2 flex items-center gap-2">
+          <CheckCircle2 size={14} className="text-orange-600" />
           Wachtwoord gewijzigd. Bij je volgende login gebruik je het nieuwe
           wachtwoord.
         </p>

@@ -315,7 +315,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-2xl mx-auto px-4 py-12 md:py-16">
         <header className="mb-10 bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-emerald-500 via-emerald-600 to-slate-900" />
+          <div className="h-1 bg-gradient-to-r from-orange-500 via-orange-600 to-slate-900" />
           <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-md bg-slate-900 text-white flex items-center justify-center font-bold text-base shrink-0">
@@ -334,7 +334,7 @@ export default function Home() {
                 <>
                   <Link
                     href="/inloggen"
-                    className="bg-slate-900 hover:bg-slate-800 text-white font-medium px-3 py-1.5 rounded-md transition-colors"
+                    className="bg-orange-600 hover:bg-orange-700 text-white font-medium px-3 py-1.5 rounded-md transition-colors"
                   >
                     Inloggen
                   </Link>
@@ -475,7 +475,7 @@ export default function Home() {
                   {postcodeStatus.state === "ok" && (
                     <>
                       <svg
-                        className="w-4 h-4 text-emerald-600 shrink-0"
+                        className="w-4 h-4 text-orange-600 shrink-0"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -614,23 +614,23 @@ export default function Home() {
                   <tbody className="text-slate-700">
                     <tr className="border-t border-slate-200">
                       <td className="py-1.5">KvK-geregistreerd</td>
-                      <td className="text-center text-emerald-600">✓</td>
+                      <td className="text-center text-orange-600">✓</td>
                       <td className="text-center text-slate-300">—</td>
                     </tr>
                     <tr className="border-t border-slate-200">
                       <td className="py-1.5">Bedrijfsverzekering</td>
-                      <td className="text-center text-emerald-600">✓</td>
+                      <td className="text-center text-orange-600">✓</td>
                       <td className="text-center text-slate-300">—</td>
                     </tr>
                     <tr className="border-t border-slate-200">
                       <td className="py-1.5">Garantie op werk</td>
-                      <td className="text-center text-emerald-600">✓</td>
+                      <td className="text-center text-orange-600">✓</td>
                       <td className="text-center text-slate-300">—</td>
                     </tr>
                     <tr className="border-t border-slate-200">
                       <td className="py-1.5">Indicatieve prijs</td>
                       <td className="text-center text-slate-500">Markt</td>
-                      <td className="text-center text-emerald-700">Goedkoper</td>
+                      <td className="text-center text-orange-700">Goedkoper</td>
                     </tr>
                   </tbody>
                 </table>
@@ -671,7 +671,7 @@ export default function Home() {
                 type="checkbox"
                 checked={alleenWerkgebied}
                 onChange={(e) => setAlleenWerkgebied(e.target.checked)}
-                className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                className="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
               />
               <span>
                 Alleen klussen in mijn werkgebied
@@ -771,7 +771,7 @@ export default function Home() {
                   </p>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {klus.voorkeurVakmanType === "professional" && (
-                      <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-orange-50 text-orange-700 border border-orange-200">
                         Vakman
                       </span>
                     )}

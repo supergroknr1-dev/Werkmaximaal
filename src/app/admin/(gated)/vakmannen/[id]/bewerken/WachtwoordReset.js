@@ -106,7 +106,7 @@ export default function WachtwoordReset({ vakmanId, vakmanNaam, vakmanEmail }) {
               <WachtwoordVeld
                 value={nieuw}
                 onChange={(e) => setNieuw(e.target.value)}
-                className="w-full text-sm border border-slate-300 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+                className="w-full text-sm border border-slate-300 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
                 minLength={MIN_LENGTE}
                 required
                 autoFocus
@@ -119,7 +119,7 @@ export default function WachtwoordReset({ vakmanId, vakmanNaam, vakmanEmail }) {
               <WachtwoordVeld
                 value={bevestig}
                 onChange={(e) => setBevestig(e.target.value)}
-                className="w-full text-sm border border-slate-300 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+                className="w-full text-sm border border-slate-300 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
                 minLength={MIN_LENGTE}
                 required
               />
@@ -131,7 +131,7 @@ export default function WachtwoordReset({ vakmanId, vakmanNaam, vakmanEmail }) {
               </p>
             )}
             {succes && (
-              <p className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded px-3 py-2">
+              <p className="text-xs text-orange-800 bg-orange-50 border border-orange-200 rounded px-3 py-2">
                 ✓ Wachtwoord is succesvol gewijzigd. Geef het nieuwe wachtwoord
                 door aan de vakman.
               </p>

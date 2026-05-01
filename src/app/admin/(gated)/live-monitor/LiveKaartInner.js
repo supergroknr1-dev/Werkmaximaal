@@ -8,7 +8,7 @@ import "leaflet/dist/leaflet.css";
 const KLEUREN = {
   nieuw: "#3b82f6", // blue-500
   "chat-actief": "#f97316", // orange-500
-  afgehandeld: "#10b981", // emerald-500
+  afgehandeld: "#10b981", // orange-500
 };
 
 const STATUS_LABEL = {
@@ -97,7 +97,7 @@ export default function LiveKaart({ punten }) {
                 </p>
                 <a
                   href={`/admin/klussen`}
-                  className="block mt-2 text-[11px] text-emerald-700 hover:underline"
+                  className="block mt-2 text-[11px] text-orange-700 hover:underline"
                 >
                   Bekijk in admin →
                 </a>

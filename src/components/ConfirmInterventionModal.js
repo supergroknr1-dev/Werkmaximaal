@@ -107,7 +107,7 @@ export default function ConfirmInterventionModal({
             value={categorie}
             onChange={(e) => setCategorie(e.target.value)}
             disabled={bezig}
-            className="w-full text-sm border border-slate-300 rounded px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 disabled:opacity-50"
+            className="w-full text-sm border border-slate-300 rounded px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 disabled:opacity-50"
           >
             {CATEGORIEEN.map((c) => (
               <option key={c.waarde} value={c.waarde}>
@@ -128,11 +128,11 @@ export default function ConfirmInterventionModal({
             disabled={bezig}
             rows={4}
             placeholder="Beschrijf waarom deze ingreep nodig is — zo kan een collega achteraf nagaan wat er gebeurd is."
-            className="w-full text-sm border border-slate-300 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 disabled:opacity-50"
+            className="w-full text-sm border border-slate-300 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 disabled:opacity-50"
           />
           <p
             className={`text-[11px] mt-1 ${
-              redenSchoon.length >= MIN_REDEN ? "text-emerald-600" : "text-slate-400"
+              redenSchoon.length >= MIN_REDEN ? "text-orange-600" : "text-slate-400"
             }`}
           >
             {redenSchoon.length}/{MIN_REDEN}
@@ -159,7 +159,7 @@ export default function ConfirmInterventionModal({
             type="button"
             onClick={handleBevestig}
             disabled={!geldig || bezig}
-            className="text-xs px-3 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-xs px-3 py-1.5 rounded bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {bezig ? "Bezig..." : bevestigLabel}
           </button>

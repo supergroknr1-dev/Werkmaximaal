@@ -18,7 +18,7 @@ function AdresStatus({ status }) {
     leeg: { tekst: "Vul postcode + huisnummer in", kleur: "text-slate-400" },
     typen: { tekst: "Vul postcode + huisnummer in", kleur: "text-slate-400" },
     bezig: { tekst: "Adres ophalen…", kleur: "text-slate-500" },
-    ok: { tekst: "✓ Adres gevonden", kleur: "text-emerald-700" },
+    ok: { tekst: "✓ Adres gevonden", kleur: "text-orange-700" },
     fout: {
       tekst: "Geen adres gevonden — check postcode en huisnummer",
       kleur: "text-rose-700",
@@ -41,7 +41,7 @@ function Veld({ label, children, hint }) {
 }
 
 const inputCls =
-  "w-full text-sm border border-slate-300 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500";
+  "w-full text-sm border border-slate-300 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500";
 
 export default function BewerkForm({ vakman }) {
   const router = useRouter();
@@ -121,7 +121,7 @@ export default function BewerkForm({ vakman }) {
   function veldKlasse(key) {
     if (isVeranderd(key)) return "bg-amber-50 border-amber-300";
     if (netOpgeslagenVelden.includes(key))
-      return "bg-emerald-50 border-emerald-300";
+      return "bg-orange-50 border-orange-300";
     return "";
   }
   // adresStatus: "leeg" | "typen" | "bezig" | "ok" | "fout"
@@ -356,8 +356,8 @@ export default function BewerkForm({ vakman }) {
                 onClick={() => set("vakmanType", "professional")}
                 className={`text-left border-2 rounded-md p-3 text-xs transition-colors ${
                   isPro
-                    ? "border-emerald-500 bg-emerald-50 ring-2 ring-emerald-100"
-                    : "border-slate-200 bg-white hover:border-emerald-300 hover:bg-emerald-50/50"
+                    ? "border-orange-500 bg-orange-50 ring-2 ring-orange-100"
+                    : "border-slate-200 bg-white hover:border-orange-300 hover:bg-orange-50/50"
                 }`}
               >
                 <div className="flex items-center justify-between mb-1.5">
@@ -365,7 +365,7 @@ export default function BewerkForm({ vakman }) {
                     Vakman (Professional)
                   </p>
                   {isPro && (
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 border border-emerald-300 rounded px-1.5 py-0.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-orange-700 bg-orange-100 border border-orange-300 rounded px-1.5 py-0.5">
                       ✓ Gekozen
                     </span>
                   )}
@@ -483,7 +483,7 @@ export default function BewerkForm({ vakman }) {
       <section className="bg-white border border-slate-200 rounded-lg shadow-sm p-5">
         <h2 className="text-sm font-semibold text-slate-900 mb-4">
           Bedrijf
-          <span className="ml-2 text-[10px] uppercase tracking-wider font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1.5 py-0.5">
+          <span className="ml-2 text-[10px] uppercase tracking-wider font-semibold text-orange-700 bg-orange-50 border border-orange-200 rounded px-1.5 py-0.5">
             Verplicht voor Vakman
           </span>
         </h2>
@@ -511,12 +511,12 @@ export default function BewerkForm({ vakman }) {
               KvK-uittreksel (PDF, JPG of PNG, max 5 MB)
             </span>
             {form.kvkUittrekselUrl ? (
-              <div className="flex items-center justify-between gap-3 bg-emerald-50 border border-emerald-200 rounded px-3 py-2">
+              <div className="flex items-center justify-between gap-3 bg-orange-50 border border-orange-200 rounded px-3 py-2">
                 <a
                   href={form.kvkUittrekselUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-emerald-800 hover:underline truncate"
+                  className="text-xs text-orange-800 hover:underline truncate"
                 >
                   ✓ {form.kvkUittrekselNaam || "Uittreksel bekijken"}
                 </a>
@@ -726,7 +726,7 @@ export default function BewerkForm({ vakman }) {
                             setPlaatsSuggesties([]);
                             setPlaatsSuggestiesOpen(false);
                           }}
-                          className="w-full text-left px-3 py-2 text-xs hover:bg-emerald-50 hover:text-emerald-800"
+                          className="w-full text-left px-3 py-2 text-xs hover:bg-orange-50 hover:text-orange-800"
                         >
                           {naam}
                         </button>
@@ -862,7 +862,7 @@ export default function BewerkForm({ vakman }) {
         </div>
       )}
       {succes && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-md px-4 py-3 text-sm text-emerald-800">
+        <div className="bg-orange-50 border border-orange-200 rounded-md px-4 py-3 text-sm text-orange-800">
           ✓ Wijzigingen opgeslagen.
         </div>
       )}

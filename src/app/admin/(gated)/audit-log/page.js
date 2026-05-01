@@ -10,7 +10,7 @@ export const metadata = {
 const CATEGORIE_KLEUR = {
   compliance: "bg-rose-50 text-rose-700 border-rose-200",
   pricing: "bg-amber-50 text-amber-700 border-amber-200",
-  ranking: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  ranking: "bg-orange-50 text-orange-700 border-orange-200",
   support: "bg-blue-50 text-blue-700 border-blue-200",
   data: "bg-slate-50 text-slate-700 border-slate-200",
   settings: "bg-slate-100 text-slate-700 border-slate-200",
@@ -144,7 +144,7 @@ export default async function AuditLogPage({ searchParams }) {
               )}
               <div className="flex items-center gap-3 text-[11px] text-slate-400 font-mono">
                 {e.goedgekeurdDoor && (
-                  <span className="text-emerald-600">
+                  <span className="text-orange-600">
                     ✓ 4-ogen door admin #{e.goedgekeurdDoor}
                   </span>
                 )}

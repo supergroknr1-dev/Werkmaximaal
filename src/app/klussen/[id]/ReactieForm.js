@@ -71,7 +71,7 @@ export default function ReactieForm({ klusId }) {
       <button
         type="submit"
         disabled={bezig || !naam.trim() || !bericht.trim()}
-        className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
+        className="bg-orange-600 hover:bg-orange-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
       >
         {bezig ? "Bezig met plaatsen..." : "Reactie plaatsen"}
       </button>

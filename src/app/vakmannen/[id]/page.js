@@ -33,7 +33,7 @@ function Sterren({ score, klasse = "text-amber-500" }) {
 function TypeBadge({ type }) {
   if (type === "professional") {
     return (
-      <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+      <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-orange-50 text-orange-700 border border-orange-200">
         Vakman
       </span>
     );
@@ -204,7 +204,7 @@ export default async function VakmanProfielPage({ params }) {
               <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <TypeBadge type={vakman.vakmanType} />
                 {vakman.kvkNummer && (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-orange-50 text-orange-700 border border-orange-200">
                     <ShieldCheck size={11} strokeWidth={2.5} />
                     KvK geverifieerd
                   </span>

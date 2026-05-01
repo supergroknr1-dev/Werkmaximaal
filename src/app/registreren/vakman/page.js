@@ -221,9 +221,9 @@ export default function RegistrerenVakmanPage() {
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-md mx-auto px-4 py-12 md:py-16">
           <div className="bg-white border border-slate-200 rounded-md shadow-sm p-6 md:p-8 text-center">
-            <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
-                className="w-6 h-6 text-emerald-600"
+                className="w-6 h-6 text-orange-600"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -240,7 +240,7 @@ export default function RegistrerenVakmanPage() {
             </p>
             <Link
               href="/inloggen"
-              className="inline-block bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
+              className="inline-block bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
             >
               Naar inloggen
             </Link>
@@ -292,8 +292,8 @@ export default function RegistrerenVakmanPage() {
                 onClick={() => setVakmanType("professional")}
                 className={`text-left border-2 rounded-md p-3 text-xs transition-colors ${
                   vakmanType === "professional"
-                    ? "border-emerald-500 bg-emerald-50 ring-2 ring-emerald-100"
-                    : "border-slate-200 bg-white hover:border-emerald-300 hover:bg-emerald-50/50"
+                    ? "border-orange-500 bg-orange-50 ring-2 ring-orange-100"
+                    : "border-slate-200 bg-white hover:border-orange-300 hover:bg-orange-50/50"
                 }`}
               >
                 <div className="flex items-center justify-between mb-1.5 gap-2">
@@ -301,11 +301,11 @@ export default function RegistrerenVakmanPage() {
                     Vakman (Professional)
                   </p>
                   {vakmanType === "professional" ? (
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 border border-emerald-300 rounded px-1.5 py-0.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-orange-700 bg-orange-100 border border-orange-300 rounded px-1.5 py-0.5">
                       ✓ Gekozen
                     </span>
                   ) : (
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1.5 py-0.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-orange-700 bg-orange-50 border border-orange-200 rounded px-1.5 py-0.5">
                       Gratis
                     </span>
                   )}
@@ -429,9 +429,9 @@ export default function RegistrerenVakmanPage() {
             </div>
           )}
           {kvkStatus.state === "match" && (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-md p-3 text-xs text-emerald-900 flex items-start gap-2">
+            <div className="bg-orange-50 border border-orange-200 rounded-md p-3 text-xs text-orange-900 flex items-start gap-2">
               <svg
-                className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"
+                className="w-4 h-4 text-orange-600 shrink-0 mt-0.5"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -467,12 +467,12 @@ export default function RegistrerenVakmanPage() {
               <span className="text-slate-400 font-normal">(optioneel)</span>
             </span>
             {kvkUittrekselUrl ? (
-              <div className="flex items-center justify-between gap-3 bg-emerald-50 border border-emerald-200 rounded px-3 py-2">
+              <div className="flex items-center justify-between gap-3 bg-orange-50 border border-orange-200 rounded px-3 py-2">
                 <a
                   href={kvkUittrekselUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-emerald-800 hover:underline truncate"
+                  className="text-xs text-orange-800 hover:underline truncate"
                 >
                   ✓ {kvkUittrekselNaam || "Uittreksel bekijken"}
                 </a>
@@ -603,7 +603,7 @@ export default function RegistrerenVakmanPage() {
                     {postcodeStatus.state === "ok" && (
                       <>
                         <svg
-                          className="w-4 h-4 text-emerald-600 shrink-0"
+                          className="w-4 h-4 text-orange-600 shrink-0"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -665,7 +665,7 @@ export default function RegistrerenVakmanPage() {
                               setPlaatsSuggesties([]);
                               setPlaatsSuggestiesOpen(false);
                             }}
-                            className="w-full text-left px-3 py-2 text-xs hover:bg-emerald-50 hover:text-emerald-800"
+                            className="w-full text-left px-3 py-2 text-xs hover:bg-orange-50 hover:text-orange-800"
                           >
                             {naam}
                           </button>
@@ -758,7 +758,7 @@ export default function RegistrerenVakmanPage() {
               !werkgebiedGeldig ||
               (vakmanType === "hobbyist" && !disclaimerAkkoord)
             }
-            className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium py-3 rounded-md transition-colors"
+            className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium py-3 rounded-md transition-colors"
           >
             {bezig ? "Bezig met registreren..." : "Account aanmaken"}
           </button>

@@ -142,7 +142,7 @@ export default async function LiveMonitorPage() {
             hint="Bericht in laatste 7 dagen"
           />
           <Legenda
-            kleur="bg-emerald-500"
+            kleur="bg-orange-500"
             label="Afgehandeld"
             aantal={tellingen.afgehandeld}
             hint="Gesloten in laatste 3 dagen"

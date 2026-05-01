@@ -68,7 +68,7 @@ export default function MfaSetupPage() {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
         <div className="w-full max-w-lg">
-          <div className="flex items-center gap-2 text-emerald-400 text-xs uppercase tracking-widest mb-3 justify-center">
+          <div className="flex items-center gap-2 text-orange-400 text-xs uppercase tracking-widest mb-3 justify-center">
             <ShieldCheck size={14} />
             MFA actief
           </div>
@@ -100,7 +100,7 @@ export default function MfaSetupPage() {
             <button
               type="button"
               onClick={rondAf}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium py-2.5 rounded transition-colors"
+              className="w-full bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium py-2.5 rounded transition-colors"
             >
               Naar admin-center →
             </button>
@@ -175,13 +175,13 @@ export default function MfaSetupPage() {
                   required
                   autoFocus
                   placeholder="123456"
-                  className="w-full px-3 py-3 bg-slate-800 border border-slate-700 rounded text-slate-100 text-center text-xl tracking-[0.4em] font-mono focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full px-3 py-3 bg-slate-800 border border-slate-700 rounded text-slate-100 text-center text-xl tracking-[0.4em] font-mono focus:outline-none focus:border-orange-500 transition-colors"
                 />
                 {fout && <p className="text-xs text-rose-400">{fout}</p>}
                 <button
                   type="submit"
                   disabled={bezig || code.length !== 6}
-                  className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:cursor-not-allowed text-white text-sm font-medium py-2.5 rounded transition-colors"
+                  className="w-full bg-orange-600 hover:bg-orange-500 disabled:bg-slate-700 disabled:cursor-not-allowed text-white text-sm font-medium py-2.5 rounded transition-colors"
                 >
                   {bezig ? "Bezig..." : "Bevestigen"}
                 </button>

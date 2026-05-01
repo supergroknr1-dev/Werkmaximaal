@@ -32,7 +32,7 @@ function formatBedrag(centen) {
 function VoorkeurBadge({ voorkeur }) {
   if (voorkeur === "professional") {
     return (
-      <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+      <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-orange-50 text-orange-700 border border-orange-200">
         Vakman
       </span>
     );
@@ -228,7 +228,7 @@ export default function KlussenTabel({ klussen, prijzen, beginFilter = "alle" })
                       Te keuren
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-orange-600">
                       <CircleDot size={11} />
                       Live
                     </span>
@@ -247,7 +247,7 @@ export default function KlussenTabel({ klussen, prijzen, beginFilter = "alle" })
                     type="button"
                     onClick={() => keur(k, true)}
                     disabled={keurId === k.id}
-                    className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-3 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-md border border-emerald-200 disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-3 text-xs font-medium text-orange-700 bg-orange-50 hover:bg-orange-100 rounded-md border border-orange-200 disabled:opacity-50"
                   >
                     <ShieldCheck size={13} />
                     {keurId === k.id ? "..." : "Goedkeuren"}
@@ -329,7 +329,7 @@ export default function KlussenTabel({ klussen, prijzen, beginFilter = "alle" })
                         Te keuren
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-orange-600">
                         <CircleDot size={12} />
                         Live
                       </span>
@@ -342,7 +342,7 @@ export default function KlussenTabel({ klussen, prijzen, beginFilter = "alle" })
                           type="button"
                           onClick={() => keur(k, true)}
                           disabled={keurId === k.id}
-                          className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-800 transition-colors disabled:opacity-50"
+                          className="inline-flex items-center gap-1 text-xs font-medium text-orange-600 hover:text-orange-800 transition-colors disabled:opacity-50"
                         >
                           <ShieldCheck size={13} />
                           {keurId === k.id ? "Bezig..." : "Goedkeuren"}

@@ -25,7 +25,7 @@ function formatDatum(datum) {
 function StatKaart({ label, waarde, icon: Icon, kleur = "slate" }) {
   const kleurMap = {
     slate: "bg-slate-50 text-slate-700 border-slate-200",
-    emerald: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    emerald: "bg-orange-50 text-orange-700 border-orange-200",
     blue: "bg-blue-50 text-blue-700 border-blue-200",
     amber: "bg-amber-50 text-amber-700 border-amber-200",
   };
@@ -125,7 +125,7 @@ export default async function DashboardPage() {
           </p>
           <Link
             href="/"
-            className="inline-block bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
+            className="inline-block bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
           >
             Nieuwe klus plaatsen →
           </Link>
@@ -170,7 +170,7 @@ export default async function DashboardPage() {
                         k.gesloten
                           ? "bg-slate-100 text-slate-600 border border-slate-200"
                           : k.goedgekeurd
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          ? "bg-orange-50 text-orange-700 border border-orange-200"
                           : "bg-amber-50 text-amber-700 border border-amber-200"
                       }`}
                     >
@@ -261,7 +261,7 @@ export default async function DashboardPage() {
           </p>
           <Link
             href="/"
-            className="inline-block bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
+            className="inline-block bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
           >
             Naar klussen-overzicht →
           </Link>

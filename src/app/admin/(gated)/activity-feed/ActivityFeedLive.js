@@ -38,7 +38,7 @@ const TYPE_LABELS = {
 
 const KLEUR_KLASSEN = {
   slate: "bg-slate-50 text-slate-700 border-slate-200",
-  emerald: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  emerald: "bg-orange-50 text-orange-700 border-orange-200",
   blue: "bg-blue-50 text-blue-700 border-blue-200",
   amber: "bg-amber-50 text-amber-700 border-amber-200",
   rose: "bg-rose-50 text-rose-700 border-rose-200",
@@ -160,7 +160,7 @@ export default function ActivityFeedLive({ initialEvents, filter }) {
                 key={e.id}
                 className={`px-5 py-3 text-sm transition-colors border-l-2 ${
                   highlight
-                    ? "bg-emerald-50 border-l-emerald-500"
+                    ? "bg-orange-50 border-l-orange-500"
                     : "border-l-transparent"
                 }`}
               >
@@ -218,8 +218,8 @@ function StatusBadge({ status }) {
     },
     live: {
       tekst: "live",
-      kleur: "bg-emerald-50 text-emerald-700",
-      stip: "bg-emerald-500 animate-pulse",
+      kleur: "bg-orange-50 text-orange-700",
+      stip: "bg-orange-500 animate-pulse",
     },
     offline: {
       tekst: "offline",

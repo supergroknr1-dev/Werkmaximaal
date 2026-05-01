@@ -190,7 +190,7 @@ export default async function DashboardPage() {
     );
   }
 
-  // ─── Vakman / Buurtklusser-dashboard ─────────────────────────────
+  // ─── Vakman / Handige Harrie-dashboard ─────────────────────────────
   if (user.rol === "vakman") {
     const [leads, openstaandeKlussenAantal] = await Promise.all([
       prisma.lead.findMany({

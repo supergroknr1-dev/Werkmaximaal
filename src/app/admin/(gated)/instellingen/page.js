@@ -30,7 +30,7 @@ export default async function AdminInstellingenPage() {
         <section className="bg-white border border-slate-200 rounded-lg shadow-sm">
           <div className="px-5 py-4 border-b border-slate-100">
             <h2 className="text-base font-semibold text-slate-900">
-              Buurtklusser
+              Handige Harrie
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
               Schakelaar voor de gehele buurtklusser-functionaliteit.
@@ -40,7 +40,7 @@ export default async function AdminInstellingenPage() {
             <InstellingToggle
               instelling="hobbyistInschakeld"
               beginWaarde={instellingen.hobbyistInschakeld}
-              label="Buurtklusser inschakelen"
+              label="Handige Harrie inschakelen"
               omschrijving="Wanneer uitgeschakeld kunnen er geen nieuwe buurtklusser-accounts meer worden aangemaakt en kunnen consumenten geen klussen meer plaatsen die exclusief voor buurtklussers zijn. Bestaande accounts en klussen blijven werken."
             />
           </div>
@@ -52,7 +52,7 @@ export default async function AdminInstellingenPage() {
               Prijsbeheer
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Stel de basis lead-prijs in voor Vakmannen. Buurtklussers betalen
+              Stel de basis lead-prijs in voor Vakmannen. Handige Harries betalen
               altijd het dubbele.
             </p>
           </div>

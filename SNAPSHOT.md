@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-05-01 (kantoor — statkaarten altijd zichtbaar)
-**Laatste commit op main:** Statkaarten altijd zichtbaar (drempel weggehaald, live cijfers)
+**Laatst bijgewerkt:** 2026-05-02 (kantoor — Klussen in database + verborgen twee-paden-sectie)
+**Laatste commit op main:** Card 2 telt alle klussen + twee-paden-sectie achter feature-flag
 **Live op:** https://werkmaximaal.vercel.app/
 
 > **Database is leeg gewist op 2026-04-29.** Alleen admin-account (`s.ozkara09@gmail.com`)
@@ -76,7 +76,9 @@ Sessie 2026-05-01 (kantoor):
 - **Z-index-fix mobiel admin-menu** op `/admin/live-monitor`. Leaflet zet zijn panes vast op z-index 200–700 en controls op 1000; admin-Sidebar drawer stond op `z-50`, hamburger op `z-40` — beide vielen onder de kaart op mobiel. Beide opgehoogd naar `z-[1100]` zodat het menu altijd bovenop de kaart ligt.
 - **Pro-Link-pilot op homepage** ("Pro-Link Interface" design-concept). Charcoal hero-sectie (slate-900 bg, witte kop "Vind de juiste vakman voor elke klus", oranje "Klus plaatsen"-CTA met `#klus-plaatsen`-anchor) toegevoegd boven de stappenbalk; stap-cirkels en de twee primary form-CTA's ("Volgende", "Plaats klus") van slate-900 → orange-600.
 - **Pro-Link sitebreed doorgevoerd** na pilot-akkoord. Globale find-replace via sed: alle `emerald-*` → `orange-*` (130 occurrences over 39 files) en alle primary CTA's `bg-slate-900 hover:bg-slate-800` → `bg-orange-600 hover:bg-orange-700` (17 files). Headers, badges, vinkjes, send-knoppen, link-hovers, focus-ringen — allemaal meebewegend. Status-pills die niet emerald waren (amber/blue/rose/slate) blijven zoals ze waren. Niet aangepast: vakman-badge was emerald → nu oranje, buurtklusser-badge blijft amber → onderscheid is visueel zwakker geworden, mogelijk later buurtklusser naar blauw/paars.
-- **Social-proof statkaarten** op homepage (Pro-Link "Duidelijke Tweedeling"-design). Twee kaarten naast elkaar (mobiel gestapeld) tussen hero en stappenbalk: Card 1 = oranje getal Vaklieden (+ Hammer-icoon, white body + subtle shadow); Card 2 = zwart getal Succesvolle Klussen (+ ClipboardCheck-icoon, white body + dunne oranje top-border, `+`-suffix achter het getal). Live cijfers via nieuw publiek `/api/stats`-endpoint (`prisma.user.count(rol:vakman)` + `prisma.klus.count(gesloten:true)`). Op verzoek géén drempel: kaarten zijn altijd zichtbaar, ook bij 0/0 — bewuste keuze voor maximale eerlijkheid bij launch (geen aspirational/fake getallen).
+- **Social-proof statkaarten** op homepage (Pro-Link "Duidelijke Tweedeling"-design). Twee kaarten naast elkaar (mobiel gestapeld) tussen hero en stappenbalk: Card 1 = oranje getal Vakmannen (+ Hammer-icoon, white body + subtle shadow); Card 2 = zwart getal Klussen in database (+ ClipboardCheck-icoon, white body + dunne oranje top-border). Live cijfers via nieuw publiek `/api/stats`-endpoint (`prisma.user.count(rol:vakman)` + `prisma.klus.count()` — geen filter, telt álle klussen). Op verzoek géén drempel: kaarten zijn altijd zichtbaar, ook bij 0/0 — bewuste keuze voor maximale eerlijkheid bij launch (geen aspirational/fake getallen).
+- **Naam-rebrand teruggedraaid** (kort experiment): eerder waren rol-labels "Vakman" → "Specialist" en "Buurtklusser/Buurtheld" → "Handige Harrie". Specialist-tak teruggedraaid naar "Vakman/Vakmannen" via sed met `\b`-grenzen (geen impact op `vakmanType`/`isVakman`/`VakmannenTabel` identifiers). "Handige Harrie" / "Handige Harries" zijn behouden als rebrand voor de buurt-rol. UI is nu: Vakman + Handige Harrie.
+- **Twee-paden-sectie** ("De Vakman" / "Handige Harrie") gebouwd op homepage onder de stat-cards: donker slate-900-blok met Shield-icoon links, wit blok met oranje MapPin-icoon rechts, beide linken naar `/registreren/vakman`. Achter feature-flag `TOON_TWEE_PADEN = false` bovenaan `src/app/page.js` — nu verborgen, klaar om aan te zetten.
 
 ## 🟡 Waar je was gebleven
 

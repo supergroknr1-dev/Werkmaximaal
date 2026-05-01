@@ -253,7 +253,7 @@ function KlusKaart({ klus, vakmanScores, eigenUserId, openChatLeadId }) {
                     {lead.vakman.vakmanType === "professional"
                       ? "Vakman"
                       : lead.vakman.vakmanType === "hobbyist"
-                      ? "Buurtklusser"
+                      ? "Handige Harrie"
                       : "Onbekend"}
                   </span>
                 </div>

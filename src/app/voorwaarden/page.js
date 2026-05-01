@@ -101,7 +101,7 @@ export default function VoorwaardenPage() {
           <ul>
             <li>
               Per klus kan een vakman één lead kopen. De prijs (€10 voor
-              Pro, €20 voor Buurtklusser, of zoals door admin ingesteld)
+              Pro, €20 voor Handige Harrie, of zoals door admin ingesteld)
               is vooraf zichtbaar.
             </li>
             <li>

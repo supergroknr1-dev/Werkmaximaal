@@ -41,7 +41,7 @@ function TypeBadge({ type }) {
   if (type === "hobbyist") {
     return (
       <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-        Buurtklusser
+        Handige Harrie
       </span>
     );
   }

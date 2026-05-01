@@ -133,7 +133,7 @@ export async function PATCH(request, { params }) {
 
   const werkafstand = intOfNull(data.werkafstand);
 
-  // Extra werkgebieden — alleen voor Vakman/Pro. Buurtklussers krijgen
+  // Extra werkgebieden — alleen voor Vakman/Pro. Handige Harries krijgen
   // geen extra werkgebieden, hun array wordt geleegd.
   const werkgebiedenExtraInput = Array.isArray(data.werkgebiedenExtra)
     ? data.werkgebiedenExtra
@@ -188,7 +188,7 @@ export async function PATCH(request, { params }) {
     select: { id: true },
     });
     // Vervang extra werkgebieden volledig (delete + create alle nieuwe).
-    // Bij Buurtklusser is werkgebiedenExtra leeg → alle rijen worden
+    // Bij Handige Harrie is werkgebiedenExtra leeg → alle rijen worden
     // verwijderd.
     await tx.werkgebiedExtra.deleteMany({ where: { userId: vakmanId } });
     if (werkgebiedenExtra.length > 0) {

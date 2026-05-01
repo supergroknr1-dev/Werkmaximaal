@@ -128,7 +128,7 @@ export default async function MijnLeadsPage({ searchParams }) {
           <div className="h-1 bg-gradient-to-r from-orange-500 via-orange-600 to-slate-900" />
           <div className="px-6 py-5">
             <p className="text-xs uppercase tracking-wider text-slate-500 font-medium mb-1">
-              {user.vakmanType === "professional" ? "Vakman" : "Buurtklusser"}
+              {user.vakmanType === "professional" ? "Vakman" : "Handige Harrie"}
             </p>
             <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
               Mijn leads

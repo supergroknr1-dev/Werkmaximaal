@@ -6,7 +6,7 @@ import { prisma } from "../../../lib/prisma";
 export async function GET() {
   const [vakmannen, klussen] = await Promise.all([
     prisma.user.count({ where: { rol: "vakman" } }),
-    prisma.klus.count({ where: { gesloten: true } }),
+    prisma.klus.count(),
   ]);
 
   return Response.json({ vakmannen, klussen });

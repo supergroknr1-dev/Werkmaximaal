@@ -3,10 +3,15 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Hammer, ClipboardCheck } from "lucide-react";
+import { Hammer, ClipboardCheck, Shield, MapPin } from "lucide-react";
 
 const PENDING_KEY = "werkmaximaal_pending_klus";
 const AUTO_PLAATSEN_KEY = "werkmaximaal_auto_plaatsen";
+
+// Twee-paden-sectie ("De Vakman" / "Handige Harrie") staat klaar maar
+// is bewust verborgen tot we besluiten 'm publiek te tonen. Zet op
+// true om beide CTA-blokken op de homepage te tonen.
+const TOON_TWEE_PADEN = false;
 
 function tijdGeleden(datumString) {
   const verschilSeconden = Math.floor((Date.now() - new Date(datumString).getTime()) / 1000);
@@ -331,7 +336,7 @@ export default function Home() {
                 <h1 className="text-lg font-semibold text-slate-900 tracking-tight leading-tight">
                   Werkmaximaal
                 </h1>
-                <p className="text-xs text-slate-500">Vakmensen voor uw klus</p>
+                <p className="text-xs text-slate-500">Vakmannen voor uw klus</p>
               </div>
             </div>
 
@@ -394,7 +399,7 @@ export default function Home() {
                   {stats.vakmannen.toLocaleString("nl-NL")}
                 </p>
                 <p className="text-sm font-medium text-slate-900">
-                  Geverifieerde Vaklieden &amp; Buurthelden
+                  Geverifieerde Vakmannen &amp; Handige Harries
                 </p>
               </div>
               <div className="bg-white rounded-lg p-8 shadow-sm text-center border-t-4 border-orange-600">
@@ -403,14 +408,50 @@ export default function Home() {
                   strokeWidth={1.5}
                 />
                 <p className="text-5xl md:text-6xl font-bold text-slate-900 tracking-tight tabular-nums mb-3">
-                  {stats.klussen.toLocaleString("nl-NL")}+
+                  {stats.klussen.toLocaleString("nl-NL")}
                 </p>
                 <p className="text-sm font-medium text-slate-900">
-                  Succesvolle Klussen
+                  Klussen in database
                 </p>
               </div>
             </div>
           )}
+
+        {TOON_TWEE_PADEN && userLoaded && !huidigeUser && (
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+            <Link
+              href="/registreren/vakman"
+              className="bg-slate-900 hover:bg-slate-800 text-white rounded-lg p-6 md:p-8 transition-colors flex items-start gap-4"
+            >
+              <div className="w-12 h-12 rounded-md bg-slate-800 flex items-center justify-center shrink-0">
+                <Shield size={24} strokeWidth={1.5} />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-lg font-semibold mb-1">De Vakman</h3>
+                <p className="text-sm text-slate-300">
+                  KvK-geregistreerd, met bedrijfsverzekering en garantie op
+                  uitgevoerd werk.
+                </p>
+              </div>
+            </Link>
+            <Link
+              href="/registreren/vakman"
+              className="bg-white border border-slate-200 hover:border-orange-300 rounded-lg p-6 md:p-8 transition-colors flex items-start gap-4"
+            >
+              <div className="w-12 h-12 rounded-md bg-orange-50 flex items-center justify-center shrink-0">
+                <MapPin size={24} strokeWidth={1.5} className="text-orange-600" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-lg font-semibold text-slate-900 mb-1">
+                  Handige Harrie
+                </h3>
+                <p className="text-sm text-slate-500">
+                  Buurtgenoot met handige skills. Vaak goedkoper en persoonlijk.
+                </p>
+              </div>
+            </Link>
+          </section>
+        )}
 
         {userLoaded && huidigeUser?.rol === "vakman" && (
           <div className="bg-white border border-slate-200 rounded-md shadow-sm p-6 md:p-8 mb-10">
@@ -614,7 +655,7 @@ export default function Home() {
                   {[
                     { val: "", label: "Beide" },
                     { val: "professional", label: "Vakman" },
-                    { val: "hobbyist", label: "Buurtklusser" },
+                    { val: "hobbyist", label: "Handige Harrie" },
                   ].map((opt) => (
                     <button
                       key={opt.val}
@@ -636,14 +677,14 @@ export default function Home() {
               {hobbyistInschakeld && (
               <div className="bg-slate-50 border border-slate-200 rounded-md p-4 mb-6">
                 <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-3">
-                  Vakman vs Buurtklusser
+                  Vakman vs Handige Harrie
                 </p>
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="text-slate-500">
                       <th className="text-left font-normal py-1"></th>
                       <th className="text-center font-medium py-1 px-2">Vakman</th>
-                      <th className="text-center font-medium py-1 px-2">Buurtklusser</th>
+                      <th className="text-center font-medium py-1 px-2">Handige Harrie</th>
                     </tr>
                   </thead>
                   <tbody className="text-slate-700">
@@ -812,12 +853,12 @@ export default function Home() {
                     )}
                     {klus.voorkeurVakmanType === "hobbyist" && (
                       <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
-                        Buurtklusser
+                        Handige Harrie
                       </span>
                     )}
                     {!klus.voorkeurVakmanType && (
                       <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-50 text-slate-600 border border-slate-200">
-                        Vakman of Buurtklusser
+                        Vakman of Handige Harrie
                       </span>
                     )}
                   </div>

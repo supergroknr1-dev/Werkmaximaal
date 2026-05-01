@@ -14,7 +14,7 @@ function rolLabel(rol, vakmanType) {
   if (rol === "consument") return "Consument";
   if (rol === "vakman") {
     if (vakmanType === "professional") return "Vakman";
-    if (vakmanType === "hobbyist") return "Buurtklusser";
+    if (vakmanType === "hobbyist") return "Handige Harrie";
     return "Vakman";
   }
   return rol;

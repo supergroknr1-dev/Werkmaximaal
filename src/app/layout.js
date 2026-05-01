@@ -12,7 +12,7 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "Werkmaximaal — Vakmensen voor uw klus",
+  title: "Werkmaximaal — Vakmannen voor uw klus",
   description: "Plaats uw klus en vind een betrouwbare vakman.",
 };
 

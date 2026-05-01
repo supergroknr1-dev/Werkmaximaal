@@ -332,7 +332,7 @@ export default function RegistrerenVakmanPage() {
               >
                 <div className="flex items-center justify-between mb-1.5 gap-2">
                   <p className="font-semibold text-slate-900">
-                    Buurtklusser (Hobbyist)
+                    Handige Harrie (Hobbyist)
                   </p>
                   {vakmanType === "hobbyist" ? (
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-blue-700 bg-blue-100 border border-blue-300 rounded px-1.5 py-0.5">
@@ -354,7 +354,7 @@ export default function RegistrerenVakmanPage() {
                   </ul>
                 ) : (
                   <p className="text-slate-500 leading-relaxed">
-                    Buurtklusser-registratie is op dit moment uitgeschakeld door
+                    Handige Harrie-registratie is op dit moment uitgeschakeld door
                     de beheerder.
                   </p>
                 )}

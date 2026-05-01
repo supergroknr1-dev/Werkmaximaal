@@ -83,11 +83,12 @@ export default function Sidebar({ adminNaam }) {
   return (
     <>
       {/* Mobiele hamburger-trigger — links in de top-balk-zone, aangezien
-          IngelogdTopBar de rechterkant gebruikt voor naam+uitlog. */}
+          IngelogdTopBar de rechterkant gebruikt voor naam+uitlog.
+          z-[1100] omdat Leaflet z-index 1000 gebruikt voor controls. */}
       <button
         type="button"
         onClick={() => setMobielOpen(true)}
-        className="md:hidden fixed top-1.5 left-2 z-40 p-2 rounded-md text-slate-200 hover:bg-slate-800 transition-colors"
+        className="md:hidden fixed top-1.5 left-2 z-[1100] p-2 rounded-md text-slate-200 hover:bg-slate-800 transition-colors"
         aria-label="Menu openen"
       >
         <Menu size={20} />
@@ -99,9 +100,10 @@ export default function Sidebar({ adminNaam }) {
         <NavLijst pathname={pathname} />
       </aside>
 
-      {/* Mobiele drawer-overlay */}
+      {/* Mobiele drawer-overlay — z-[1100] om boven Leaflet's panes
+          (popup 700, controls 1000) te blijven op /admin/live-monitor. */}
       {mobielOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex">
+        <div className="md:hidden fixed inset-0 z-[1100] flex">
           <div
             className="absolute inset-0 bg-black/50"
             onClick={() => setMobielOpen(false)}

@@ -8,12 +8,6 @@ import { Hammer, ClipboardCheck } from "lucide-react";
 const PENDING_KEY = "werkmaximaal_pending_klus";
 const AUTO_PLAATSEN_KEY = "werkmaximaal_auto_plaatsen";
 
-// Drempels voor de social-proof-sectie. Sectie is verborgen tot
-// beide tellers boven hun drempel zitten — zo voorkomen we dat
-// "1 vakman · 0 klussen" als vertrouwens-claim wordt getoond.
-const STATS_DREMPEL_VAKMANNEN = 25;
-const STATS_DREMPEL_KLUSSEN = 10;
-
 function tijdGeleden(datumString) {
   const verschilSeconden = Math.floor((Date.now() - new Date(datumString).getTime()) / 1000);
 
@@ -389,9 +383,7 @@ export default function Home() {
           </section>
         )}
 
-        {stats &&
-          stats.vakmannen >= STATS_DREMPEL_VAKMANNEN &&
-          stats.klussen >= STATS_DREMPEL_KLUSSEN && (
+        {stats && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
               <div className="bg-white rounded-lg p-8 shadow-md text-center">
                 <Hammer

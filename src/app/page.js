@@ -17,6 +17,7 @@ import {
   Minus,
   Clock,
   Sparkles,
+  Check,
 } from "lucide-react";
 import { detectCategorie } from "@/lib/categorie-detect";
 
@@ -707,20 +708,50 @@ export default function Home() {
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Categorie{" "}
                   <span className="text-slate-400 font-normal text-xs">
-                    {huidigeCategorie ? "(automatisch herkend, mag aangepast worden)" : "(optioneel)"}
+                    {huidigeCategorie && !categorieAangeraakt
+                      ? "(automatisch herkend, mag aangepast worden)"
+                      : !categorie
+                      ? "(optioneel)"
+                      : ""}
                   </span>
                 </label>
-                <input
-                  type="text"
-                  value={categorie}
-                  onChange={(e) => {
-                    setCategorie(e.target.value);
-                    setCategorieAangeraakt(true);
-                  }}
-                  list="categorieen-lijst"
-                  placeholder="Bijvoorbeeld: Schilder"
-                  className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
-                />
+                {categorie ? (
+                  <div className="bg-orange-50 border-2 border-orange-300 rounded-md p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center shrink-0">
+                      <Check size={20} className="text-white" strokeWidth={3} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] uppercase tracking-wider text-orange-700 font-semibold">
+                        Gekozen categorie
+                      </p>
+                      <p className="text-lg font-semibold text-slate-900 leading-tight">
+                        {categorie}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCategorie("");
+                        setCategorieAangeraakt(true);
+                      }}
+                      className="text-xs text-slate-600 hover:text-slate-900 underline shrink-0"
+                    >
+                      Wijzigen
+                    </button>
+                  </div>
+                ) : (
+                  <input
+                    type="text"
+                    value={categorie}
+                    onChange={(e) => {
+                      setCategorie(e.target.value);
+                      setCategorieAangeraakt(true);
+                    }}
+                    list="categorieen-lijst"
+                    placeholder="Bijvoorbeeld: Schilder"
+                    className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+                  />
+                )}
                 <datalist id="categorieen-lijst">
                   {CATEGORIEEN.map((c) => (
                     <option key={c} value={c} />

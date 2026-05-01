@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-05-02 (kantoor — beheer-paneel: multi-input + test-modus)
-**Laatste commit op main:** /beheer multi-input + live test-modus + bulk-API voor trefwoorden
+**Laatst bijgewerkt:** 2026-05-02 (kantoor — categorie-tegel op stap 2)
+**Laatste commit op main:** Prominente categorie-tegel op stap 2 van klus-form
 **Live op:** https://werkmaximaal.vercel.app/
 
 > **Database is leeg gewist op 2026-04-29.** Alleen admin-account (`s.ozkara09@gmail.com`)
@@ -83,6 +83,7 @@ Sessie 2026-05-01 (kantoor):
 - **Trefwoorden-DB uitgebreid** van 39 → 242 entries. Nieuw script `scripts/seed-trefwoorden.mjs` (idempotent via `@@unique([categorie, woord])`) zet 30+ trefwoorden per actieve categorie (Elektricien, Loodgieter, Schilder, Klusjesman, Tuinman, Timmerman, Stratenmaker). Voeding voor de smart-input: typt iemand "zonnepanelen aansluiten" → automatisch Elektricien. Detect-logica is `lager.includes(woord)` — verbuigingen ("verstopt" vs "verstopping") matchen niet, dat blijft een edge case.
 - **Configurator-pilot** voor Schilder op stap 2 van de klus-form. Nieuwe Prisma-migratie `add_klus_specs` voegt `oppervlakte Int? · binnenBuiten String? · aantal Int? · urgentie String?` toe aan `Klus` (al toegepast op de Railway-DB). Toont alleen wanneer `categorie === "schilder"`. UI-blok "Specificeer uw klus" met Sparkles-icoon en 4 velden: Oppervlakte (m²-input + Ruler-icoon), Locatie (3 toggle-buttons Binnen/Buiten/Beide met Home/Sun/Hammer-iconen, oranje als actief), Aantal deuren (counter met +/-) en Urgentie (select Spoed / Deze week / Deze maand / Geen haast). `POST /api/klussen` accepteert + valideert deze velden; reset-flow op stap 1 zet ze terug. Andere categorieën zien (nog) geen configurator.
 - **/beheer trefwoorden-paneel uitgebreid** met (1) multi-input — textarea splitst op komma's/newlines, toont preview-tags + aantal, doet één bulk-call; (2) live test-modus bovenaan — typ een klustekst en zie direct welke categorie matcht; (3) categorie-filter; (4) witte-kaart-header in Pro-Link-stijl. `POST /api/trefwoorden` accepteert nu `{categorie, woorden: []}`-array (idempotent: bestaande skipped, response telt toegevoegd vs bestaand). `detectCategorie()`-helper geëxtraheerd uit `src/app/page.js` naar `src/lib/categorie-detect.js` — gebruikt door homepage smart-input én admin test-modus.
+- **Prominente categorie-tegel** op stap 2 van het klus-form. Wanneer de categorie ingevuld is (auto via smart-input of handmatig), wordt het kale tekst-input vervangen door een oranje tegel: ronde Check-icoon links, label "GEKOZEN CATEGORIE" in oranje, naam in `text-lg font-semibold`, en een "Wijzigen"-link rechts die het veld weer leegmaakt. Veel duidelijker dan de oude platte input.
 
 ## 🟡 Waar je was gebleven
 

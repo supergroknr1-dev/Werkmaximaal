@@ -67,16 +67,19 @@ export default async function ProfielPage() {
           ← Terug naar overzicht
         </Link>
 
-        <header className="mb-8">
-          <p className="text-xs uppercase tracking-wider text-slate-500 font-medium mb-1">
-            {rolLabel(user.rol, user.vakmanType)}
-          </p>
-          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
-            Mijn profiel
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Werk uw contactgegevens bij of wijzig uw wachtwoord.
-          </p>
+        <header className="mb-8 bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+          <div className="h-1 bg-gradient-to-r from-emerald-500 via-emerald-600 to-slate-900" />
+          <div className="px-6 py-5">
+            <p className="text-xs uppercase tracking-wider text-slate-500 font-medium mb-1">
+              {rolLabel(user.rol, user.vakmanType)}
+            </p>
+            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+              Mijn profiel
+            </h1>
+            <p className="text-sm text-slate-500 mt-1">
+              Werk uw contactgegevens bij of wijzig uw wachtwoord.
+            </p>
+          </div>
         </header>
 
         <section className="bg-white border border-slate-200 rounded-md shadow-sm p-6 md:p-8 mb-6">

@@ -165,16 +165,19 @@ export default async function AdminOverzicht() {
 
   return (
     <>
-      <header className="mb-8">
-        <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">
-          Admin Center
-        </p>
-        <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
-          Overzicht
-        </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Realtime statistieken over aanmeldingen, klussen en omzet.
-        </p>
+      <header className="mb-8 bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+        <div className="h-1 bg-gradient-to-r from-emerald-500 via-emerald-600 to-slate-900" />
+        <div className="px-6 py-5">
+          <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">
+            Admin Center
+          </p>
+          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+            Overzicht
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Realtime statistieken over aanmeldingen, klussen en omzet.
+          </p>
+        </div>
       </header>
 
       <section className="mb-6">

@@ -110,14 +110,17 @@ export default async function MijnKlussenPage({ searchParams }) {
           ← Terug naar overzicht
         </Link>
 
-        <header className="mb-8">
-          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
-            Mijn klussen
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Overzicht van uw geplaatste klussen en de vakmannen die zich hebben
-            aangemeld.
-          </p>
+        <header className="mb-8 bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+          <div className="h-1 bg-gradient-to-r from-emerald-500 via-emerald-600 to-slate-900" />
+          <div className="px-6 py-5">
+            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+              Mijn klussen
+            </h1>
+            <p className="text-sm text-slate-500 mt-1">
+              Overzicht van uw geplaatste klussen en de vakmannen die zich hebben
+              aangemeld.
+            </p>
+          </div>
         </header>
 
         {klussen.length === 0 && (

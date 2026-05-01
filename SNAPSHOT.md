@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-04-29 (diepe nacht — chat + inbox + Mollie diagnose + watermerk + uniform topbalk)
-**Laatste commit op main:** Uniforme topbalk met begroeting + uitlog-icoon op admin én ingelogde pagina's
+**Laatst bijgewerkt:** 2026-05-01 (kantoor — witte-kaart-headers uniform)
+**Laatste commit op main:** Uniforme witte-kaart-stijl headers op Mijn klussen, Mijn leads, Profiel en Admin
 **Live op:** https://werkmaximaal.vercel.app/
 
 > **Database is leeg gewist op 2026-04-29.** Alleen admin-account (`s.ozkara09@gmail.com`)
@@ -71,21 +71,23 @@ Sessie 2026-04-29 (late avond, chat-feature):
 - **`/admin/live-monitor` interactieve kaart** voor admin-only monitoring. Server-side klusdata via Prisma + geocoding via PDOK (`postcodeNaarCoords`, cached 7 dagen). OpenStreetMap-tiles, vrije zoom/pan (geen NL-restricties — admin wilde de wereldkaart behouden). Drie statussen: 🔵 **Nieuw** (open + geen recente chat), 🟠 **Chat actief** (bericht in laatste 7 dagen), 🟢 **Afgehandeld** (gesloten + `bijgewerktOp` ≤ 3 dagen geleden — verdwijnt automatisch daarna). Migratie `klus_bijgewerkt_op` voegt `bijgewerktOp DateTime @updatedAt` toe aan Klus. Auto-refresh elke 60 sec via `AutoRefresh`-client-component die `router.refresh()` aanroept — kaart-state (zoom/pan) blijft bewaard. Kaart via `react-leaflet`, dynamic import met `ssr:false`. Gesplit `LiveKaart` (wrapper) + `LiveKaartInner` (leaflet-code) + `AutoRefresh` (polling). Sidebar krijgt "Live monitor"-link.
 - **Mobile-friendly admin-omgeving**: (1) Admin-zijbalk heeft nu een hamburger-menu op mobile (`md:hidden`-knop linksboven binnen IngelogdTopBar's lege linkerkant) — opent een drawer-overlay met dezelfde nav-items + admin-naam-header. (2) Tabellen `vakmannen`, `klussen` en `consumenten` schakelen op mobile naar verticale **kaart-weergave** (één blok per item met info + 40px-min touch-knoppen) — desktop-tabel via `hidden md:block`. (3) Live-monitor markers vergroot van 18px naar **28px** (rond 44px touch-target) zodat ze met de duim te tikken zijn.
 
+Sessie 2026-05-01 (kantoor):
+- **Uniforme witte-kaart-stijl headers** op `/mijn-klussen`, `/mijn-leads`, `/profiel` en `/admin`. Bestaande eyebrow + h1 + subtitel zit nu in een witte kaart met `border border-slate-200 rounded-lg shadow-sm overflow-hidden` plus een `h-1 bg-gradient-to-r from-emerald-500 via-emerald-600 to-slate-900`-strip bovenaan — dezelfde look als de homepage-header. Inhoud van de headers ongewijzigd, alleen wrapper.
+
 ## 🟡 Waar je was gebleven
 
-Chat-feature volledig live: vakman + consument kunnen op `/mijn-leads` resp. `/mijn-klussen` direct met elkaar chatten per gekochte lead, met polling, unread-badge en email-notificatie. DB is helemaal gewist — site staat klaar voor de echte launch met alleen admin-account erin.
+Headers van de 4 hoofd-ingelogd-pagina's (Mijn klussen, Mijn leads, Profiel, Admin) zijn visueel uniform met de homepage. Volgende cosmetische puntjes (foto-ordering, Turnstile) staan nog open. Mollie-KvK-verificatie blijft het belangrijkste niet-code-werk vóór live-mode.
 
 ## 🔴 Volgende stappen — top-3 voor morgen
 
 Beste opties (vraag morgen welke):
-1. **KvK-verificatie indienen bij Mollie** (handmatig, 5 min + 1-3 werkdagen wachten) — zie `/admin/mollie` voor het stappenplan. Kan vandaag al, vóór de start van de werksessie morgen.
-2. **Headers in nieuwe witte-kaart-stijl** (~1u) — Mijn klussen, Mijn leads, Profiel, Admin headers krijgen dezelfde witte-kaart-met-emerald-accent als de homepage.
-3. **Foto-ordering met drag** tussen showcase-foto's (volgorde-veld bestaat al in DB). ~45 min.
+1. **KvK-verificatie indienen bij Mollie** (handmatig, 5 min + 1-3 werkdagen wachten) — zie `/admin/mollie` voor het stappenplan. Kan altijd, los van een werksessie.
+2. **Foto-ordering met drag** tussen showcase-foto's (volgorde-veld bestaat al in DB). ~45 min.
+3. **Cloudflare Turnstile config** (account aanmaken + 2 env-vars). Spam-helper is al klaar; dit is enkel wat insteek-werk.
 
 Alternatieven:
-- **Cloudflare Turnstile config** (account aanmaken + 2 env-vars). Spam-helper is al klaar; dit is enkel wat insteek-werk.
-- **Foto-ordering met drag** tussen showcase-foto's (volgorde-veld bestaat al in DB).
-- **Headers in nieuwe witte-kaart-stijl** (~1u) — visuele consistency over alle pagina's.
+- Privacy/voorwaarden door **echte jurist** laten reviewen vóór live live-mode.
+- Inactieve-account-cleanup cron (genoemd in privacyverklaring; niet gebouwd).
 
 Andere openstaande items:
 - ID-verificatie via iDIN/Mollie (door user uitgesteld)

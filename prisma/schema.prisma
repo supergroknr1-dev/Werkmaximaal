@@ -108,6 +108,13 @@ model Klus {
   plaats       String
   categorie    String?
   voorkeurVakmanType String? // "professional", "hobbyist" of null voor 'beide'
+  // Optionele klus-specs (gebruikt door de configurator op stap 2; nu
+  // alleen voor categorie 'Schilder' — pilot). Per categorie zijn andere
+  // velden relevant; null = niet ingevuld.
+  oppervlakte  Int?      // m² (Schilder)
+  binnenBuiten String?   // "binnen", "buiten", "beide" (Schilder)
+  aantal       Int?      // generieke teller, bv. aantal deuren bij Schilder
+  urgentie     String?   // "spoed", "deze-week", "deze-maand", "geen-haast"
   gesloten     Boolean   @default(false)
   // Moderatie: nieuwe klussen staan op 'in afwachting' totdat een admin
   // ze goedkeurt. Bestaande klussen zijn in de migration op true gezet.

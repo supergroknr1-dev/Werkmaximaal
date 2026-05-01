@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-05-02 (kantoor — Klussen in database + verborgen twee-paden-sectie)
-**Laatste commit op main:** Card 2 telt alle klussen + twee-paden-sectie achter feature-flag
+**Laatst bijgewerkt:** 2026-05-02 (kantoor — smart-input + Schilder-configurator + 203 trefwoorden)
+**Laatste commit op main:** Smart-input + configurator-pilot voor Schilder + 203 nieuwe trefwoorden
 **Live op:** https://werkmaximaal.vercel.app/
 
 > **Database is leeg gewist op 2026-04-29.** Alleen admin-account (`s.ozkara09@gmail.com`)
@@ -79,6 +79,9 @@ Sessie 2026-05-01 (kantoor):
 - **Social-proof statkaarten** op homepage (Pro-Link "Duidelijke Tweedeling"-design). Twee kaarten naast elkaar (mobiel gestapeld) tussen hero en stappenbalk: Card 1 = oranje getal Vakmannen (+ Hammer-icoon, white body + subtle shadow); Card 2 = zwart getal Klussen in database (+ ClipboardCheck-icoon, white body + dunne oranje top-border). Live cijfers via nieuw publiek `/api/stats`-endpoint (`prisma.user.count(rol:vakman)` + `prisma.klus.count()` — geen filter, telt álle klussen). Op verzoek géén drempel: kaarten zijn altijd zichtbaar, ook bij 0/0 — bewuste keuze voor maximale eerlijkheid bij launch (geen aspirational/fake getallen).
 - **Naam-rebrand teruggedraaid** (kort experiment): eerder waren rol-labels "Vakman" → "Specialist" en "Buurtklusser/Buurtheld" → "Handige Harrie". Specialist-tak teruggedraaid naar "Vakman/Vakmannen" via sed met `\b`-grenzen (geen impact op `vakmanType`/`isVakman`/`VakmannenTabel` identifiers). "Handige Harrie" / "Handige Harries" zijn behouden als rebrand voor de buurt-rol. UI is nu: Vakman + Handige Harrie.
 - **Twee-paden-sectie** ("De Vakman" / "Handige Harrie") gebouwd op homepage onder de stat-cards: donker slate-900-blok met Shield-icoon links, wit blok met oranje MapPin-icoon rechts, beide linken naar `/registreren/vakman`. Achter feature-flag `TOON_TWEE_PADEN = false` bovenaan `src/app/page.js` — nu verborgen, klaar om aan te zetten.
+- **Smart-input** op homepage (vervangt de oude charcoal hero). Eén witte kaart met donkere header "Wat is uw klus?": textarea voor probleembeschrijving + `<select>` met categorieën. Tijdens typen draait `detectCategorie()` op de zoek-tekst en vult automatisch de dropdown (oranje border + "automatisch herkend"-hint zolang de gebruiker niet zelf gekozen heeft). Handmatige override zet `zoekCategorieAangeraakt`-flag → auto-detect uit voor de sessie. "Volgende"-knop neemt zowel titel als categorie mee naar het stappenbalk-form (en zet daar `categorieAangeraakt` zodat de form-stap-2 niet overschrijft). Vervangt ook de eerdere dual-search met "OF"-divider.
+- **Trefwoorden-DB uitgebreid** van 39 → 242 entries. Nieuw script `scripts/seed-trefwoorden.mjs` (idempotent via `@@unique([categorie, woord])`) zet 30+ trefwoorden per actieve categorie (Elektricien, Loodgieter, Schilder, Klusjesman, Tuinman, Timmerman, Stratenmaker). Voeding voor de smart-input: typt iemand "zonnepanelen aansluiten" → automatisch Elektricien. Detect-logica is `lager.includes(woord)` — verbuigingen ("verstopt" vs "verstopping") matchen niet, dat blijft een edge case.
+- **Configurator-pilot** voor Schilder op stap 2 van de klus-form. Nieuwe Prisma-migratie `add_klus_specs` voegt `oppervlakte Int? · binnenBuiten String? · aantal Int? · urgentie String?` toe aan `Klus` (al toegepast op de Railway-DB). Toont alleen wanneer `categorie === "schilder"`. UI-blok "Specificeer uw klus" met Sparkles-icoon en 4 velden: Oppervlakte (m²-input + Ruler-icoon), Locatie (3 toggle-buttons Binnen/Buiten/Beide met Home/Sun/Hammer-iconen, oranje als actief), Aantal deuren (counter met +/-) en Urgentie (select Spoed / Deze week / Deze maand / Geen haast). `POST /api/klussen` accepteert + valideert deze velden; reset-flow op stap 1 zet ze terug. Andere categorieën zien (nog) geen configurator.
 
 ## 🟡 Waar je was gebleven
 

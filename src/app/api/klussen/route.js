@@ -128,6 +128,23 @@ export async function POST(request) {
       );
     }
   }
+  // Configurator-velden (optioneel; alleen ingevuld bij categorieën die
+  // de configurator op stap 2 ondersteunen — pilot: Schilder).
+  const oppervlakte = Number.isFinite(Number(data.oppervlakte))
+    ? Math.max(0, Math.floor(Number(data.oppervlakte)))
+    : null;
+  const aantal = Number.isFinite(Number(data.aantal))
+    ? Math.max(0, Math.floor(Number(data.aantal)))
+    : null;
+  const binnenBuiten = ["binnen", "buiten", "beide"].includes(data.binnenBuiten)
+    ? data.binnenBuiten
+    : null;
+  const urgentie = ["spoed", "deze-week", "deze-maand", "geen-haast"].includes(
+    data.urgentie
+  )
+    ? data.urgentie
+    : null;
+
   const nieuweKlus = await prisma.klus.create({
     data: {
       titel: data.titel,
@@ -138,6 +155,10 @@ export async function POST(request) {
       categorie: data.categorie || null,
       voorkeurVakmanType:
         voorkeur === "professional" || voorkeur === "hobbyist" ? voorkeur : null,
+      oppervlakte,
+      binnenBuiten,
+      aantal,
+      urgentie,
       userId: user.id,
     },
   });

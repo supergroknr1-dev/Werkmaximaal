@@ -3,7 +3,21 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Hammer, ClipboardCheck, Shield, MapPin } from "lucide-react";
+import {
+  Hammer,
+  ClipboardCheck,
+  Shield,
+  MapPin,
+  Search,
+  Wrench,
+  Ruler,
+  Home as HomeIcon,
+  Sun,
+  Plus,
+  Minus,
+  Clock,
+  Sparkles,
+} from "lucide-react";
 
 const PENDING_KEY = "werkmaximaal_pending_klus";
 const AUTO_PLAATSEN_KEY = "werkmaximaal_auto_plaatsen";
@@ -107,6 +121,14 @@ export default function Home() {
   const [userLoaded, setUserLoaded] = useState(false);
   const [hobbyistInschakeld, setHobbyistInschakeld] = useState(true);
   const [stats, setStats] = useState(null);
+  const [zoekTekst, setZoekTekst] = useState("");
+  const [zoekCategorie, setZoekCategorie] = useState("");
+  const [zoekCategorieAangeraakt, setZoekCategorieAangeraakt] = useState(false);
+  // Configurator-velden (optioneel, nu alleen relevant bij Schilder)
+  const [oppervlakte, setOppervlakte] = useState("");
+  const [binnenBuiten, setBinnenBuiten] = useState("");
+  const [aantal, setAantal] = useState(0);
+  const [urgentie, setUrgentie] = useState("");
 
   useEffect(() => {
     haalKlussenOp();
@@ -168,6 +190,14 @@ export default function Home() {
     const gevonden = detectCategorie(titel, trefwoorden);
     if (gevonden) setCategorie(gevonden);
   }, [titel, categorieAangeraakt, trefwoorden]);
+
+  // Auto-detect categorie in de zoek-sectie boven aan de homepage,
+  // tenzij de gebruiker zelf al een categorie heeft gekozen.
+  useEffect(() => {
+    if (zoekCategorieAangeraakt) return;
+    const gevonden = detectCategorie(zoekTekst, trefwoorden);
+    setZoekCategorie(gevonden ?? "");
+  }, [zoekTekst, zoekCategorieAangeraakt, trefwoorden]);
 
   useEffect(() => {
     const schoonPc = postcode.trim().toUpperCase();
@@ -276,6 +306,10 @@ export default function Home() {
         plaats: postcodeStatus.plaats,
         categorie,
         voorkeurVakmanType: voorkeurVakmanType || null,
+        oppervlakte: oppervlakte ? parseInt(oppervlakte) : null,
+        binnenBuiten: binnenBuiten || null,
+        aantal: aantal > 0 ? aantal : null,
+        urgentie: urgentie || null,
       }),
     });
 
@@ -290,6 +324,10 @@ export default function Home() {
     setCategorie("");
     setVoorkeurVakmanType("");
     setCategorieAangeraakt(false);
+    setOppervlakte("");
+    setBinnenBuiten("");
+    setAantal(0);
+    setUrgentie("");
     setStap(1);
     setBezig(false);
 
@@ -370,20 +408,74 @@ export default function Home() {
         </header>
 
         {userLoaded && !huidigeUser?.isAdmin && (!huidigeUser || huidigeUser.rol === "consument") && (
-          <section className="mb-10 bg-slate-900 rounded-lg overflow-hidden shadow-sm">
-            <div className="px-6 py-10 md:px-10 md:py-14 text-center">
-              <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight mb-3">
-                Vind de juiste vakman voor elke klus
-              </h2>
-              <p className="text-sm md:text-base text-slate-300 mb-6 max-w-md mx-auto">
-                Plaats uw klus gratis en ontvang reacties van geschikte vakmensen in uw buurt.
-              </p>
-              <a
-                href="#klus-plaatsen"
-                className="inline-block bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold px-6 py-3 rounded-md transition-colors"
+          <section className="mb-10 bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
+            <div className="bg-slate-900 text-white px-5 py-3 flex items-center gap-2">
+              <Search size={16} strokeWidth={2} />
+              <h3 className="text-sm font-semibold">Wat is uw klus?</h3>
+            </div>
+            <div className="p-5 md:p-6">
+              <label className="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-2">
+                Beschrijf uw probleem
+              </label>
+              <textarea
+                value={zoekTekst}
+                onChange={(e) => setZoekTekst(e.target.value)}
+                placeholder="bijv: mijn wc spoelt niet door"
+                rows={3}
+                className="w-full px-3 py-2.5 border border-slate-300 rounded-md text-sm placeholder:text-slate-400 focus:outline-none focus:border-slate-900 resize-none"
+              />
+
+              <div className="mt-4">
+                <label className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1.5 flex items-center gap-1.5">
+                  <Wrench size={12} className="text-orange-600" />
+                  Categorie
+                  {zoekCategorie && !zoekCategorieAangeraakt && (
+                    <span className="text-[10px] normal-case font-normal text-orange-600 tracking-normal">
+                      (automatisch herkend, mag aangepast worden)
+                    </span>
+                  )}
+                </label>
+                <select
+                  value={zoekCategorie}
+                  onChange={(e) => {
+                    setZoekCategorie(e.target.value);
+                    setZoekCategorieAangeraakt(true);
+                  }}
+                  className={`w-full px-3 py-2.5 border-2 rounded-md text-sm focus:outline-none bg-white transition-colors ${
+                    zoekCategorie
+                      ? "border-orange-300 focus:border-orange-600"
+                      : "border-slate-300 focus:border-slate-900"
+                  }`}
+                >
+                  <option value="">Kies een categorie...</option>
+                  {CATEGORIEEN.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (!zoekTekst.trim() && !zoekCategorie) return;
+                  if (zoekTekst.trim()) setTitel(zoekTekst);
+                  if (zoekCategorie) {
+                    setCategorie(zoekCategorie);
+                    setCategorieAangeraakt(true);
+                  }
+                  setTimeout(() => {
+                    document
+                      .getElementById("klus-plaatsen")
+                      ?.scrollIntoView({ behavior: "smooth" });
+                  }, 50);
+                }}
+                disabled={!zoekTekst.trim() && !zoekCategorie}
+                className="mt-5 w-full bg-orange-600 hover:bg-orange-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-sm font-semibold py-2.5 rounded-md transition-colors"
               >
-                Klus plaatsen
-              </a>
+                Volgende
+              </button>
             </div>
           </section>
         )}
@@ -645,6 +737,118 @@ export default function Home() {
                   ))}
                 </datalist>
               </div>
+
+              {categorie?.toLowerCase() === "schilder" && (
+                <div className="mb-6 bg-slate-50 border border-slate-200 rounded-md p-4">
+                  <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                    <Sparkles size={16} className="text-orange-600" />
+                    Specificeer uw klus
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1.5 flex items-center gap-1.5">
+                        <Ruler size={14} />
+                        Oppervlakte
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          min={0}
+                          value={oppervlakte}
+                          onChange={(e) => setOppervlakte(e.target.value)}
+                          placeholder="0"
+                          className="w-full px-3 py-2 pr-10 border border-slate-300 rounded-md text-sm bg-white focus:outline-none focus:border-slate-900"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">
+                          m²
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1.5">
+                        Locatie
+                      </label>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {[
+                          { val: "binnen", label: "Binnen", Icon: HomeIcon },
+                          { val: "buiten", label: "Buiten", Icon: Sun },
+                          { val: "beide", label: "Beide", Icon: Hammer },
+                        ].map(({ val, label, Icon }) => (
+                          <button
+                            key={val}
+                            type="button"
+                            onClick={() =>
+                              setBinnenBuiten(
+                                binnenBuiten === val ? "" : val
+                              )
+                            }
+                            className={`flex flex-col items-center gap-1 px-2 py-2 rounded-md border text-[11px] font-medium transition-colors ${
+                              binnenBuiten === val
+                                ? "bg-orange-600 text-white border-orange-600"
+                                : "bg-white text-slate-700 border-slate-300 hover:border-slate-900"
+                            }`}
+                          >
+                            <Icon size={16} />
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1.5">
+                        Aantal deuren
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setAantal(Math.max(0, aantal - 1))}
+                          className="w-9 h-9 rounded-md border border-slate-300 bg-white text-orange-600 hover:border-orange-600 flex items-center justify-center transition-colors"
+                          aria-label="Eén minder"
+                        >
+                          <Minus size={16} />
+                        </button>
+                        <input
+                          type="number"
+                          min={0}
+                          value={aantal}
+                          onChange={(e) =>
+                            setAantal(
+                              Math.max(0, parseInt(e.target.value) || 0)
+                            )
+                          }
+                          className="flex-1 text-center border border-slate-300 rounded-md py-1.5 text-sm font-semibold bg-white focus:outline-none focus:border-slate-900 tabular-nums"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setAantal(aantal + 1)}
+                          className="w-9 h-9 rounded-md border border-slate-300 bg-white text-orange-600 hover:border-orange-600 flex items-center justify-center transition-colors"
+                          aria-label="Eén meer"
+                        >
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1.5 flex items-center gap-1.5">
+                        <Clock size={14} />
+                        Urgentie
+                      </label>
+                      <select
+                        value={urgentie}
+                        onChange={(e) => setUrgentie(e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white focus:outline-none focus:border-slate-900"
+                      >
+                        <option value="">Kies wanneer</option>
+                        <option value="spoed">Spoed (binnen 24u)</option>
+                        <option value="deze-week">Deze week</option>
+                        <option value="deze-maand">Deze maand</option>
+                        <option value="geen-haast">Geen haast</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {hobbyistInschakeld && (
               <div className="mb-6">

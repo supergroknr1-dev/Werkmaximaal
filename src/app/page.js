@@ -124,6 +124,10 @@ export default function Home() {
   // er dan 2 klussen die naar elkaar verwijzen.
   const [relatie, setRelatie] = useState(null);
   const [extraGekozen, setExtraGekozen] = useState(false);
+  // Multi-klus ontleding: LLM splitst de omschrijving in 1+ klussen,
+  // elk met eigen beroep. Bij submit worden N gelinkte klussen aangemaakt.
+  const [klusLijst, setKlusLijst] = useState([]); // [{omschrijving, beroep}]
+  const [ontleedt, setOntleedt] = useState(false);
   // Configurator-velden (optioneel, nu alleen relevant bij Schilder)
   const [oppervlakte, setOppervlakte] = useState("");
   const [binnenBuiten, setBinnenBuiten] = useState("");
@@ -198,6 +202,37 @@ export default function Home() {
     const gevonden = detectCategorie(titel, trefwoorden, categorieen);
     if (gevonden) setCategorie(gevonden);
   }, [titel, categorieAangeraakt, trefwoorden]);
+
+  // Semantic search op de "Omschrijving" van stap 1 — vult automatisch
+  // de BEROEPEN-dropdown wanneer gebruiker direct in stap-1 form typt
+  // (zonder via de top-smart-input te gaan). 600ms debounce na laatste
+  // toetsaanslag om de OpenAI-kosten te beperken.
+  useEffect(() => {
+    if (categorieAangeraakt) return;
+    if (!titel || titel.trim().length < 4) return;
+    const ctrl = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/zoek-categorie", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tekst: titel }),
+          signal: ctrl.signal,
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.match && data.match.score >= 60 && !categorieAangeraakt) {
+          setCategorie(data.match.categorie);
+        }
+      } catch {
+        // abort of netwerkfout — laat keyword-match staan
+      }
+    }, 600);
+    return () => {
+      clearTimeout(timer);
+      ctrl.abort();
+    };
+  }, [titel, categorieAangeraakt]);
 
   // Auto-detect tijdens typen is uit — gebruiker triggert zoek via
   // de "Volgende"-knop. Dit voorkomt flikkering en onnodige API-calls,
@@ -318,7 +353,6 @@ export default function Home() {
     setBezig(true);
 
     const baseBody = {
-      titel,
       postcode,
       huisnummer,
       straatnaam: postcodeStatus.straatnaam,
@@ -330,26 +364,53 @@ export default function Home() {
       urgentie: urgentie || null,
     };
 
-    // Plaats primaire klus
-    const primair = await fetch("/api/klussen", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...baseBody, categorie }),
-    }).then((r) => (r.ok ? r.json() : null));
-
-    // Cross-sell: als gebruiker een extra beroep heeft toegevoegd,
-    // maak ook een 2e klus aan die naar de primaire verwijst.
-    if (primair?.id && extraGekozen && relatie?.gerelateerdeNaam) {
-      await fetch("/api/klussen", {
+    // Multi-klus modus: als de LLM-ontleding meerdere klussen heeft
+    // gevonden, maak voor elke een aparte klus aan, gelinkt aan de eerste.
+    if (klusLijst.length > 1) {
+      const primair = await fetch("/api/klussen", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...baseBody,
-          titel: `${titel} — ${relatie.gerelateerdeNaam}`,
-          categorie: relatie.gerelateerdeNaam,
-          gerelateerdeAanId: primair.id,
+          titel: klusLijst[0].omschrijving || titel,
+          categorie: klusLijst[0].beroep,
         }),
-      });
+      }).then((r) => (r.ok ? r.json() : null));
+
+      if (primair?.id) {
+        for (let i = 1; i < klusLijst.length; i++) {
+          await fetch("/api/klussen", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...baseBody,
+              titel: klusLijst[i].omschrijving || titel,
+              categorie: klusLijst[i].beroep,
+              gerelateerdeAanId: primair.id,
+            }),
+          });
+        }
+      }
+    } else {
+      // Enkel-klus modus: 1 klus + optioneel cross-sell extra.
+      const primair = await fetch("/api/klussen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...baseBody, titel, categorie }),
+      }).then((r) => (r.ok ? r.json() : null));
+
+      if (primair?.id && extraGekozen && relatie?.gerelateerdeNaam) {
+        await fetch("/api/klussen", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...baseBody,
+            titel: `${titel} — ${relatie.gerelateerdeNaam}`,
+            categorie: relatie.gerelateerdeNaam,
+            gerelateerdeAanId: primair.id,
+          }),
+        });
+      }
     }
 
     // Klus geplaatst — onthouden hoeft niet meer
@@ -365,6 +426,7 @@ export default function Home() {
     setCategorieAangeraakt(false);
     setRelatie(null);
     setExtraGekozen(false);
+    setKlusLijst([]);
     setOppervlakte("");
     setBinnenBuiten("");
     setAantal(0);
@@ -462,54 +524,6 @@ export default function Home() {
                 rows={3}
                 className="w-full px-3 py-2.5 border border-slate-300 rounded-md text-sm placeholder:text-slate-400 focus:outline-none focus:border-slate-900 resize-none"
               />
-
-              <div className="mt-4">
-                <label className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1.5 flex items-center gap-1.5">
-                  <Wrench size={12} className="text-orange-600" />
-                  Beroepen
-                </label>
-                <select
-                  value={zoekCategorie}
-                  onChange={(e) => {
-                    setZoekCategorie(e.target.value);
-                    setZoekCategorieAangeraakt(true);
-                  }}
-                  className={`w-full px-3 py-2.5 border-2 rounded-md text-sm focus:outline-none bg-white transition-colors ${
-                    zoekCategorie && !zoekCategorieAangeraakt
-                      ? "border-orange-500 focus:border-orange-600 bg-orange-50 ring-2 ring-orange-200"
-                      : zoekCategorie
-                      ? "border-orange-300 focus:border-orange-600"
-                      : "border-slate-300 focus:border-slate-900"
-                  }`}
-                >
-                  <option value="">Kies een beroep...</option>
-                  {categorieen.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-                {zoekCategorie && !zoekCategorieAangeraakt && (
-                  <div className="mt-3 px-4 py-3 bg-gradient-to-r from-orange-100 to-orange-50 border-2 border-orange-400 border-l-[6px] rounded-md shadow-md ring-2 ring-orange-200/60 flex items-start gap-3">
-                    <Sparkles
-                      size={20}
-                      className="text-orange-600 shrink-0 mt-0.5"
-                      strokeWidth={2.5}
-                    />
-                    <div>
-                      <p className="text-base font-bold text-orange-900 leading-tight">
-                        Voor uw klus heeft u een {zoekCategorie} nodig.
-                      </p>
-                      <p className="text-sm text-orange-800 mt-1 leading-snug">
-                        Klopt dit niet?{" "}
-                        <span className="font-semibold underline">
-                          Kies zelf de juiste vakman hierboven.
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
 
               <button
                 type="button"
@@ -749,7 +763,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="mb-8">
+              <div className="mb-6">
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Omschrijving van de klus
                 </label>
@@ -760,6 +774,138 @@ export default function Home() {
                   placeholder="Bijvoorbeeld: Ik zoek een schilder voor mijn woonkamer en hal."
                   className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors resize-none text-sm"
                 />
+              </div>
+
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2 gap-2">
+                  <label className="text-sm font-medium text-slate-700 flex items-center gap-1.5">
+                    <Wrench size={14} className="text-orange-600" />
+                    Welke vakmensen heeft u nodig?
+                  </label>
+                  <button
+                    type="button"
+                    disabled={!titel.trim() || ontleedt}
+                    onClick={async () => {
+                      setOntleedt(true);
+                      try {
+                        const res = await fetch("/api/ontleed-klus", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ tekst: titel }),
+                        });
+                        if (res.ok) {
+                          const data = await res.json();
+                          setKlusLijst(data.klussen || []);
+                          if (data.klussen?.[0])
+                            setCategorie(data.klussen[0].beroep);
+                        }
+                      } catch {}
+                      setOntleedt(false);
+                    }}
+                    className="text-xs text-orange-600 hover:text-orange-700 font-semibold inline-flex items-center gap-1 disabled:text-slate-400"
+                  >
+                    <Sparkles size={12} />
+                    {ontleedt ? "Bezig..." : "Analyseer klus"}
+                  </button>
+                </div>
+
+                {klusLijst.length > 0 ? (
+                  <div className="space-y-2">
+                    {klusLijst.map((k, i) => (
+                      <div
+                        key={i}
+                        className="bg-orange-50 border-2 border-orange-300 border-l-[6px] rounded-md px-3 py-2.5"
+                      >
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-orange-600 text-white text-[11px] font-bold shrink-0">
+                            {i + 1}
+                          </span>
+                          <select
+                            value={k.beroep}
+                            onChange={(e) => {
+                              const nieuw = [...klusLijst];
+                              nieuw[i] = { ...k, beroep: e.target.value };
+                              setKlusLijst(nieuw);
+                              if (i === 0) setCategorie(e.target.value);
+                              setCategorieAangeraakt(true);
+                            }}
+                            className="flex-1 px-2 py-1 bg-white border border-orange-300 rounded text-sm font-semibold text-slate-900 focus:outline-none focus:border-orange-600"
+                          >
+                            {categorieen.map((c) => (
+                              <option key={c} value={c}>
+                                {c}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const nieuw = klusLijst.filter((_, j) => j !== i);
+                              setKlusLijst(nieuw);
+                              if (nieuw.length > 0) setCategorie(nieuw[0].beroep);
+                              else setCategorie("");
+                            }}
+                            className="text-slate-400 hover:text-rose-600 text-base leading-none px-1"
+                            aria-label={`Verwijder klus ${i + 1}`}
+                          >
+                            ×
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          value={k.omschrijving}
+                          onChange={(e) => {
+                            const nieuw = [...klusLijst];
+                            nieuw[i] = { ...k, omschrijving: e.target.value };
+                            setKlusLijst(nieuw);
+                          }}
+                          className="w-full ml-7 -mt-px px-2 py-1 bg-white/70 border border-transparent hover:border-orange-300 focus:border-orange-600 rounded text-xs text-slate-700 focus:outline-none transition-colors"
+                          style={{ width: "calc(100% - 1.75rem)" }}
+                        />
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setKlusLijst([
+                          ...klusLijst,
+                          { omschrijving: "", beroep: categorieen[0] || "" },
+                        ]);
+                      }}
+                      className="text-xs text-orange-600 hover:text-orange-700 font-medium inline-flex items-center gap-1"
+                    >
+                      <Plus size={12} /> Voeg klus toe
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <select
+                      value={categorie}
+                      onChange={(e) => {
+                        setCategorie(e.target.value);
+                        setCategorieAangeraakt(true);
+                      }}
+                      className={`w-full px-3 py-2.5 border-2 rounded-md text-sm focus:outline-none bg-white transition-colors ${
+                        categorie && !categorieAangeraakt
+                          ? "border-orange-500 focus:border-orange-600 bg-orange-50 ring-2 ring-orange-200"
+                          : categorie
+                          ? "border-orange-300 focus:border-orange-600"
+                          : "border-slate-300 focus:border-slate-900"
+                      }`}
+                    >
+                      <option value="">Kies een beroep...</option>
+                      {categorieen.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-slate-500 mt-2">
+                      Of klik <strong>Analyseer klus</strong> hierboven voor
+                      meerdere vakmensen tegelijk.
+                    </p>
+                  </>
+                )}
               </div>
 
               <button

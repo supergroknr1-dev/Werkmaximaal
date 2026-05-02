@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-05-02 (kantoor — bulk-add voor beroepen)
-**Laatste commit op main:** Bulk-add voor beroepen op /beheer
+**Laatst bijgewerkt:** 2026-05-02 (kantoor — merken/materialen-laag + match-prio)
+**Laatste commit op main:** Merken-laag op trefwoorden + match-priority logica
 **Live op:** https://werkmaximaal.vercel.app/
 
 > **Database is leeg gewist op 2026-04-29.** Alleen admin-account (`s.ozkara09@gmail.com`)
@@ -94,6 +94,9 @@ Sessie 2026-05-02 (kantoor, beroepen beheerbaar):
 - **Sidebar-link "Beroepen"** (Briefcase-icoon) toegevoegd aan admin-sidebar onder "Instellingen". De oude "Snelkoppelingen"-tegel met "Trefwoorden voor categorie-detectie beheren"-link is weg uit `/admin/instellingen`. Note: `/beheer` zit nog steeds buiten de `(gated)`-layout, dus de admin-sidebar valt weg op die pagina — eventueel later verhuizen naar `/admin/(gated)/beroepen`.
 - **Alle trefwoorden gewist** op verzoek (241 → 0). Backup eerst gemaakt: `backups/2026-05-02T00-31-50-165Z/`. Smart-input op homepage en Test-modus op /beheer geven nu altijd "geen match" tot er weer trefwoorden worden toegevoegd. Bewuste keuze: vers beginnen i.p.v. de oude lijst.
 - **Bulk-add voor beroepen** op /beheer. Single-input vervangen door textarea met komma/newline-split, preview-pills met case-insensitive dedupe, en idempotente bulk-call (POST `/api/categorieen` accepteert nu `{namen: []}`-array naast single `{naam}`). Status-melding "X toegevoegd · Y bestonden al" — zelfde patroon als bij trefwoorden. WISSEN-bevestiging blijft onveranderd op individuele delete.
+- **Merken & Materialen-laag** op trefwoorden. Migratie `add_trefwoord_type` voegt `type String @default("zoekterm")` toe (waarden: `"zoekterm"` of `"merk"`). POST `/api/trefwoorden` accepteert nu `type` (default zoekterm). Tweede paneel "Merken & Materialen toevoegen" op /beheer naast bestaande zoektermen-blok — blauwe styling i.p.v. oranje voor visueel onderscheid. De gegroepeerde lijst onder "Bestaande trefwoorden" toont nu 2 sub-secties per beroep: ZOEKTERMEN (grijs) en MERKEN & MATERIALEN (blauw).
+- **Match-priority logica** in `detectCategorie()`. Drie passes in volgorde: (1) beroepsnaam in tekst, (2) zoekterm-substring, (3) merk-substring. Eerste hit wint. Nieuwe `detectMetBron()`-helper geeft ook de match-bron terug (`"beroep"|"zoekterm"|"merk"`) zodat de Test-modus op /beheer expliciet toont *waarom* iets matcht ("Match: Elektricien (via merk: 'hager')"). Homepage gebruikt nog steeds de oude `detectCategorie` maar geeft nu ook `categorieen` mee zodat beroepsnaam-match ook daar werkt.
+- **Categorie-tabel werd leeggeresend** door `prisma migrate dev` (Prisma vond drift en deed silent reset). Opnieuw geseed via `node scripts/seed-categorieen.mjs` (8 beroepen). Bewust niet onderzocht; gebeurt vrijwel altijd 1× per nieuwe migratie als er manuele data-load is geweest. Backup van vóór de migratie staat nog op `backups/2026-05-02T00-31-50-165Z/`.
 
 ## 🟡 Waar je was gebleven
 

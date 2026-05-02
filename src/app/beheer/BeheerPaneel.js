@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { detectCategorie } from "@/lib/categorie-detect";
+import { detectMetBron } from "@/lib/categorie-detect";
 
 export default function BeheerPaneel() {
   const [categorieen, setCategorieen] = useState([]);
@@ -12,6 +12,13 @@ export default function BeheerPaneel() {
   const [bezig, setBezig] = useState(false);
   const [foutmelding, setFoutmelding] = useState("");
   const [statusmelding, setStatusmelding] = useState("");
+
+  // Merken-paneel — eigen state, eigen submit, zelfde patroon als zoektermen.
+  const [merkCategorie, setMerkCategorie] = useState("");
+  const [merkenInput, setMerkenInput] = useState("");
+  const [merkBezig, setMerkBezig] = useState(false);
+  const [merkFout, setMerkFout] = useState("");
+  const [merkStatus, setMerkStatus] = useState("");
   const [filter, setFilter] = useState("");
   const [testTekst, setTestTekst] = useState("");
 
@@ -35,6 +42,7 @@ export default function BeheerPaneel() {
     const data = await res.json();
     setCategorieen(data);
     if (!categorie && data.length > 0) setCategorie(data[0].naam);
+    if (!merkCategorie && data.length > 0) setMerkCategorie(data[0].naam);
     return data;
   }
 
@@ -59,6 +67,18 @@ export default function BeheerPaneel() {
       ),
     ];
   }, [woordenInput]);
+
+  // Merken-input: zelfde split-logica als zoektermen.
+  const merkenLijst = useMemo(() => {
+    return [
+      ...new Set(
+        merkenInput
+          .split(/[,\n]+/)
+          .map((w) => w.trim().toLowerCase())
+          .filter(Boolean)
+      ),
+    ];
+  }, [merkenInput]);
 
   // Beroepen-input: zelfde split-logica, maar zonder lowercase
   // (beroepen behouden hoofdletter — "Schilder" niet "schilder").
@@ -101,6 +121,36 @@ export default function BeheerPaneel() {
       haalTrefwoorden();
     }
     setBezig(false);
+  }
+
+  async function voegMerkenToe(e) {
+    e.preventDefault();
+    if (merkenLijst.length === 0) return;
+    setMerkBezig(true);
+    setMerkFout("");
+    setMerkStatus("");
+    const res = await fetch("/api/trefwoorden", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        categorie: merkCategorie,
+        woorden: merkenLijst,
+        type: "merk",
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setMerkFout(data.error || "Er ging iets mis.");
+    } else {
+      const { aantalToegevoegd, aantalBestaand } = data;
+      const stukken = [];
+      if (aantalToegevoegd) stukken.push(`${aantalToegevoegd} toegevoegd`);
+      if (aantalBestaand) stukken.push(`${aantalBestaand} bestond al`);
+      setMerkStatus(stukken.join(" · ") || "Geen wijzigingen.");
+      setMerkenInput("");
+      haalTrefwoorden();
+    }
+    setMerkBezig(false);
   }
 
   async function voegBeroepToe(e) {
@@ -178,8 +228,8 @@ export default function BeheerPaneel() {
     .filter((c) => !filter || c === filter);
 
   const testMatch = useMemo(() => {
-    return detectCategorie(testTekst, trefwoorden);
-  }, [testTekst, trefwoorden]);
+    return detectMetBron(testTekst, trefwoorden, categorieen);
+  }, [testTekst, trefwoorden, categorieen]);
 
   // Telt per categorie hoeveel trefwoorden er zijn (voor info-tekst bij delete)
   const trefwoordenTeller = useMemo(() => {
@@ -316,7 +366,10 @@ export default function BeheerPaneel() {
             ) : testMatch ? (
               <span className="inline-flex items-center gap-1.5 text-orange-700">
                 <span className="w-2 h-2 rounded-full bg-orange-600" />
-                Match: <strong>{testMatch}</strong>
+                Match: <strong>{testMatch.categorie}</strong>{" "}
+                <span className="text-xs text-slate-500">
+                  (via {testMatch.bron === "beroep" ? "beroepsnaam" : testMatch.bron}: &quot;{testMatch.treffer}&quot;)
+                </span>
               </span>
             ) : (
               <span className="text-slate-500">
@@ -328,11 +381,12 @@ export default function BeheerPaneel() {
 
         <section className="bg-white border border-slate-200 rounded-md shadow-sm p-6 mb-6">
           <h2 className="text-base font-semibold text-slate-900 mb-1">
-            Trefwoorden toevoegen
+            Zoektermen toevoegen
           </h2>
           <p className="text-xs text-slate-500 mb-3">
-            Plak meerdere trefwoorden tegelijk — gescheiden door komma of
-            nieuwe regel.
+            Plak meerdere zoektermen tegelijk — gescheiden door komma of
+            nieuwe regel. Voorbeeld: &quot;lekkage, verstopping, kraan&quot; voor
+            Loodgieter.
           </p>
           <form onSubmit={voegToe} className="space-y-3">
             <select
@@ -392,6 +446,71 @@ export default function BeheerPaneel() {
           )}
         </section>
 
+        <section className="bg-white border border-slate-200 rounded-md shadow-sm p-6 mb-6">
+          <h2 className="text-base font-semibold text-slate-900 mb-1">
+            Merken &amp; Materialen toevoegen
+          </h2>
+          <p className="text-xs text-slate-500 mb-3">
+            Specifieke merknamen of materialen die het beroep mogen aansturen.
+            Voorbeeld: &quot;Hager, ABB, Busch-Jaeger&quot; voor Elektricien.
+            Komma- of newline-gescheiden.
+          </p>
+          <form onSubmit={voegMerkenToe} className="space-y-3">
+            <select
+              value={merkCategorie}
+              onChange={(e) => setMerkCategorie(e.target.value)}
+              className="w-full md:w-60 px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+              disabled={categorieen.length === 0}
+            >
+              {categorieen.map((c) => (
+                <option key={c.id} value={c.naam}>
+                  {c.naam}
+                </option>
+              ))}
+            </select>
+            <textarea
+              value={merkenInput}
+              onChange={(e) => setMerkenInput(e.target.value)}
+              rows={3}
+              placeholder="Bijv: Hager, ABB, Busch-Jaeger"
+              className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm resize-none"
+            />
+            {merkenLijst.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {merkenLijst.map((m) => (
+                  <span
+                    key={m}
+                    className="inline-flex items-center px-2 py-0.5 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700"
+                  >
+                    {m}
+                  </span>
+                ))}
+                <span className="text-xs text-slate-400 self-center ml-1">
+                  ({merkenLijst.length} item
+                  {merkenLijst.length === 1 ? "" : "s"})
+                </span>
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={merkBezig || merkenLijst.length === 0 || !merkCategorie}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
+            >
+              {merkBezig
+                ? "Bezig..."
+                : `Toevoegen aan ${merkCategorie}${
+                    merkenLijst.length > 1 ? ` (${merkenLijst.length}×)` : ""
+                  }`}
+            </button>
+          </form>
+          {merkFout && (
+            <p className="text-sm text-rose-600 mt-3">{merkFout}</p>
+          )}
+          {merkStatus && (
+            <p className="text-sm text-emerald-700 mt-3">{merkStatus}</p>
+          )}
+        </section>
+
         <section className="bg-white border border-slate-200 rounded-md shadow-sm p-6 mb-4">
           <div className="flex items-center justify-between gap-4 mb-3">
             <h2 className="text-base font-semibold text-slate-900">
@@ -418,44 +537,89 @@ export default function BeheerPaneel() {
               Nog geen trefwoorden in deze categorie.
             </p>
           ) : (
-            gesorteerdeCategorieen.map((cat) => (
-              <div
-                key={cat}
-                className="bg-white border border-slate-200 rounded-md p-5"
-              >
-                <h3 className="text-sm font-semibold text-slate-900 mb-3">
-                  {cat}{" "}
-                  <span className="text-slate-400 font-normal">
-                    ({groepen[cat].length})
-                  </span>
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {groepen[cat].map((t) => (
-                    <span
-                      key={t.id}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-700"
-                    >
-                      {t.woord}
-                      <button
-                        type="button"
-                        onClick={() =>
-                          vraagBevestiging({
-                            kind: "trefwoord",
-                            id: t.id,
-                            woord: t.woord,
-                            categorie: t.categorie,
-                          })
-                        }
-                        className="text-slate-400 hover:text-rose-600 transition-colors text-base leading-none"
-                        aria-label={`Verwijder ${t.woord}`}
-                      >
-                        ×
-                      </button>
+            gesorteerdeCategorieen.map((cat) => {
+              const zoektermen = groepen[cat].filter((t) => t.type !== "merk");
+              const merken = groepen[cat].filter((t) => t.type === "merk");
+              return (
+                <div
+                  key={cat}
+                  className="bg-white border border-slate-200 rounded-md p-5"
+                >
+                  <h3 className="text-sm font-semibold text-slate-900 mb-3">
+                    {cat}{" "}
+                    <span className="text-slate-400 font-normal">
+                      ({groepen[cat].length})
                     </span>
-                  ))}
+                  </h3>
+
+                  {zoektermen.length > 0 && (
+                    <div className="mb-3">
+                      <p className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold mb-1.5">
+                        Zoektermen ({zoektermen.length})
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {zoektermen.map((t) => (
+                          <span
+                            key={t.id}
+                            className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-700"
+                          >
+                            {t.woord}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                vraagBevestiging({
+                                  kind: "trefwoord",
+                                  id: t.id,
+                                  woord: t.woord,
+                                  categorie: t.categorie,
+                                })
+                              }
+                              className="text-slate-400 hover:text-rose-600 transition-colors text-base leading-none"
+                              aria-label={`Verwijder ${t.woord}`}
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {merken.length > 0 && (
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-blue-600 font-semibold mb-1.5">
+                        Merken &amp; Materialen ({merken.length})
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {merken.map((t) => (
+                          <span
+                            key={t.id}
+                            className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 border border-blue-200 rounded-md text-sm text-blue-800"
+                          >
+                            {t.woord}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                vraagBevestiging({
+                                  kind: "trefwoord",
+                                  id: t.id,
+                                  woord: t.woord,
+                                  categorie: t.categorie,
+                                })
+                              }
+                              className="text-blue-400 hover:text-rose-600 transition-colors text-base leading-none"
+                              aria-label={`Verwijder ${t.woord}`}
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>

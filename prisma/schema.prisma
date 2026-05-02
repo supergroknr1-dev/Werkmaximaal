@@ -224,6 +224,7 @@ model Trefwoord {
   id        Int    @id @default(autoincrement())
   categorie String
   woord     String
+  type      String @default("zoekterm") // "zoekterm" of "merk"
 
   @@unique([categorie, woord])
 }

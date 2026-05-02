@@ -16,6 +16,7 @@ export async function POST(request) {
 
   const data = await request.json();
   const categorie = (data.categorie ?? "").trim();
+  const type = data.type === "merk" ? "merk" : "zoekterm";
 
   if (!categorie) {
     return Response.json({ error: "Categorie is verplicht." }, { status: 400 });
@@ -58,7 +59,7 @@ export async function POST(request) {
       continue;
     }
     const nieuw = await prisma.trefwoord.create({
-      data: { categorie, woord: w },
+      data: { categorie, woord: w, type },
     });
     toegevoegd.push(nieuw);
   }

@@ -189,7 +189,7 @@ export default function Home() {
 
   useEffect(() => {
     if (categorieAangeraakt) return;
-    const gevonden = detectCategorie(titel, trefwoorden);
+    const gevonden = detectCategorie(titel, trefwoorden, categorieen);
     if (gevonden) setCategorie(gevonden);
   }, [titel, categorieAangeraakt, trefwoorden]);
 
@@ -197,7 +197,7 @@ export default function Home() {
   // tenzij de gebruiker zelf al een categorie heeft gekozen.
   useEffect(() => {
     if (zoekCategorieAangeraakt) return;
-    const gevonden = detectCategorie(zoekTekst, trefwoorden);
+    const gevonden = detectCategorie(zoekTekst, trefwoorden, categorieen);
     setZoekCategorie(gevonden ?? "");
   }, [zoekTekst, zoekCategorieAangeraakt, trefwoorden]);
 
@@ -343,7 +343,7 @@ export default function Home() {
     haalKlussenOp();
   }
 
-  const huidigeCategorie = detectCategorie(titel, trefwoorden);
+  const huidigeCategorie = detectCategorie(titel, trefwoorden, categorieen);
   const stap1Geldig = postcodeStatus.state === "ok" && titel.trim().length > 0;
 
   const uniekePlaatsen = [...new Set(klussen.map((k) => k.plaats))].sort();

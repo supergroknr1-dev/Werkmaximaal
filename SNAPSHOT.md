@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-05-02 (kantoor — bulk-wis-knop voor zoektermen en merken)
-**Laatste commit op main:** Wis-alle-knop per type (zoektermen / merken) op /beheer
+**Laatst bijgewerkt:** 2026-05-02 (kantoor — homepage label "Categorie" → "Beroepen")
+**Laatste commit op main:** Homepage label "Categorie" → "Beroepen"
 **Live op:** https://werkmaximaal.vercel.app/
 
 > **Database is leeg gewist op 2026-04-29.** Alleen admin-account (`s.ozkara09@gmail.com`)

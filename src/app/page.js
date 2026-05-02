@@ -430,7 +430,7 @@ export default function Home() {
               <div className="mt-4">
                 <label className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1.5 flex items-center gap-1.5">
                   <Wrench size={12} className="text-orange-600" />
-                  Categorie
+                  Beroepen
                   {zoekCategorie && !zoekCategorieAangeraakt && (
                     <span className="text-[10px] normal-case font-normal text-orange-600 tracking-normal">
                       (automatisch herkend, mag aangepast worden)
@@ -449,7 +449,7 @@ export default function Home() {
                       : "border-slate-300 focus:border-slate-900"
                   }`}
                 >
-                  <option value="">Kies een categorie...</option>
+                  <option value="">Kies een beroep...</option>
                   {categorieen.map((c) => (
                     <option key={c} value={c}>
                       {c}

@@ -3,8 +3,16 @@ import { getCurrentUser } from "../../../lib/auth";
 import { emitActivity } from "../../../lib/events";
 
 export async function GET() {
+  // Belangrijk: NIET include alleen, maar select — anders trekt Prisma
+  // de 1536-float embedding kolom mee uit de DB (~13MB voor 2200 rijen).
   const rows = await prisma.trefwoord.findMany({
-    include: { categorieRef: true },
+    select: {
+      id: true,
+      woord: true,
+      type: true,
+      categorieId: true,
+      categorieRef: { select: { naam: true } },
+    },
     orderBy: [{ categorieRef: { naam: "asc" } }, { woord: "asc" }],
   });
   // Behoud `categorie` als string in de response zodat clients ongewijzigd

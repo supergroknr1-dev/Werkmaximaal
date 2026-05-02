@@ -19,7 +19,6 @@ import {
   Sparkles,
   Check,
 } from "lucide-react";
-import { detectCategorie } from "@/lib/categorie-detect";
 
 const PENDING_KEY = "werkmaximaal_pending_klus";
 const AUTO_PLAATSEN_KEY = "werkmaximaal_auto_plaatsen";
@@ -109,7 +108,6 @@ export default function Home() {
   const [categorieAangeraakt, setCategorieAangeraakt] = useState(false);
   const [stap, setStap] = useState(1);
   const [postcodeStatus, setPostcodeStatus] = useState({ state: "leeg" });
-  const [trefwoorden, setTrefwoorden] = useState([]);
   const [categorieen, setCategorieen] = useState(FALLBACK_CATEGORIEEN);
   const [huidigeUser, setHuidigeUser] = useState(null);
   const [userLoaded, setUserLoaded] = useState(false);
@@ -136,24 +134,23 @@ export default function Home() {
 
   useEffect(() => {
     haalKlussenOp();
-    haalTrefwoordenOp();
-    haalUserOp();
-    fetch("/api/instellingen")
-      .then((r) => r.json())
-      .then((d) => setHobbyistInschakeld(d.hobbyistInschakeld !== false))
-      .catch(() => {});
-    fetch("/api/stats")
-      .then((r) => r.json())
-      .then((d) => setStats(d))
-      .catch(() => {});
-    fetch("/api/categorieen")
+    // Bundled init: 1 round-trip i.p.v. 4 (me + stats + instellingen + categorieen).
+    // Trefwoorden client-side niet meer nodig — LLM-ontleding doet matching server-side.
+    fetch("/api/init")
       .then((r) => r.json())
       .then((d) => {
-        if (Array.isArray(d) && d.length > 0) {
-          setCategorieen(d.map((c) => c.naam));
+        setHuidigeUser(d.user || null);
+        setUserLoaded(true);
+        if (d.stats) setStats(d.stats);
+        if (d.instellingen)
+          setHobbyistInschakeld(d.instellingen.hobbyistInschakeld !== false);
+        if (Array.isArray(d.categorieen) && d.categorieen.length > 0) {
+          setCategorieen(d.categorieen.map((c) => c.naam));
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        setUserLoaded(true);
+      });
     // Herstel een onafgemaakte klus uit sessionStorage (gebruiker ging
     // eerst inloggen/registreren). Velden worden gevuld; gebruiker
     // klikt zelf 'Volgende' / 'Plaats klus' om af te ronden — tenzij
@@ -196,12 +193,6 @@ export default function Home() {
     plaatsKlus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userLoaded, huidigeUser, postcodeStatus.state, titel, postcode, huisnummer]);
-
-  useEffect(() => {
-    if (categorieAangeraakt) return;
-    const gevonden = detectCategorie(titel, trefwoorden, categorieen);
-    if (gevonden) setCategorie(gevonden);
-  }, [titel, categorieAangeraakt, trefwoorden]);
 
   // Multi-klus ontleding op de "Omschrijving" — splitst automatisch in
   // 1+ klussen via LLM (gpt-4o-mini). 1500ms debounce omdat de LLM-call
@@ -297,19 +288,6 @@ export default function Home() {
     const reactie = await fetch("/api/klussen");
     const data = await reactie.json();
     setKlussen(data);
-  }
-
-  async function haalTrefwoordenOp() {
-    const reactie = await fetch("/api/trefwoorden");
-    const data = await reactie.json();
-    setTrefwoorden(data);
-  }
-
-  async function haalUserOp() {
-    const reactie = await fetch("/api/me");
-    const data = await reactie.json();
-    setHuidigeUser(data.user);
-    setUserLoaded(true);
   }
 
   // Admins horen niet op de publieke homepage — direct naar /admin
@@ -450,7 +428,6 @@ export default function Home() {
     haalKlussenOp();
   }
 
-  const huidigeCategorie = detectCategorie(titel, trefwoorden, categorieen);
   const stap1Geldig = postcodeStatus.state === "ok" && titel.trim().length > 0;
 
   const uniekePlaatsen = [...new Set(klussen.map((k) => k.plaats))].sort();
@@ -954,7 +931,7 @@ export default function Home() {
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Categorie{" "}
                   <span className="text-slate-400 font-normal text-xs">
-                    {huidigeCategorie && !categorieAangeraakt
+                    {categorie && !categorieAangeraakt
                       ? "(automatisch herkend, mag aangepast worden)"
                       : !categorie
                       ? "(optioneel)"

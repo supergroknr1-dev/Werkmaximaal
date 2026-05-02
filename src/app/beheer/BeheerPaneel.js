@@ -34,6 +34,12 @@ export default function BeheerPaneel() {
   const [wisInput, setWisInput] = useState("");
   const [wisFout, setWisFout] = useState("");
 
+  // Bewerk-modal voor beroep-naam.
+  const [teBewerken, setTeBewerken] = useState(null);
+  const [bewerkInput, setBewerkInput] = useState("");
+  const [bewerkBezig, setBewerkBezig] = useState(false);
+  const [bewerkFout, setBewerkFout] = useState("");
+
   useEffect(() => {
     haalAllesOp();
   }, []);
@@ -201,6 +207,47 @@ export default function BeheerPaneel() {
     setWisFout("");
   }
 
+  function startBewerken(c) {
+    setTeBewerken(c);
+    setBewerkInput(c.naam);
+    setBewerkFout("");
+  }
+
+  function annuleerBewerken() {
+    setTeBewerken(null);
+    setBewerkInput("");
+    setBewerkFout("");
+  }
+
+  async function bevestigBewerken() {
+    if (!teBewerken) return;
+    const naam = bewerkInput.trim();
+    if (!naam || naam === teBewerken.naam) {
+      annuleerBewerken();
+      return;
+    }
+    setBewerkBezig(true);
+    setBewerkFout("");
+    const res = await fetch(`/api/categorieen/${teBewerken.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ naam }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setBewerkFout(data.error || "Bewerken mislukt.");
+      setBewerkBezig(false);
+      return;
+    }
+    // Master-selector volgt de hernoeming als die op het oude beroep stond.
+    if (gekozenBeroep === teBewerken.naam) {
+      setGekozenBeroep(naam);
+    }
+    await haalAllesOp();
+    setBewerkBezig(false);
+    annuleerBewerken();
+  }
+
   function annuleerBevestiging() {
     setTeVerwijderen(null);
     setWisInput("");
@@ -339,6 +386,15 @@ export default function BeheerPaneel() {
                   {c.naam}
                   <button
                     type="button"
+                    onClick={() => startBewerken(c)}
+                    className="text-orange-400 hover:text-orange-700 transition-colors text-xs leading-none"
+                    aria-label={`Bewerk beroep ${c.naam}`}
+                    title="Bewerken"
+                  >
+                    ✎
+                  </button>
+                  <button
+                    type="button"
                     onClick={() =>
                       vraagBevestiging({
                         kind: "categorie",
@@ -348,6 +404,7 @@ export default function BeheerPaneel() {
                     }
                     className="text-orange-400 hover:text-rose-600 transition-colors text-base leading-none"
                     aria-label={`Verwijder beroep ${c.naam}`}
+                    title="Verwijderen"
                   >
                     ×
                   </button>
@@ -638,6 +695,64 @@ export default function BeheerPaneel() {
           )}
         </div>
       </div>
+
+      {teBewerken && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 px-4"
+          onClick={annuleerBewerken}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              Beroep bewerken
+            </h3>
+            <p className="text-sm text-slate-600 mb-4">
+              Wijzig de naam van{" "}
+              <strong className="text-slate-900">{teBewerken.naam}</strong>.
+              Bestaande zoektermen, merken en klussen lopen mee — geen verlies
+              van data.
+            </p>
+            <input
+              type="text"
+              value={bewerkInput}
+              onChange={(e) => setBewerkInput(e.target.value)}
+              autoFocus
+              maxLength={60}
+              className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm mb-2"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") bevestigBewerken();
+                if (e.key === "Escape") annuleerBewerken();
+              }}
+            />
+            {bewerkFout && (
+              <p className="text-sm text-rose-600 mb-2">{bewerkFout}</p>
+            )}
+            <div className="flex justify-end gap-2 mt-2">
+              <button
+                type="button"
+                onClick={annuleerBewerken}
+                className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md transition-colors"
+              >
+                Annuleren
+              </button>
+              <button
+                type="button"
+                onClick={bevestigBewerken}
+                disabled={
+                  bewerkBezig ||
+                  !bewerkInput.trim() ||
+                  bewerkInput.trim() === teBewerken.naam
+                }
+                className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed rounded-md transition-colors"
+              >
+                {bewerkBezig ? "Bezig..." : "Opslaan"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {teVerwijderen && (
         <div

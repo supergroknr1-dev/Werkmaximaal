@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-05-02 (kantoor — merken/materialen-laag + match-prio)
-**Laatste commit op main:** Merken-laag op trefwoorden + match-priority logica
+**Laatst bijgewerkt:** 2026-05-02 (kantoor — master-beroep dropdown bestuurt /beheer)
+**Laatste commit op main:** Master-beroep dropdown stuurt alle vakken op /beheer
 **Live op:** https://werkmaximaal.vercel.app/
 
 > **Database is leeg gewist op 2026-04-29.** Alleen admin-account (`s.ozkara09@gmail.com`)
@@ -97,6 +97,7 @@ Sessie 2026-05-02 (kantoor, beroepen beheerbaar):
 - **Merken & Materialen-laag** op trefwoorden. Migratie `add_trefwoord_type` voegt `type String @default("zoekterm")` toe (waarden: `"zoekterm"` of `"merk"`). POST `/api/trefwoorden` accepteert nu `type` (default zoekterm). Tweede paneel "Merken & Materialen toevoegen" op /beheer naast bestaande zoektermen-blok — blauwe styling i.p.v. oranje voor visueel onderscheid. De gegroepeerde lijst onder "Bestaande trefwoorden" toont nu 2 sub-secties per beroep: ZOEKTERMEN (grijs) en MERKEN & MATERIALEN (blauw).
 - **Match-priority logica** in `detectCategorie()`. Drie passes in volgorde: (1) beroepsnaam in tekst, (2) zoekterm-substring, (3) merk-substring. Eerste hit wint. Nieuwe `detectMetBron()`-helper geeft ook de match-bron terug (`"beroep"|"zoekterm"|"merk"`) zodat de Test-modus op /beheer expliciet toont *waarom* iets matcht ("Match: Elektricien (via merk: 'hager')"). Homepage gebruikt nog steeds de oude `detectCategorie` maar geeft nu ook `categorieen` mee zodat beroepsnaam-match ook daar werkt.
 - **Categorie-tabel werd leeggeresend** door `prisma migrate dev` (Prisma vond drift en deed silent reset). Opnieuw geseed via `node scripts/seed-categorieen.mjs` (8 beroepen). Bewust niet onderzocht; gebeurt vrijwel altijd 1× per nieuwe migratie als er manuele data-load is geweest. Backup van vóór de migratie staat nog op `backups/2026-05-02T00-31-50-165Z/`.
+- **Master-beroep dropdown** op /beheer. Eén dikke oranje "WERKEN AAN BEROEP"-selector tussen "Beroepen beheren" en "Test-modus" stuurt alle onderliggende vakken aan: zoektermen-toevoegen, merken-toevoegen, en bestaande trefwoorden-lijst (filtert tot 1 beroep). Per-form dropdowns weggehaald, h2-titels tonen nu "· {beroep}"-suffix, knop-labels "Toevoegen aan {beroep}". Filter-dropdown ("Alle categorieën") onderaan ook weg — master bestuurt nu alles. Ook helper-tekst onder Zoektermen-titel verduidelijkt dat hele zinsdelen werken (bv. "aanbouw bij hoekwoning"), in reactie op vraag van de eigenaar.
 
 ## 🟡 Waar je was gebleven
 

@@ -7,19 +7,20 @@ import { detectMetBron } from "@/lib/categorie-detect";
 export default function BeheerPaneel() {
   const [categorieen, setCategorieen] = useState([]);
   const [trefwoorden, setTrefwoorden] = useState([]);
-  const [categorie, setCategorie] = useState("");
+
+  // Master-selectie: één beroep dat alle onderliggende vakken aansturen.
+  // Wijzigt → zoektermen-, merken- en lijst-vak schakelen mee.
+  const [gekozenBeroep, setGekozenBeroep] = useState("");
+
   const [woordenInput, setWoordenInput] = useState("");
   const [bezig, setBezig] = useState(false);
   const [foutmelding, setFoutmelding] = useState("");
   const [statusmelding, setStatusmelding] = useState("");
 
-  // Merken-paneel — eigen state, eigen submit, zelfde patroon als zoektermen.
-  const [merkCategorie, setMerkCategorie] = useState("");
   const [merkenInput, setMerkenInput] = useState("");
   const [merkBezig, setMerkBezig] = useState(false);
   const [merkFout, setMerkFout] = useState("");
   const [merkStatus, setMerkStatus] = useState("");
-  const [filter, setFilter] = useState("");
   const [testTekst, setTestTekst] = useState("");
 
   // Beroepen-paneel
@@ -41,8 +42,17 @@ export default function BeheerPaneel() {
     const res = await fetch("/api/categorieen");
     const data = await res.json();
     setCategorieen(data);
-    if (!categorie && data.length > 0) setCategorie(data[0].naam);
-    if (!merkCategorie && data.length > 0) setMerkCategorie(data[0].naam);
+    // Zorg dat gekozenBeroep altijd geldig is. Eerste keer = eerste beroep.
+    // Als de huidige keuze niet meer in de lijst staat (verwijderd) → reset.
+    if (data.length === 0) {
+      setGekozenBeroep("");
+    } else {
+      setGekozenBeroep((current) =>
+        current && data.some((c) => c.naam === current)
+          ? current
+          : data[0].naam
+      );
+    }
     return data;
   }
 
@@ -106,7 +116,7 @@ export default function BeheerPaneel() {
     const res = await fetch("/api/trefwoorden", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ categorie, woorden: woordenLijst }),
+      body: JSON.stringify({ categorie: gekozenBeroep, woorden: woordenLijst }),
     });
     const data = await res.json();
     if (!res.ok) {
@@ -133,7 +143,7 @@ export default function BeheerPaneel() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        categorie: merkCategorie,
+        categorie: gekozenBeroep,
         woorden: merkenLijst,
         type: "merk",
       }),
@@ -223,9 +233,11 @@ export default function BeheerPaneel() {
     return acc;
   }, {});
 
-  const gesorteerdeCategorieen = Object.keys(groepen)
-    .sort()
-    .filter((c) => !filter || c === filter);
+  // Toon alleen de gegroepeerde lijst voor het gekozen beroep — master
+  // bestuurt alle vakken hieronder.
+  const gesorteerdeCategorieen = gekozenBeroep && groepen[gekozenBeroep]
+    ? [gekozenBeroep]
+    : [];
 
   const testMatch = useMemo(() => {
     return detectMetBron(testTekst, trefwoorden, categorieen);
@@ -345,6 +357,32 @@ export default function BeheerPaneel() {
           </div>
         </section>
 
+        <section className="bg-orange-50 border-2 border-orange-200 rounded-md shadow-sm p-6 mb-6">
+          <h2 className="text-sm font-semibold text-orange-900 uppercase tracking-wide mb-2">
+            Werken aan beroep
+          </h2>
+          <p className="text-xs text-orange-700 mb-3">
+            Kies één beroep — alle vakken hieronder werken op dit beroep
+            (zoektermen, merken, en de lijst onderaan).
+          </p>
+          <select
+            value={gekozenBeroep}
+            onChange={(e) => setGekozenBeroep(e.target.value)}
+            disabled={categorieen.length === 0}
+            className="w-full px-4 py-3 bg-white border border-orange-300 rounded-md text-slate-900 focus:outline-none focus:border-orange-600 transition-colors text-base font-medium"
+          >
+            {categorieen.length === 0 ? (
+              <option value="">Voeg eerst een beroep toe ↑</option>
+            ) : (
+              categorieen.map((c) => (
+                <option key={c.id} value={c.naam}>
+                  {c.naam}
+                </option>
+              ))
+            )}
+          </select>
+        </section>
+
         <section className="bg-white border border-slate-200 rounded-md shadow-sm p-6 mb-6">
           <h2 className="text-base font-semibold text-slate-900 mb-1">
             Test-modus
@@ -382,25 +420,16 @@ export default function BeheerPaneel() {
         <section className="bg-white border border-slate-200 rounded-md shadow-sm p-6 mb-6">
           <h2 className="text-base font-semibold text-slate-900 mb-1">
             Zoektermen toevoegen
+            {gekozenBeroep && (
+              <span className="text-orange-600 font-medium"> · {gekozenBeroep}</span>
+            )}
           </h2>
           <p className="text-xs text-slate-500 mb-3">
             Plak meerdere zoektermen tegelijk — gescheiden door komma of
-            nieuwe regel. Voorbeeld: &quot;lekkage, verstopping, kraan&quot; voor
-            Loodgieter.
+            nieuwe regel. Hele zinsdelen werken ook (bv. &quot;aanbouw bij
+            hoekwoning&quot;).
           </p>
           <form onSubmit={voegToe} className="space-y-3">
-            <select
-              value={categorie}
-              onChange={(e) => setCategorie(e.target.value)}
-              className="w-full md:w-60 px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:border-slate-900 transition-colors text-sm"
-              disabled={categorieen.length === 0}
-            >
-              {categorieen.map((c) => (
-                <option key={c.id} value={c.naam}>
-                  {c.naam}
-                </option>
-              ))}
-            </select>
             <textarea
               value={woordenInput}
               onChange={(e) => setWoordenInput(e.target.value)}
@@ -427,13 +456,13 @@ export default function BeheerPaneel() {
             <button
               type="submit"
               disabled={
-                bezig || woordenLijst.length === 0 || !categorie
+                bezig || woordenLijst.length === 0 || !gekozenBeroep
               }
               className="bg-orange-600 hover:bg-orange-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
             >
               {bezig
                 ? "Bezig..."
-                : `Toevoegen aan ${categorie}${
+                : `Toevoegen aan ${gekozenBeroep || "..."}${
                     woordenLijst.length > 1 ? ` (${woordenLijst.length}×)` : ""
                   }`}
             </button>
@@ -449,6 +478,9 @@ export default function BeheerPaneel() {
         <section className="bg-white border border-slate-200 rounded-md shadow-sm p-6 mb-6">
           <h2 className="text-base font-semibold text-slate-900 mb-1">
             Merken &amp; Materialen toevoegen
+            {gekozenBeroep && (
+              <span className="text-blue-600 font-medium"> · {gekozenBeroep}</span>
+            )}
           </h2>
           <p className="text-xs text-slate-500 mb-3">
             Specifieke merknamen of materialen die het beroep mogen aansturen.
@@ -456,18 +488,6 @@ export default function BeheerPaneel() {
             Komma- of newline-gescheiden.
           </p>
           <form onSubmit={voegMerkenToe} className="space-y-3">
-            <select
-              value={merkCategorie}
-              onChange={(e) => setMerkCategorie(e.target.value)}
-              className="w-full md:w-60 px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:border-slate-900 transition-colors text-sm"
-              disabled={categorieen.length === 0}
-            >
-              {categorieen.map((c) => (
-                <option key={c.id} value={c.naam}>
-                  {c.naam}
-                </option>
-              ))}
-            </select>
             <textarea
               value={merkenInput}
               onChange={(e) => setMerkenInput(e.target.value)}
@@ -493,12 +513,12 @@ export default function BeheerPaneel() {
             )}
             <button
               type="submit"
-              disabled={merkBezig || merkenLijst.length === 0 || !merkCategorie}
+              disabled={merkBezig || merkenLijst.length === 0 || !gekozenBeroep}
               className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
             >
               {merkBezig
                 ? "Bezig..."
-                : `Toevoegen aan ${merkCategorie}${
+                : `Toevoegen aan ${gekozenBeroep || "..."}${
                     merkenLijst.length > 1 ? ` (${merkenLijst.length}×)` : ""
                   }`}
             </button>
@@ -512,29 +532,24 @@ export default function BeheerPaneel() {
         </section>
 
         <section className="bg-white border border-slate-200 rounded-md shadow-sm p-6 mb-4">
-          <div className="flex items-center justify-between gap-4 mb-3">
-            <h2 className="text-base font-semibold text-slate-900">
-              Bestaande trefwoorden ({trefwoorden.length})
-            </h2>
-            <select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="px-3 py-1.5 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:border-slate-900 transition-colors text-xs"
-            >
-              <option value="">Alle categorieën</option>
-              {categorieen.map((c) => (
-                <option key={c.id} value={c.naam}>
-                  {c.naam}
-                </option>
-              ))}
-            </select>
-          </div>
+          <h2 className="text-base font-semibold text-slate-900">
+            Bestaande trefwoorden
+            {gekozenBeroep && (
+              <span className="text-orange-600 font-medium"> · {gekozenBeroep}</span>
+            )}
+          </h2>
+          <p className="text-xs text-slate-500 mt-1">
+            Toont alle zoektermen en merken voor het gekozen beroep — wijzig
+            de keuze bovenaan om naar een ander beroep te schakelen.
+          </p>
         </section>
 
         <div className="space-y-4">
           {gesorteerdeCategorieen.length === 0 ? (
             <p className="text-sm text-slate-500 text-center bg-white border border-slate-200 rounded-md p-6">
-              Nog geen trefwoorden in deze categorie.
+              {gekozenBeroep
+                ? `Nog geen zoektermen of merken voor ${gekozenBeroep}.`
+                : "Kies eerst een beroep bovenaan."}
             </p>
           ) : (
             gesorteerdeCategorieen.map((cat) => {

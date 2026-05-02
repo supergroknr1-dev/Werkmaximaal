@@ -256,11 +256,23 @@ export default function BeheerPaneel() {
 
   async function bevestigVerwijderen() {
     if (wisInput.trim().toUpperCase() !== "WISSEN" || !teVerwijderen) return;
-    const url =
-      teVerwijderen.kind === "categorie"
-        ? `/api/categorieen/${teVerwijderen.id}`
-        : `/api/trefwoorden/${teVerwijderen.id}`;
-    const res = await fetch(url, { method: "DELETE" });
+    let res;
+    if (teVerwijderen.kind === "bulk") {
+      res = await fetch("/api/trefwoorden/bulk-wis", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          categorieId: teVerwijderen.categorieId,
+          type: teVerwijderen.type,
+        }),
+      });
+    } else {
+      const url =
+        teVerwijderen.kind === "categorie"
+          ? `/api/categorieen/${teVerwijderen.id}`
+          : `/api/trefwoorden/${teVerwijderen.id}`;
+      res = await fetch(url, { method: "DELETE" });
+    }
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
       setWisFout(data.error || "Verwijderen mislukt.");
@@ -717,9 +729,26 @@ export default function BeheerPaneel() {
 
                   {zoektermen.length > 0 && (
                     <div className="mb-3">
-                      <p className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold mb-1.5">
-                        Zoektermen ({zoektermen.length})
-                      </p>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <p className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">
+                          Zoektermen ({zoektermen.length})
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            vraagBevestiging({
+                              kind: "bulk",
+                              type: "zoekterm",
+                              categorieId: zoektermen[0].categorieId,
+                              categorie: cat,
+                              aantal: zoektermen.length,
+                            })
+                          }
+                          className="text-[11px] text-rose-600 hover:text-rose-700 hover:underline font-medium"
+                        >
+                          Wis alle ({zoektermen.length})
+                        </button>
+                      </div>
                       <div className="flex flex-wrap gap-2">
                         {zoektermen.map((t) => (
                           <span
@@ -750,9 +779,26 @@ export default function BeheerPaneel() {
 
                   {merken.length > 0 && (
                     <div>
-                      <p className="text-[11px] uppercase tracking-wide text-blue-600 font-semibold mb-1.5">
-                        Merken &amp; Materialen ({merken.length})
-                      </p>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <p className="text-[11px] uppercase tracking-wide text-blue-600 font-semibold">
+                          Merken &amp; Materialen ({merken.length})
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            vraagBevestiging({
+                              kind: "bulk",
+                              type: "merk",
+                              categorieId: merken[0].categorieId,
+                              categorie: cat,
+                              aantal: merken.length,
+                            })
+                          }
+                          className="text-[11px] text-rose-600 hover:text-rose-700 hover:underline font-medium"
+                        >
+                          Wis alle ({merken.length})
+                        </button>
+                      </div>
                       <div className="flex flex-wrap gap-2">
                         {merken.map((t) => (
                           <span
@@ -857,6 +903,8 @@ export default function BeheerPaneel() {
             <h3 className="text-lg font-semibold text-slate-900 mb-2">
               {teVerwijderen.kind === "categorie"
                 ? "Beroep verwijderen?"
+                : teVerwijderen.kind === "bulk"
+                ? `Alle ${teVerwijderen.type === "merk" ? "merken & materialen" : "zoektermen"} verwijderen?`
                 : "Trefwoord verwijderen?"}
             </h3>
             {teVerwijderen.kind === "categorie" ? (
@@ -877,6 +925,22 @@ export default function BeheerPaneel() {
                   </>
                 ) : null}
                 . Typ <strong>WISSEN</strong> om te bevestigen.
+              </p>
+            ) : teVerwijderen.kind === "bulk" ? (
+              <p className="text-sm text-slate-600 mb-4">
+                Je staat op het punt{" "}
+                <strong className="text-rose-700">
+                  alle {teVerwijderen.aantal}{" "}
+                  {teVerwijderen.type === "merk"
+                    ? "merken & materialen"
+                    : "zoektermen"}
+                </strong>{" "}
+                voor{" "}
+                <strong className="text-slate-900">
+                  {teVerwijderen.categorie}
+                </strong>{" "}
+                te verwijderen. Dit is niet ongedaan te maken (behalve via een
+                backup). Typ <strong>WISSEN</strong> om te bevestigen.
               </p>
             ) : (
               <p className="text-sm text-slate-600 mb-4">

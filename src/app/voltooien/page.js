@@ -52,7 +52,7 @@ export default function VoltooienPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Inloggen mislukt.");
       sessionStorage.setItem(AUTO_PLAATSEN_KEY, "1");
-      router.push("/");
+      router.push("/aanvraag");
       router.refresh();
     } catch (err) {
       setFout(err.message);
@@ -104,7 +104,7 @@ export default function VoltooienPage() {
         throw new Error("Account aangemaakt, maar automatisch inloggen mislukte. Probeer handmatig in te loggen.");
       }
       sessionStorage.setItem(AUTO_PLAATSEN_KEY, "1");
-      router.push("/");
+      router.push("/aanvraag");
       router.refresh();
     } catch (err) {
       setFout(err.message);
@@ -124,7 +124,7 @@ export default function VoltooienPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-2xl mx-auto px-4 py-12 md:py-16">
         <Link
-          href="/"
+          href="/aanvraag"
           className="text-sm text-slate-600 hover:text-slate-900 inline-flex items-center gap-1 mb-6 transition-colors"
         >
           ← Terug naar de klus

@@ -203,17 +203,20 @@ export default function Home() {
     if (gevonden) setCategorie(gevonden);
   }, [titel, categorieAangeraakt, trefwoorden]);
 
-  // Semantic search op de "Omschrijving" van stap 1 — vult automatisch
-  // de BEROEPEN-dropdown wanneer gebruiker direct in stap-1 form typt
-  // (zonder via de top-smart-input te gaan). 600ms debounce na laatste
-  // toetsaanslag om de OpenAI-kosten te beperken.
+  // Multi-klus ontleding op de "Omschrijving" — splitst automatisch in
+  // 1+ klussen via LLM (gpt-4o-mini). 1500ms debounce omdat de LLM-call
+  // duurder en trager is dan een embedding-call. Vervangt de oude
+  // /api/zoek-categorie-fallback. Als ontleding 1 klus vindt, fungeert
+  // het als single-detect; bij 2+ klussen verschijnt automatisch de
+  // multi-klus lijst zodat de gebruiker ze ziet zonder een knop te klikken.
   useEffect(() => {
     if (categorieAangeraakt) return;
-    if (!titel || titel.trim().length < 4) return;
+    if (!titel || titel.trim().length < 6) return;
     const ctrl = new AbortController();
     const timer = setTimeout(async () => {
+      setOntleedt(true);
       try {
-        const res = await fetch("/api/zoek-categorie", {
+        const res = await fetch("/api/ontleed-klus", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ tekst: titel }),
@@ -221,13 +224,16 @@ export default function Home() {
         });
         if (!res.ok) return;
         const data = await res.json();
-        if (data.match && data.match.score >= 60 && !categorieAangeraakt) {
-          setCategorie(data.match.categorie);
+        if (Array.isArray(data.klussen) && data.klussen.length > 0 && !categorieAangeraakt) {
+          setKlusLijst(data.klussen);
+          setCategorie(data.klussen[0].beroep);
         }
       } catch {
-        // abort of netwerkfout — laat keyword-match staan
+        // abort of netwerkfout — laat staan
+      } finally {
+        setOntleedt(false);
       }
-    }, 600);
+    }, 1500);
     return () => {
       clearTimeout(timer);
       ctrl.abort();

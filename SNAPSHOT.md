@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-05-02 (kantoor — multi-klus ontleding via LLM)
-**Laatste commit op main:** Multi-klus ontleding: 1 tekst → N gelinkte klussen via OpenAI Chat
+**Laatst bijgewerkt:** 2026-05-02 (kantoor — auto-ontleding tijdens typen)
+**Laatste commit op main:** Multi-klus ontleding draait automatisch tijdens typen
 **Live op:** https://werkmaximaal.vercel.app/
 
 > **Database is leeg gewist op 2026-04-29.** Alleen admin-account (`s.ozkara09@gmail.com`)

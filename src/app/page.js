@@ -50,7 +50,9 @@ function tijdGeleden(datumString) {
   });
 }
 
-const CATEGORIEEN = [
+// Fallback voor het allereerste paint vóór /api/categorieen geladen is.
+// Wordt direct na mount overschreven door de live DB-lijst.
+const FALLBACK_CATEGORIEEN = [
   "Schilder",
   "Loodgieter",
   "Klusjesman",
@@ -108,6 +110,7 @@ export default function Home() {
   const [stap, setStap] = useState(1);
   const [postcodeStatus, setPostcodeStatus] = useState({ state: "leeg" });
   const [trefwoorden, setTrefwoorden] = useState([]);
+  const [categorieen, setCategorieen] = useState(FALLBACK_CATEGORIEEN);
   const [huidigeUser, setHuidigeUser] = useState(null);
   const [userLoaded, setUserLoaded] = useState(false);
   const [hobbyistInschakeld, setHobbyistInschakeld] = useState(true);
@@ -132,6 +135,14 @@ export default function Home() {
     fetch("/api/stats")
       .then((r) => r.json())
       .then((d) => setStats(d))
+      .catch(() => {});
+    fetch("/api/categorieen")
+      .then((r) => r.json())
+      .then((d) => {
+        if (Array.isArray(d) && d.length > 0) {
+          setCategorieen(d.map((c) => c.naam));
+        }
+      })
       .catch(() => {});
     // Herstel een onafgemaakte klus uit sessionStorage (gebruiker ging
     // eerst inloggen/registreren). Velden worden gevuld; gebruiker
@@ -439,7 +450,7 @@ export default function Home() {
                   }`}
                 >
                   <option value="">Kies een categorie...</option>
-                  {CATEGORIEEN.map((c) => (
+                  {categorieen.map((c) => (
                     <option key={c} value={c}>
                       {c}
                     </option>
@@ -753,7 +764,7 @@ export default function Home() {
                   />
                 )}
                 <datalist id="categorieen-lijst">
-                  {CATEGORIEEN.map((c) => (
+                  {categorieen.map((c) => (
                     <option key={c} value={c} />
                   ))}
                 </datalist>

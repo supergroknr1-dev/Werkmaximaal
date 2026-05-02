@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import { getInstellingen } from "../../../../lib/instellingen";
 import { getLeadPrijs } from "../../../../lib/lead-prijs";
 import InstellingToggle from "../InstellingToggle";
@@ -76,24 +74,6 @@ export default async function AdminInstellingenPage() {
           </div>
         </section>
 
-        <section className="bg-white border border-slate-200 rounded-lg shadow-sm">
-          <div className="px-5 py-4 border-b border-slate-100">
-            <h2 className="text-base font-semibold text-slate-900">
-              Snelkoppelingen
-            </h2>
-          </div>
-          <ul className="divide-y divide-slate-100">
-            <li>
-              <Link
-                href="/beheer"
-                className="flex items-center justify-between px-5 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
-              >
-                <span>Trefwoorden voor categorie-detectie beheren</span>
-                <ArrowUpRight size={14} className="text-slate-400" />
-              </Link>
-            </li>
-          </ul>
-        </section>
       </div>
     </>
   );

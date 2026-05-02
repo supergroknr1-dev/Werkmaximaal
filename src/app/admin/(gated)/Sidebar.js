@@ -14,6 +14,7 @@ import {
   Camera,
   CreditCard,
   Map as MapIcon,
+  Briefcase,
   Menu,
   X,
 } from "lucide-react";
@@ -29,6 +30,7 @@ const ITEMS = [
   { href: "/admin/audit-log", label: "Audit log", icon: ScrollText },
   { href: "/admin/mollie", label: "Mollie", icon: CreditCard },
   { href: "/admin/instellingen", label: "Instellingen", icon: Settings },
+  { href: "/beheer", label: "Beroepen", icon: Briefcase },
 ];
 
 function Header({ adminNaam }) {

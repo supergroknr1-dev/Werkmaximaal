@@ -86,7 +86,9 @@ export function getZoekSuggesties(tekst, trefwoorden, categorieen = [], opties =
     const naam = (c.naam ?? c).toString();
     if (!naam) continue;
     const naamLow = naam.toLowerCase();
-    const exact = lager.includes(naamLow);
+    const inputBevatTarget = lager.includes(naamLow);
+    const targetBevatInput = lager.length >= 3 && naamLow.includes(lager);
+    const exact = inputBevatTarget || targetBevatInput;
     const score = exact ? 100 : bestFuzzyScore(lager, naamLow);
     if (score >= drempel) {
       items.push({
@@ -101,7 +103,14 @@ export function getZoekSuggesties(tekst, trefwoorden, categorieen = [], opties =
 
   for (const t of trefwoorden ?? []) {
     const woord = t.woord.toLowerCase();
-    const exact = lager.includes(woord);
+    // Bidirectionele substring match: ofwel input bevat het trefwoord
+    // (volledige treffer in een lange klusbeschrijving), ofwel trefwoord
+    // bevat de input (gebruiker typt een prefix/woord uit een langere
+    // zin — bv. "uitbouw" → "uitbouw woning"). Min 3 chars om "het"-soort
+    // ruis te voorkomen.
+    const inputBevatTarget = lager.includes(woord);
+    const targetBevatInput = lager.length >= 3 && woord.includes(lager);
+    const exact = inputBevatTarget || targetBevatInput;
     const score = exact ? 100 : bestFuzzyScore(lager, woord);
     if (score >= drempel) {
       items.push({

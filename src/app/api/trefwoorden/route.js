@@ -72,23 +72,16 @@ export async function POST(request) {
     );
   }
 
-  const toegevoegd = [];
-  let bestaand = 0;
-  for (const w of schoneWoorden) {
-    const al = await prisma.trefwoord.findUnique({
-      where: { categorieId_woord: { categorieId: cat.id, woord: w } },
-    });
-    if (al) {
-      bestaand++;
-      continue;
-    }
-    const nieuw = await prisma.trefwoord.create({
-      data: { categorieId: cat.id, woord: w, type },
-    });
-    toegevoegd.push(nieuw);
-  }
+  // Bulk insert via createMany + skipDuplicates — één DB-roundtrip i.p.v.
+  // N. Voor 144 woorden scheelt dit 28s vs <1s op Railway.
+  const result = await prisma.trefwoord.createMany({
+    data: schoneWoorden.map((w) => ({ categorieId: cat.id, woord: w, type })),
+    skipDuplicates: true,
+  });
+  const aantalToegevoegd = result.count;
+  const aantalBestaand = schoneWoorden.length - aantalToegevoegd;
 
-  if (toegevoegd.length > 0) {
+  if (aantalToegevoegd > 0) {
     emitActivity({
       type:
         type === "merk"
@@ -99,15 +92,13 @@ export async function POST(request) {
       targetId: cat.id,
       payload: {
         categorie: cat.naam,
-        aantal: toegevoegd.length,
-        woorden: toegevoegd.map((t) => t.woord),
+        aantal: aantalToegevoegd,
       },
     });
   }
 
   return Response.json({
-    toegevoegd,
-    aantalToegevoegd: toegevoegd.length,
-    aantalBestaand: bestaand,
+    aantalToegevoegd,
+    aantalBestaand,
   });
 }

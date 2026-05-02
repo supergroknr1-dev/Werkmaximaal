@@ -52,35 +52,36 @@ export async function POST(request) {
     );
   }
 
-  // Idempotent insert — bestaande naam blijft staan, geen fout.
-  const toegevoegd = [];
-  let bestaand = 0;
-  for (const naam of schoneNamen) {
-    const al = await prisma.categorie.findUnique({ where: { naam } });
-    if (al) {
-      bestaand++;
-      continue;
-    }
-    const nieuw = await prisma.categorie.create({ data: { naam } });
-    toegevoegd.push(nieuw);
-  }
+  // Bulk insert via createMany + skipDuplicates — één DB-roundtrip.
+  const result = await prisma.categorie.createMany({
+    data: schoneNamen.map((naam) => ({ naam })),
+    skipDuplicates: true,
+  });
+  const aantalToegevoegd = result.count;
+  const aantalBestaand = schoneNamen.length - aantalToegevoegd;
 
-  if (toegevoegd.length > 0) {
+  if (aantalToegevoegd > 0) {
+    // Pak de net-aangemaakte rijen voor het event (createMany geeft ze
+    // niet terug — handig om dit los te doen, blijft één extra query).
+    const verseRijen = await prisma.categorie.findMany({
+      where: { naam: { in: schoneNamen } },
+      orderBy: { id: "desc" },
+      take: aantalToegevoegd,
+    });
     emitActivity({
       type: "beroep.toegevoegd",
       actor: { id: user.id, rol: "admin" },
       targetType: "categorie",
-      targetId: toegevoegd[0].id,
+      targetId: verseRijen[0]?.id ?? null,
       payload: {
-        aantal: toegevoegd.length,
-        namen: toegevoegd.map((c) => c.naam),
+        aantal: aantalToegevoegd,
+        namen: verseRijen.map((c) => c.naam),
       },
     });
   }
 
   return Response.json({
-    toegevoegd,
-    aantalToegevoegd: toegevoegd.length,
-    aantalBestaand: bestaand,
+    aantalToegevoegd,
+    aantalBestaand,
   });
 }

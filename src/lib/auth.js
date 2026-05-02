@@ -1,7 +1,11 @@
+import { cache } from "react";
 import { prisma } from "./prisma";
 import { getSession } from "./session";
 
-export async function getCurrentUser() {
+// Per-request cache: layout.js + page.js mogen beiden getCurrentUser
+// aanroepen zonder dubbele Prisma-query. React 19 dedupliceert binnen
+// dezelfde request via deze cache().
+export const getCurrentUser = cache(async function getCurrentUser() {
   const session = await getSession();
   if (!session.userId) return null;
   return prisma.user.findUnique({
@@ -17,4 +21,4 @@ export async function getCurrentUser() {
       totpEnabled: true,
     },
   });
-}
+});

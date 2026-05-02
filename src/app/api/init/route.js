@@ -64,10 +64,23 @@ export async function GET() {
     session.destroy();
   }
 
-  return Response.json({
-    user: userPayload,
-    stats: { vakmannen, klussen },
-    categorieen,
-    instellingen,
-  });
+  // Cache-strategie: anon visitors krijgen een korte CDN-cache (1 min
+  // edge, 2 min stale-while-revalidate). Logged-in responses bevatten
+  // user-specifieke data en mogen NOOIT gecached worden — zet expliciet
+  // private+no-store. Vercel-edge respecteert deze headers automatisch.
+  const headers = {
+    "Cache-Control": session.userId
+      ? "private, no-store"
+      : "public, s-maxage=60, stale-while-revalidate=120",
+  };
+
+  return Response.json(
+    {
+      user: userPayload,
+      stats: { vakmannen, klussen },
+      categorieen,
+      instellingen,
+    },
+    { headers }
+  );
 }

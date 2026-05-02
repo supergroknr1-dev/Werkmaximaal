@@ -16,9 +16,10 @@ export const metadata = {
   description: "Plaats uw klus en vind een betrouwbare vakman.",
 };
 
-// De root layout leest de sessie via cookies — daarom moet hij
-// per request opnieuw renderen en niet statisch worden gecached.
-export const dynamic = "force-dynamic";
+// De root layout leest de sessie via cookies — Next.js detecteert dat
+// automatisch en maakt de layout per-request dynamic. Géén `force-dynamic`
+// flag nodig: route-segmenten zonder cookie-reads (bv. /privacy, /robots)
+// kunnen dan wél als static worden gerendered op de Edge.
 
 /**
  * Detecteer of de huidige sessie een admin is (gewone modus of

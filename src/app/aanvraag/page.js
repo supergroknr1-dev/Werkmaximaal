@@ -4,14 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Hammer,
   Wrench,
-  Ruler,
-  Home as HomeIcon,
-  Sun,
   Plus,
-  Minus,
-  Clock,
   Sparkles,
   Check,
   ArrowLeft,
@@ -82,10 +76,6 @@ export default function AanvraagPage() {
   // Vlag of de omschrijving al via smart-input op de homepage gegeven is.
   // Bepaalt of stap 1 de textarea toont of de read-only summary-card.
   const [vooringevuld, setVooringevuld] = useState(false);
-  const [oppervlakte, setOppervlakte] = useState("");
-  const [binnenBuiten, setBinnenBuiten] = useState("");
-  const [aantal, setAantal] = useState(0);
-  const [urgentie, setUrgentie] = useState("");
 
   useEffect(() => {
     fetch("/api/init")
@@ -291,10 +281,6 @@ export default function AanvraagPage() {
       straatnaam: postcodeStatus.straatnaam,
       plaats: postcodeStatus.plaats,
       voorkeurVakmanType: voorkeurVakmanType || null,
-      oppervlakte: oppervlakte ? parseInt(oppervlakte) : null,
-      binnenBuiten: binnenBuiten || null,
-      aantal: aantal > 0 ? aantal : null,
-      urgentie: urgentie || null,
     };
 
     if (klusLijst.length > 1) {
@@ -832,114 +818,6 @@ export default function AanvraagPage() {
                   </div>
                 )}
               </div>
-
-              {categorie?.toLowerCase() === "schilder" && (
-                <div className="mb-6 bg-slate-50 border border-slate-200 rounded-md p-4">
-                  <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                    <Sparkles size={16} className="text-orange-600" />
-                    Specificeer uw klus
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1.5 flex items-center gap-1.5">
-                        <Ruler size={14} />
-                        Oppervlakte
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          inputMode="numeric"
-                          min={0}
-                          value={oppervlakte}
-                          onChange={(e) => setOppervlakte(e.target.value)}
-                          placeholder="0"
-                          className="w-full px-3 py-2 pr-10 border border-slate-300 rounded-md text-sm bg-white focus:outline-none focus:border-slate-900"
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">
-                          m²
-                        </span>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1.5">
-                        Locatie
-                      </label>
-                      <div className="grid grid-cols-3 gap-1.5">
-                        {[
-                          { val: "binnen", label: "Binnen", Icon: HomeIcon },
-                          { val: "buiten", label: "Buiten", Icon: Sun },
-                          { val: "beide", label: "Beide", Icon: Hammer },
-                        ].map(({ val, label, Icon }) => (
-                          <button
-                            key={val}
-                            type="button"
-                            onClick={() =>
-                              setBinnenBuiten(binnenBuiten === val ? "" : val)
-                            }
-                            className={`flex flex-col items-center gap-1 px-2 py-2 rounded-md border text-[11px] font-medium transition-colors ${
-                              binnenBuiten === val
-                                ? "bg-orange-600 text-white border-orange-600"
-                                : "bg-white text-slate-700 border-slate-300 hover:border-slate-900"
-                            }`}
-                          >
-                            <Icon size={16} />
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1.5">
-                        Aantal deuren
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setAantal(Math.max(0, aantal - 1))}
-                          className="w-9 h-9 rounded-md border border-slate-300 bg-white text-orange-600 hover:border-orange-600 flex items-center justify-center transition-colors"
-                          aria-label="Eén minder"
-                        >
-                          <Minus size={16} />
-                        </button>
-                        <input
-                          type="number"
-                          min={0}
-                          value={aantal}
-                          onChange={(e) =>
-                            setAantal(Math.max(0, parseInt(e.target.value) || 0))
-                          }
-                          className="flex-1 text-center border border-slate-300 rounded-md py-1.5 text-sm font-semibold bg-white focus:outline-none focus:border-slate-900 tabular-nums"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setAantal(aantal + 1)}
-                          className="w-9 h-9 rounded-md border border-slate-300 bg-white text-orange-600 hover:border-orange-600 flex items-center justify-center transition-colors"
-                          aria-label="Eén meer"
-                        >
-                          <Plus size={16} />
-                        </button>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1.5 flex items-center gap-1.5">
-                        <Clock size={14} />
-                        Urgentie
-                      </label>
-                      <select
-                        value={urgentie}
-                        onChange={(e) => setUrgentie(e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white focus:outline-none focus:border-slate-900"
-                      >
-                        <option value="">Kies wanneer</option>
-                        <option value="spoed">Spoed (binnen 24u)</option>
-                        <option value="deze-week">Deze week</option>
-                        <option value="deze-maand">Deze maand</option>
-                        <option value="geen-haast">Geen haast</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {hobbyistInschakeld && (
                 <div className="mb-6">

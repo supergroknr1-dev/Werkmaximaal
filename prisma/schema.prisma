@@ -126,11 +126,18 @@ model Klus {
   // die zonder account zijn aangemaakt.
   userId       Int?
   user         User?     @relation(fields: [userId], references: [id])
+  // Cross-sell: gerelateerde klus aangemaakt vanuit dezelfde aanvraag
+  // (bv. een primair Schilder + extra Stukadoor). Self-relation, beide
+  // kanten zichtbaar via `gerelateerdeAan` (parent) en `gerelateerdeKlus` (child).
+  gerelateerdeAanId Int?
+  gerelateerdeAan   Klus?     @relation("KlusRelatie", fields: [gerelateerdeAanId], references: [id], onDelete: SetNull)
+  gerelateerdeKlus  Klus[]    @relation("KlusRelatie")
   // Auto-bijgewerkt door Prisma bij elke wijziging — gebruikt door de
   // admin live-monitor om "recent gesloten" klussen op te pikken.
   bijgewerktOp DateTime  @default(now()) @updatedAt
 
   @@index([userId])
+  @@index([gerelateerdeAanId])
 }
 
 model Setting {
@@ -239,6 +246,23 @@ model Categorie {
   naam        String      @unique
   volgorde    Int         @default(0)
   trefwoorden Trefwoord[]
+  // Cross-sell relaties: welke beroepen worden vaak samen gevraagd.
+  primaireRelaties     BeroepRelatie[] @relation("PrimaireRelatie")
+  gerelateerdeRelaties BeroepRelatie[] @relation("GerelateerdeRelatie")
+}
+
+// Cross-sell config: bij beroep X (primair) suggereren we beroep Y
+// (gerelateerd) op de klus-form. `uitleg` wordt getoond in de notice.
+model BeroepRelatie {
+  id              Int       @id @default(autoincrement())
+  primaireId      Int
+  primaireRef     Categorie @relation("PrimaireRelatie", fields: [primaireId], references: [id], onDelete: Cascade)
+  gerelateerdeId  Int
+  gerelateerdeRef Categorie @relation("GerelateerdeRelatie", fields: [gerelateerdeId], references: [id], onDelete: Cascade)
+  uitleg          String
+
+  @@unique([primaireId, gerelateerdeId])
+  @@index([primaireId])
 }
 
 // ─────────────────────────────────────────────────────────────────

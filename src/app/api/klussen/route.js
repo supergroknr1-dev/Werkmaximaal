@@ -145,6 +145,20 @@ export async function POST(request) {
     ? data.urgentie
     : null;
 
+  // Cross-sell: optioneel verwijst de nieuwe klus naar een primaire klus
+  // (bv. een Stukadoor-klus die volgt op een Schilder-klus uit dezelfde
+  // aanvraag). Server-side check zodat alleen klussen van dezelfde user
+  // gelinkt mogen worden.
+  let gerelateerdeAanId = null;
+  if (data.gerelateerdeAanId) {
+    const parent = await prisma.klus.findUnique({
+      where: { id: parseInt(data.gerelateerdeAanId) },
+    });
+    if (parent && parent.userId === user.id) {
+      gerelateerdeAanId = parent.id;
+    }
+  }
+
   const nieuweKlus = await prisma.klus.create({
     data: {
       titel: data.titel,
@@ -160,6 +174,7 @@ export async function POST(request) {
       aantal,
       urgentie,
       userId: user.id,
+      gerelateerdeAanId,
     },
   });
 

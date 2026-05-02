@@ -118,6 +118,12 @@ export default function Home() {
   const [zoekTekst, setZoekTekst] = useState("");
   const [zoekCategorie, setZoekCategorie] = useState("");
   const [zoekCategorieAangeraakt, setZoekCategorieAangeraakt] = useState(false);
+  const [zoekt, setZoekt] = useState(false);
+  // Cross-sell: bij sommige beroepen suggereren we een 2e vakman
+  // (bv. Schilder → Stukadoor). Opt-in via toggle; bij submit komen
+  // er dan 2 klussen die naar elkaar verwijzen.
+  const [relatie, setRelatie] = useState(null);
+  const [extraGekozen, setExtraGekozen] = useState(false);
   // Configurator-velden (optioneel, nu alleen relevant bij Schilder)
   const [oppervlakte, setOppervlakte] = useState("");
   const [binnenBuiten, setBinnenBuiten] = useState("");
@@ -193,45 +199,27 @@ export default function Home() {
     if (gevonden) setCategorie(gevonden);
   }, [titel, categorieAangeraakt, trefwoorden]);
 
-  // Auto-detect categorie in de zoek-sectie boven aan de homepage,
-  // tenzij de gebruiker zelf al een categorie heeft gekozen.
-  // Twee-laagse strategie:
-  //   1. Snelle keyword-match (lokaal, gratis, instant) — vult dropdown
-  //      direct met een eerste schatting tijdens het typen.
-  //   2. Semantic search via /api/zoek-categorie (OpenAI embeddings)
-  //      na 500ms debounce — overschrijft als 'ie een betere match vindt.
-  useEffect(() => {
-    if (zoekCategorieAangeraakt) return;
-    const gevonden = detectCategorie(zoekTekst, trefwoorden, categorieen);
-    setZoekCategorie(gevonden ?? "");
-  }, [zoekTekst, zoekCategorieAangeraakt, trefwoorden]);
+  // Auto-detect tijdens typen is uit — gebruiker triggert zoek via
+  // de "Volgende"-knop. Dit voorkomt flikkering en onnodige API-calls,
+  // en geeft de gebruiker controle over wanneer er gezocht wordt.
 
+  // Cross-sell: zodra een categorie gekozen is, kijk of er een
+  // gerelateerd beroep is om voor te stellen.
   useEffect(() => {
-    if (zoekCategorieAangeraakt) return;
-    if (!zoekTekst || zoekTekst.trim().length < 3) return;
+    if (!categorie) {
+      setRelatie(null);
+      setExtraGekozen(false);
+      return;
+    }
     const ctrl = new AbortController();
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch("/api/zoek-categorie", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tekst: zoekTekst }),
-          signal: ctrl.signal,
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.match && data.match.score >= 60 && !zoekCategorieAangeraakt) {
-          setZoekCategorie(data.match.categorie);
-        }
-      } catch {
-        // abort of netwerkfout — laat keyword-match staan
-      }
-    }, 500);
-    return () => {
-      clearTimeout(timer);
-      ctrl.abort();
-    };
-  }, [zoekTekst, zoekCategorieAangeraakt]);
+    fetch(`/api/beroep-relaties?categorie=${encodeURIComponent(categorie)}`, {
+      signal: ctrl.signal,
+    })
+      .then((r) => r.json())
+      .then((d) => setRelatie(d.relatie ?? null))
+      .catch(() => setRelatie(null));
+    return () => ctrl.abort();
+  }, [categorie]);
 
   useEffect(() => {
     const schoonPc = postcode.trim().toUpperCase();
@@ -329,23 +317,40 @@ export default function Home() {
 
     setBezig(true);
 
-    await fetch("/api/klussen", {
+    const baseBody = {
+      titel,
+      postcode,
+      huisnummer,
+      straatnaam: postcodeStatus.straatnaam,
+      plaats: postcodeStatus.plaats,
+      voorkeurVakmanType: voorkeurVakmanType || null,
+      oppervlakte: oppervlakte ? parseInt(oppervlakte) : null,
+      binnenBuiten: binnenBuiten || null,
+      aantal: aantal > 0 ? aantal : null,
+      urgentie: urgentie || null,
+    };
+
+    // Plaats primaire klus
+    const primair = await fetch("/api/klussen", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        titel,
-        postcode,
-        huisnummer,
-        straatnaam: postcodeStatus.straatnaam,
-        plaats: postcodeStatus.plaats,
-        categorie,
-        voorkeurVakmanType: voorkeurVakmanType || null,
-        oppervlakte: oppervlakte ? parseInt(oppervlakte) : null,
-        binnenBuiten: binnenBuiten || null,
-        aantal: aantal > 0 ? aantal : null,
-        urgentie: urgentie || null,
-      }),
-    });
+      body: JSON.stringify({ ...baseBody, categorie }),
+    }).then((r) => (r.ok ? r.json() : null));
+
+    // Cross-sell: als gebruiker een extra beroep heeft toegevoegd,
+    // maak ook een 2e klus aan die naar de primaire verwijst.
+    if (primair?.id && extraGekozen && relatie?.gerelateerdeNaam) {
+      await fetch("/api/klussen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...baseBody,
+          titel: `${titel} — ${relatie.gerelateerdeNaam}`,
+          categorie: relatie.gerelateerdeNaam,
+          gerelateerdeAanId: primair.id,
+        }),
+      });
+    }
 
     // Klus geplaatst — onthouden hoeft niet meer
     try {
@@ -358,6 +363,8 @@ export default function Home() {
     setCategorie("");
     setVoorkeurVakmanType("");
     setCategorieAangeraakt(false);
+    setRelatie(null);
+    setExtraGekozen(false);
     setOppervlakte("");
     setBinnenBuiten("");
     setAantal(0);
@@ -506,11 +513,35 @@ export default function Home() {
 
               <button
                 type="button"
-                onClick={() => {
+                onClick={async () => {
                   if (!zoekTekst.trim() && !zoekCategorie) return;
+                  let categorieResult = zoekCategorie;
+                  // Als gebruiker een tekst heeft maar nog geen handmatige
+                  // beroep-keuze: zoek de juiste vakman via semantic search.
+                  if (zoekTekst.trim() && !zoekCategorie) {
+                    setZoekt(true);
+                    try {
+                      const res = await fetch("/api/zoek-categorie", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ tekst: zoekTekst }),
+                      });
+                      if (res.ok) {
+                        const data = await res.json();
+                        if (data.match && data.match.score >= 60) {
+                          categorieResult = data.match.categorie;
+                          setZoekCategorie(categorieResult);
+                        }
+                      }
+                    } catch {
+                      // netwerkfout — laat lege dropdown staan, gebruiker
+                      // kiest zelf
+                    }
+                    setZoekt(false);
+                  }
                   if (zoekTekst.trim()) setTitel(zoekTekst);
-                  if (zoekCategorie) {
-                    setCategorie(zoekCategorie);
+                  if (categorieResult) {
+                    setCategorie(categorieResult);
                     setCategorieAangeraakt(true);
                   }
                   setTimeout(() => {
@@ -519,10 +550,10 @@ export default function Home() {
                       ?.scrollIntoView({ behavior: "smooth" });
                   }, 50);
                 }}
-                disabled={!zoekTekst.trim() && !zoekCategorie}
+                disabled={zoekt || (!zoekTekst.trim() && !zoekCategorie)}
                 className="mt-5 w-full bg-orange-600 hover:bg-orange-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-sm font-semibold py-2.5 rounded-md transition-colors"
               >
-                Volgende
+                {zoekt ? "Bezig met zoeken..." : "Volgende"}
               </button>
             </div>
           </section>
@@ -814,6 +845,43 @@ export default function Home() {
                     <option key={c} value={c} />
                   ))}
                 </datalist>
+
+                {categorie && relatie && (
+                  <div className="mt-4 px-4 py-3 bg-gradient-to-r from-blue-50 to-orange-50 border-2 border-blue-300 border-l-[6px] border-l-blue-500 rounded-md shadow-sm">
+                    <div className="flex items-start gap-3">
+                      <Sparkles
+                        size={20}
+                        className="text-blue-600 shrink-0 mt-0.5"
+                        strokeWidth={2.5}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-blue-900 leading-tight">
+                          Wist u dat? Bij {categorie} hebben klanten vaak ook
+                          een <span className="text-orange-700">{relatie.gerelateerdeNaam}</span> nodig.
+                        </p>
+                        <p className="text-xs text-slate-700 mt-1 leading-snug">
+                          {relatie.uitleg}
+                        </p>
+                        <label className="mt-3 flex items-center gap-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={extraGekozen}
+                            onChange={(e) => setExtraGekozen(e.target.checked)}
+                            className="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-2 focus:ring-orange-200"
+                          />
+                          <span className="text-sm font-medium text-slate-900">
+                            Voeg {relatie.gerelateerdeNaam} toe aan mijn aanvraag
+                          </span>
+                        </label>
+                        {extraGekozen && (
+                          <p className="text-xs text-emerald-700 mt-1.5 ml-6 font-medium">
+                            ✓ U ontvangt straks 2 aparte aanvragen — één voor {categorie} en één voor {relatie.gerelateerdeNaam}.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {categorie?.toLowerCase() === "schilder" && (

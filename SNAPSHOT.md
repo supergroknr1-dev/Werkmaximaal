@@ -5,7 +5,7 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-05-03 (kantoor — handmatige stat-waarden op homepage)
+**Laatst bijgewerkt:** 2026-05-02 (kantoor — homepage redesign, marktplaats-look)
 **Laatste commit op main:** Stat-tegels handmatig instelbaar (toggle + waarden)
 **Live op:** https://werkmaximaal.vercel.app/
 
@@ -99,6 +99,13 @@ Sessie 2026-05-02 (kantoor, beroepen beheerbaar):
 - **Categorie-tabel werd leeggeresend** door `prisma migrate dev` (Prisma vond drift en deed silent reset). Opnieuw geseed via `node scripts/seed-categorieen.mjs` (8 beroepen). Bewust niet onderzocht; gebeurt vrijwel altijd 1× per nieuwe migratie als er manuele data-load is geweest. Backup van vóór de migratie staat nog op `backups/2026-05-02T00-31-50-165Z/`.
 - **Stat-tegels handmatig instelbaar** op /admin/instellingen → "Statkaarten op homepage". Nieuwe `StatsForm`-component met: toggle "Handmatige waarden gebruiken" + 2 number-inputs (Vakmannen-waarde, Klussen-waarde) + Opslaan-knop. Inputs zijn grijs/disabled als toggle uit staat. Drie nieuwe instellingen-keys: `statsHandmatig` (boolean), `statsVakmannenWaarde` (int 0-1M), `statsKlussenWaarde` (int 0-1M). `/api/stats` en `/api/init` checken bij elke call: bij handmatig=true → return de ingestelde waarden i.p.v. live counts (skip ook de DB-counts om kosten te besparen). Direct zichtbaar op homepage tegels. Handig in early stage om de site niet kaal te laten lijken.
 - **Progress-bar overlay** op de smart-input Volgende-knop. Tijdens de LLM-call (`zoekt=true`) animeert een lichtere oranje balk binnen de knop van 0% naar 95% breed in 3 seconden via `transition-[width]`. Geeft visuele feedback dat er iets gebeurt — voorkomt dat gebruikers denken dat de knop niets doet. Snel terug naar 0% (200ms) zodra response binnen is. Geen extra dependency nodig — pure Tailwind + inline style.
+- **Homepage marktplaats-redesign** (Werkspot-functionaliteit, eigen Pro-Link uitstraling). `src/app/page.js` volledig herstructureerd in 5 lagen boven het bestaande stappen-form en de klussenlijst (logica ongewijzigd):
+  - **Full-bleed donkere hero** (`from-slate-950 via-slate-900`) met decoratieve oranje glow-blobs, fijne grid-overlay en zachte fade-naar-wit onderaan. Top-bar met logo + Inloggen-knop drijft erbovenop. Tweekoloms layout op desktop (`lg:grid-cols-12`): marketing-pitch links (badge "SLIM MATCHEN MET AI" + H1 met oranje gradient op het woord *vakman* + trust-pills), smart-input wit kaartje rechts. Vakman-rol krijgt `<VakmanHeroCard>` met directe links naar /mijn-leads en /profiel.
+  - **Populaire-beroepen rij** (alleen voor anon/consument): 8-tegel grid die slight overlapt met de hero (`-mt-6`). Klik op een tegel pre-filt categorie + scrollt naar het stappen-form. Iconen: PaintBucket / Droplet / Zap / Leaf / Hammer / Drill / Construction / HomeIcon, elk met eigen accent-kleur en hover-lift.
+  - **Stats — 3 cards** met count-up animatie (in plaats van 2). Drie varianten: oranje-fill (vakmannen), wit (klussen), donker slate-900 (beroepen-aantal). Telt op van 0 → eindwaarde via `useCountUp`-hook (IntersectionObserver + requestAnimationFrame, easeOutCubic). Callback-ref `setNode` zodat het ook werkt als de stats-sectie pas later mount na `/api/init`.
+  - **"Hoe werkt het"** in 3 stappen (ClipboardList → MessageSquare → Handshake) met dunne gradient-verbindingslijn op desktop. Genummerde badge rechtsboven elk stap-icoon. Kaarten met hover-state.
+  - **"Waarom Werkmaximaal"** trust-bar (slate-50 achtergrond, border-y) met 4 icon-kaarten: KvK-geverifieerd · Veilig betalen · Direct contact · Open en eerlijk. Bewust geen verzonnen reviews/cijfers — alle claims zijn feitelijk juist voor het platform.
+  - **Bestaande stappen-form, vakman-welkom, klussenlijst** behouden in een smaller `max-w-2xl` container onderaan. Niets aan de logica gewijzigd. Smart-input section (oude versie) is weggehaald — de smart-input zit nu in de hero. `kiesPopulairBeroep`- en `startSmartZoek`-helpers geëxtraheerd voor leesbaarheid. Sub-componenten `SmartInputCard`, `VakmanHeroCard`, `StatCard`, `Stap`, `TrustItem` onderaan het bestand.
 - **Homepage performance-optimalisaties** (4 wins):
   - **Bundled `/api/init`-endpoint** — `me + stats + instellingen + categorieen` in 1 parallel `Promise.all`-query (~252ms response, 1 round-trip i.p.v. 4).
   - **`/api/trefwoorden` skipt nu `embedding`-kolom** via Prisma `select` — was 13 MB DB→server transfer (2208 × 1536 floats), nu klein. Endpoint nog steeds in gebruik door /beheer.

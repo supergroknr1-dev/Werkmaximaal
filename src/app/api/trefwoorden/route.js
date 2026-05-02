@@ -1,11 +1,23 @@
 import { prisma } from "../../../lib/prisma";
 import { getCurrentUser } from "../../../lib/auth";
+import { emitActivity } from "../../../lib/events";
 
 export async function GET() {
-  const trefwoorden = await prisma.trefwoord.findMany({
-    orderBy: [{ categorie: "asc" }, { woord: "asc" }],
+  const rows = await prisma.trefwoord.findMany({
+    include: { categorieRef: true },
+    orderBy: [{ categorieRef: { naam: "asc" } }, { woord: "asc" }],
   });
-  return Response.json(trefwoorden);
+  // Behoud `categorie` als string in de response zodat clients ongewijzigd
+  // blijven werken — interne kolom is nu een echte FK (categorieId).
+  return Response.json(
+    rows.map((t) => ({
+      id: t.id,
+      woord: t.woord,
+      type: t.type,
+      categorieId: t.categorieId,
+      categorie: t.categorieRef.naam,
+    }))
+  );
 }
 
 export async function POST(request) {
@@ -15,15 +27,29 @@ export async function POST(request) {
   }
 
   const data = await request.json();
-  const categorie = (data.categorie ?? "").trim();
+  const categorieNaam = (data.categorie ?? "").trim();
   const type = data.type === "merk" ? "merk" : "zoekterm";
 
-  if (!categorie) {
-    return Response.json({ error: "Categorie is verplicht." }, { status: 400 });
+  if (!categorieNaam) {
+    return Response.json(
+      { error: "Categorie is verplicht." },
+      { status: 400 }
+    );
   }
 
-  // Accepteer ofwel `woord` (single) of `woorden` (array). De multi-input
-  // in /beheer splitst op komma's of newlines en stuurt het als array.
+  // Vind de categorie via naam (case-insensitive om historische input
+  // te accepteren). FK garandeert verder dat we niet met spookbeeld-strings
+  // kunnen werken.
+  const cat = await prisma.categorie.findFirst({
+    where: { naam: { equals: categorieNaam, mode: "insensitive" } },
+  });
+  if (!cat) {
+    return Response.json(
+      { error: `Categorie "${categorieNaam}" bestaat niet.` },
+      { status: 400 }
+    );
+  }
+
   let inputWoorden = [];
   if (Array.isArray(data.woorden)) {
     inputWoorden = data.woorden;
@@ -46,22 +72,37 @@ export async function POST(request) {
     );
   }
 
-  // Idempotent insert via upsert — bestaande (categorie,woord) blijft
-  // staan en wordt niet als fout gemeld.
   const toegevoegd = [];
   let bestaand = 0;
   for (const w of schoneWoorden) {
     const al = await prisma.trefwoord.findUnique({
-      where: { categorie_woord: { categorie, woord: w } },
+      where: { categorieId_woord: { categorieId: cat.id, woord: w } },
     });
     if (al) {
       bestaand++;
       continue;
     }
     const nieuw = await prisma.trefwoord.create({
-      data: { categorie, woord: w, type },
+      data: { categorieId: cat.id, woord: w, type },
     });
     toegevoegd.push(nieuw);
+  }
+
+  if (toegevoegd.length > 0) {
+    emitActivity({
+      type:
+        type === "merk"
+          ? "trefwoord.merken_toegevoegd"
+          : "trefwoord.zoektermen_toegevoegd",
+      actor: { id: user.id, rol: "admin" },
+      targetType: "categorie",
+      targetId: cat.id,
+      payload: {
+        categorie: cat.naam,
+        aantal: toegevoegd.length,
+        woorden: toegevoegd.map((t) => t.woord),
+      },
+    });
   }
 
   return Response.json({

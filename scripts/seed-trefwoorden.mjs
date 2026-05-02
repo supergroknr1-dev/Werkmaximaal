@@ -85,28 +85,37 @@ const TREFWOORDEN = {
 async function main() {
   let nieuw = 0;
 
+  // Bouw eenmalige naam→id map zodat we niet per trefwoord de DB raadplegen.
+  const cats = await prisma.categorie.findMany();
+  const naarId = Object.fromEntries(cats.map((c) => [c.naam, c.id]));
+
   for (const [categorie, woorden] of Object.entries(TREFWOORDEN)) {
+    const categorieId = naarId[categorie];
+    if (!categorieId) {
+      console.warn(`! Categorie "${categorie}" bestaat niet — overgeslagen.`);
+      continue;
+    }
     for (const woord of woorden) {
       const w = woord.toLowerCase().trim();
       const bestond = await prisma.trefwoord.findUnique({
-        where: { categorie_woord: { categorie, woord: w } },
+        where: { categorieId_woord: { categorieId, woord: w } },
       });
       if (!bestond) {
-        await prisma.trefwoord.create({ data: { categorie, woord: w } });
+        await prisma.trefwoord.create({ data: { categorieId, woord: w } });
         nieuw++;
       }
     }
   }
 
   const totaal = await prisma.trefwoord.groupBy({
-    by: ["categorie"],
+    by: ["categorieId"],
     _count: true,
-    orderBy: { categorie: "asc" },
   });
+  const idNaarNaam = Object.fromEntries(cats.map((c) => [c.id, c.naam]));
   console.log(`\n✓ ${nieuw} nieuwe trefwoorden toegevoegd.\n`);
   console.log("Totaal per categorie:");
   for (const t of totaal) {
-    console.log(`  ${t.categorie}: ${t._count}`);
+    console.log(`  ${idNaarNaam[t.categorieId]}: ${t._count}`);
   }
   console.log(
     `\nTotaal: ${totaal.reduce((s, t) => s + t._count, 0)} trefwoorden.`

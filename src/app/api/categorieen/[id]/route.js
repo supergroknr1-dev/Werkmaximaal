@@ -1,5 +1,6 @@
 import { prisma } from "../../../../lib/prisma";
 import { getCurrentUser } from "../../../../lib/auth";
+import { emitActivity } from "../../../../lib/events";
 
 export async function DELETE(request, { params }) {
   const user = await getCurrentUser();
@@ -21,12 +22,14 @@ export async function DELETE(request, { params }) {
   }
 
   // Veiligheidscheck: blokkeren als er nog klussen of trefwoorden hangen.
+  // Klus.categorie is nog een string (legacy) — case-insensitive match.
+  // Trefwoord.categorieId is een echte FK.
   const [aantalKlussen, aantalTrefwoorden] = await Promise.all([
     prisma.klus.count({
       where: { categorie: { equals: cat.naam, mode: "insensitive" } },
     }),
     prisma.trefwoord.count({
-      where: { categorie: cat.naam },
+      where: { categorieId: categorieId },
     }),
   ]);
 
@@ -49,6 +52,15 @@ export async function DELETE(request, { params }) {
   }
 
   await prisma.categorie.delete({ where: { id: categorieId } });
+
+  emitActivity({
+    type: "beroep.verwijderd",
+    actor: { id: user.id, rol: "admin" },
+    targetType: "categorie",
+    targetId: categorieId,
+    payload: { categorie: cat.naam },
+  });
+
   return Response.json({ success: true });
 }
 
@@ -102,24 +114,27 @@ export async function PATCH(request, { params }) {
     );
   }
 
-  // Transactie: rename Categorie + bijbehorende Trefwoord-rijen + Klus-rijen
-  // zodat string-referenties consistent blijven. Klus is case-insensitive
-  // (matcht historische data); Trefwoord matcht exact (we zetten zelf de
-  // hoofdletter).
+  // Transactie: rename Categorie + Klus.categorie (string-veld, legacy).
+  // Trefwoord hoeft niet — die heeft een echte FK (categorieId) die
+  // ongewijzigd blijft, dus de relatie loopt automatisch mee.
   const [updated] = await prisma.$transaction([
     prisma.categorie.update({
       where: { id: categorieId },
       data: { naam: nieuweNaam },
-    }),
-    prisma.trefwoord.updateMany({
-      where: { categorie: cat.naam },
-      data: { categorie: nieuweNaam },
     }),
     prisma.klus.updateMany({
       where: { categorie: { equals: cat.naam, mode: "insensitive" } },
       data: { categorie: nieuweNaam },
     }),
   ]);
+
+  emitActivity({
+    type: "beroep.hernoemd",
+    actor: { id: user.id, rol: "admin" },
+    targetType: "categorie",
+    targetId: categorieId,
+    payload: { vorigeNaam: cat.naam, nieuweNaam },
+  });
 
   return Response.json(updated);
 }

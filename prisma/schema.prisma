@@ -221,18 +221,21 @@ model ShowcaseFoto {
 }
 
 model Trefwoord {
-  id        Int    @id @default(autoincrement())
-  categorie String
-  woord     String
-  type      String @default("zoekterm") // "zoekterm" of "merk"
+  id           Int       @id @default(autoincrement())
+  categorieId  Int
+  categorieRef Categorie @relation(fields: [categorieId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  woord        String
+  type         String    @default("zoekterm") // "zoekterm" of "merk"
 
-  @@unique([categorie, woord])
+  @@unique([categorieId, woord])
+  @@index([type])
 }
 
 model Categorie {
-  id       Int    @id @default(autoincrement())
-  naam     String @unique
-  volgorde Int    @default(0)
+  id          Int         @id @default(autoincrement())
+  naam        String      @unique
+  volgorde    Int         @default(0)
+  trefwoorden Trefwoord[]
 }
 
 // ─────────────────────────────────────────────────────────────────

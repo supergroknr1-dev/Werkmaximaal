@@ -1,5 +1,6 @@
 import { prisma } from "../../../lib/prisma";
 import { getCurrentUser } from "../../../lib/auth";
+import { emitActivity } from "../../../lib/events";
 
 export async function GET() {
   const categorieen = await prisma.categorie.findMany({
@@ -62,6 +63,19 @@ export async function POST(request) {
     }
     const nieuw = await prisma.categorie.create({ data: { naam } });
     toegevoegd.push(nieuw);
+  }
+
+  if (toegevoegd.length > 0) {
+    emitActivity({
+      type: "beroep.toegevoegd",
+      actor: { id: user.id, rol: "admin" },
+      targetType: "categorie",
+      targetId: toegevoegd[0].id,
+      payload: {
+        aantal: toegevoegd.length,
+        namen: toegevoegd.map((c) => c.naam),
+      },
+    });
   }
 
   return Response.json({

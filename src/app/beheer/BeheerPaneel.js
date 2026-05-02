@@ -309,15 +309,25 @@ export default function BeheerPaneel() {
 
         <header className="mb-8 bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
           <div className="h-1 bg-gradient-to-r from-orange-500 via-orange-600 to-slate-900" />
-          <div className="px-6 py-5">
-            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight mb-1">
-              Beheer beroepen &amp; trefwoorden
-            </h1>
-            <p className="text-sm text-slate-500">
-              Beheer welke beroepen klanten kunnen kiezen, en pas de
-              matchwoorden aan die de auto-detectie van categorieën aansturen op
-              de homepage.
-            </p>
+          <div className="px-6 py-5 flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-semibold text-slate-900 tracking-tight mb-1">
+                Beheer beroepen &amp; trefwoorden
+              </h1>
+              <p className="text-sm text-slate-500">
+                Beheer welke beroepen klanten kunnen kiezen, en pas de
+                matchwoorden aan die de auto-detectie van categorieën aansturen
+                op de homepage.
+              </p>
+            </div>
+            <a
+              href="/api/categorieen/export"
+              download
+              className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded-md transition-colors"
+              title="Download JSON-backup"
+            >
+              ↓ Backup
+            </a>
           </div>
         </header>
 

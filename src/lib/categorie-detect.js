@@ -66,6 +66,87 @@ function bestFuzzyScore(input, target) {
 
 const TYPE_RANK = { beroep: 3, zoekterm: 2, merk: 1 };
 
+// Synoniemen-tabel voor de bouw-context. Bij tokenisatie wordt elk
+// gevonden woord uitgebreid met zijn varianten zodat verschillende
+// vervoegingen ("lekkende") evenveel match-kracht krijgen als het
+// canonieke woord ("lekkage"). Klein gehouden — alleen veelgebruikte
+// consumenten-termen, geen volledige Nederlandse lemmatisering.
+const SYNONIEMEN = {
+  // Lekkage-cluster
+  lek: ["lekkage"],
+  lekt: ["lekkage", "lek"],
+  lekken: ["lekkage", "lek"],
+  lekkend: ["lekkage", "lek"],
+  lekkende: ["lekkage", "lek"],
+  lekkages: ["lekkage"],
+
+  // Verf / schilder
+  verf: ["schilder", "verven", "schilderen", "verfwerk"],
+  verven: ["verf", "schilder", "schilderen"],
+  geverfd: ["verf", "schilder"],
+  schilderen: ["schilder", "verf", "verven"],
+  schilderwerk: ["schilder", "verf"],
+  verfwerk: ["verf", "schilder"],
+
+  // Defect / reparatie
+  kapot: ["defect", "reparatie", "stuk"],
+  defect: ["kapot", "reparatie"],
+  stuk: ["kapot", "defect"],
+  herstellen: ["reparatie", "repareren"],
+  herstel: ["reparatie", "repareren"],
+  repareren: ["reparatie", "herstellen"],
+
+  // Lamp / verlichting
+  lamp: ["verlichting"],
+  lampje: ["lamp", "verlichting"],
+  lampjes: ["lamp", "verlichting"],
+  lampen: ["lamp", "verlichting"],
+  verlichting: ["lamp"],
+  lichtpunt: ["lamp", "verlichting"],
+
+  // Verstopping
+  verstopt: ["verstopping"],
+  verstoppingen: ["verstopping"],
+  geblokkeerd: ["verstopping"],
+
+  // Tegel / vloer
+  tegels: ["tegel"],
+  tegeltjes: ["tegel"],
+  tegelvloer: ["tegel", "vloer"],
+
+  // Plaatsen / monteren — bouwsector synoniemen
+  zetten: ["plaatsen", "monteren", "installeren"],
+  zet: ["plaatsen", "monteren"],
+  geplaatst: ["plaatsen", "monteren"],
+  plaatsen: ["zetten", "monteren", "installeren"],
+  plaats: ["plaatsen"],
+  monteren: ["plaatsen", "installeren", "zetten"],
+  installeren: ["plaatsen", "monteren", "aansluiten"],
+  aansluiten: ["installeren", "monteren"],
+  leggen: ["plaatsen"],
+
+  // Vervangen / verwijderen
+  vervangen: ["nieuw", "vernieuwen"],
+  vernieuwen: ["vervangen", "nieuw"],
+  weghalen: ["verwijderen"],
+
+  // Diverse natuurlijke verkleinwoorden
+  kraantje: ["kraan"],
+  kraanetje: ["kraan"],
+  raampje: ["raam"],
+  ruitje: ["ruit", "raam"],
+  deurtje: ["deur"],
+  muurtje: ["muur"],
+  trapje: ["trap"],
+
+  // Vakman-rollen
+  loodgieter: ["loodgieter"],
+  schilder: ["schilder", "verf"],
+  elektricien: ["elektricien"],
+  hovenier: ["hovenier", "tuinman"],
+  tuinman: ["hovenier", "tuinman"],
+};
+
 // Nederlandse functie-woorden die we willen overslaan bij woord-overlap.
 // Houden we klein — significante woorden ("huis", "kraan", etc.) blijven.
 const STOPWOORDEN = new Set([
@@ -113,10 +194,18 @@ function woordOverlapScore(inputWoorden, target) {
 }
 
 function tokeniseer(tekst) {
-  return tekst
+  const raw = tekst
     .toLowerCase()
     .split(/[^a-zà-ÿ0-9]+/i)
     .filter((w) => w.length >= 4 && !STOPWOORDEN.has(w));
+  // Breid elk woord uit met zijn synoniemen zodat vervoegingen
+  // dezelfde match-kracht krijgen als het canonieke woord.
+  const expanded = new Set(raw);
+  for (const w of raw) {
+    const syns = SYNONIEMEN[w];
+    if (syns) for (const s of syns) expanded.add(s);
+  }
+  return [...expanded];
 }
 
 // ─── Public API ────────────────────────────────────────────────────

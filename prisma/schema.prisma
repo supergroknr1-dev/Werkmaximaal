@@ -226,6 +226,9 @@ model Trefwoord {
   categorieRef Categorie @relation(fields: [categorieId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   woord        String
   type         String    @default("zoekterm") // "zoekterm" of "merk"
+  // OpenAI text-embedding-3-small = 1536 dimensies. Nullable zodat
+  // bestaande rijen kunnen blijven; pre-compute script vult ze later.
+  embedding    Float[]   @default([])
 
   @@unique([categorieId, woord])
   @@index([type])

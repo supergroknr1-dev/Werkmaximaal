@@ -195,11 +195,43 @@ export default function Home() {
 
   // Auto-detect categorie in de zoek-sectie boven aan de homepage,
   // tenzij de gebruiker zelf al een categorie heeft gekozen.
+  // Twee-laagse strategie:
+  //   1. Snelle keyword-match (lokaal, gratis, instant) — vult dropdown
+  //      direct met een eerste schatting tijdens het typen.
+  //   2. Semantic search via /api/zoek-categorie (OpenAI embeddings)
+  //      na 500ms debounce — overschrijft als 'ie een betere match vindt.
   useEffect(() => {
     if (zoekCategorieAangeraakt) return;
     const gevonden = detectCategorie(zoekTekst, trefwoorden, categorieen);
     setZoekCategorie(gevonden ?? "");
   }, [zoekTekst, zoekCategorieAangeraakt, trefwoorden]);
+
+  useEffect(() => {
+    if (zoekCategorieAangeraakt) return;
+    if (!zoekTekst || zoekTekst.trim().length < 3) return;
+    const ctrl = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/zoek-categorie", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tekst: zoekTekst }),
+          signal: ctrl.signal,
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.match && data.match.score >= 60 && !zoekCategorieAangeraakt) {
+          setZoekCategorie(data.match.categorie);
+        }
+      } catch {
+        // abort of netwerkfout — laat keyword-match staan
+      }
+    }, 500);
+    return () => {
+      clearTimeout(timer);
+      ctrl.abort();
+    };
+  }, [zoekTekst, zoekCategorieAangeraakt]);
 
   useEffect(() => {
     const schoonPc = postcode.trim().toUpperCase();

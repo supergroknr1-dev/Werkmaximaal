@@ -15,29 +15,58 @@ export async function POST(request) {
   }
 
   const data = await request.json();
-  const naam = (data.naam ?? "").trim();
 
-  if (!naam) {
+  // Accepteer ofwel `naam` (single) of `namen` (array). De multi-input
+  // in /beheer splitst op komma's of newlines en stuurt het als array.
+  let inputNamen = [];
+  if (Array.isArray(data.namen)) {
+    inputNamen = data.namen;
+  } else if (typeof data.naam === "string") {
+    inputNamen = [data.naam];
+  }
+
+  // Trim, dedupe (case-insensitive), filter lege strings en cap op 60 tekens.
+  const seen = new Set();
+  const schoneNamen = [];
+  for (const raw of inputNamen) {
+    if (typeof raw !== "string") continue;
+    const naam = raw.trim();
+    if (!naam) continue;
+    if (naam.length > 60) {
+      return Response.json(
+        { error: `"${naam.slice(0, 30)}..." is te lang (max 60 tekens).` },
+        { status: 400 }
+      );
+    }
+    const key = naam.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    schoneNamen.push(naam);
+  }
+
+  if (schoneNamen.length === 0) {
     return Response.json(
-      { error: "Naam is verplicht." },
+      { error: "Geef minimaal één beroep op." },
       { status: 400 }
     );
   }
-  if (naam.length > 60) {
-    return Response.json(
-      { error: "Naam mag maximaal 60 tekens zijn." },
-      { status: 400 }
-    );
+
+  // Idempotent insert — bestaande naam blijft staan, geen fout.
+  const toegevoegd = [];
+  let bestaand = 0;
+  for (const naam of schoneNamen) {
+    const al = await prisma.categorie.findUnique({ where: { naam } });
+    if (al) {
+      bestaand++;
+      continue;
+    }
+    const nieuw = await prisma.categorie.create({ data: { naam } });
+    toegevoegd.push(nieuw);
   }
 
-  const bestaand = await prisma.categorie.findUnique({ where: { naam } });
-  if (bestaand) {
-    return Response.json(
-      { error: `Categorie "${naam}" bestaat al.` },
-      { status: 409 }
-    );
-  }
-
-  const nieuw = await prisma.categorie.create({ data: { naam } });
-  return Response.json(nieuw);
+  return Response.json({
+    toegevoegd,
+    aantalToegevoegd: toegevoegd.length,
+    aantalBestaand: bestaand,
+  });
 }

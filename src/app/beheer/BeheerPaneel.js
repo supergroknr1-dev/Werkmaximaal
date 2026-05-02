@@ -16,7 +16,7 @@ export default function BeheerPaneel() {
   const [testTekst, setTestTekst] = useState("");
 
   // Beroepen-paneel
-  const [nieuwBeroep, setNieuwBeroep] = useState("");
+  const [beroepenInput, setBeroepenInput] = useState("");
   const [beroepBezig, setBeroepBezig] = useState(false);
   const [beroepFout, setBeroepFout] = useState("");
   const [beroepStatus, setBeroepStatus] = useState("");
@@ -60,6 +60,23 @@ export default function BeheerPaneel() {
     ];
   }, [woordenInput]);
 
+  // Beroepen-input: zelfde split-logica, maar zonder lowercase
+  // (beroepen behouden hoofdletter — "Schilder" niet "schilder").
+  // Dedupe gebeurt server-side case-insensitive.
+  const beroepenLijst = useMemo(() => {
+    const seen = new Set();
+    const out = [];
+    for (const raw of beroepenInput.split(/[,\n]+/)) {
+      const naam = raw.trim();
+      if (!naam) continue;
+      const key = naam.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(naam);
+    }
+    return out;
+  }, [beroepenInput]);
+
   async function voegToe(e) {
     e.preventDefault();
     if (woordenLijst.length === 0) return;
@@ -88,22 +105,31 @@ export default function BeheerPaneel() {
 
   async function voegBeroepToe(e) {
     e.preventDefault();
-    const naam = nieuwBeroep.trim();
-    if (!naam) return;
+    if (beroepenLijst.length === 0) return;
     setBeroepBezig(true);
     setBeroepFout("");
     setBeroepStatus("");
     const res = await fetch("/api/categorieen", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ naam }),
+      body: JSON.stringify({ namen: beroepenLijst }),
     });
     const data = await res.json();
     if (!res.ok) {
       setBeroepFout(data.error || "Er ging iets mis.");
     } else {
-      setBeroepStatus(`"${data.naam}" toegevoegd.`);
-      setNieuwBeroep("");
+      const { aantalToegevoegd, aantalBestaand } = data;
+      const stukken = [];
+      if (aantalToegevoegd)
+        stukken.push(
+          `${aantalToegevoegd} beroep${aantalToegevoegd === 1 ? "" : "en"} toegevoegd`
+        );
+      if (aantalBestaand)
+        stukken.push(
+          `${aantalBestaand} bestond${aantalBestaand === 1 ? "" : "en"} al`
+        );
+      setBeroepStatus(stukken.join(" · ") || "Geen wijzigingen.");
+      setBeroepenInput("");
       haalCategorieen();
     }
     setBeroepBezig(false);
@@ -191,24 +217,44 @@ export default function BeheerPaneel() {
             Beroepen beheren ({categorieen.length})
           </h2>
           <p className="text-xs text-slate-500 mb-3">
-            Voeg beroepen toe of verwijder ze. Een beroep kan alleen verwijderd
-            worden als er geen klussen of trefwoorden meer aan gekoppeld zijn.
+            Voeg één of meerdere beroepen tegelijk toe — gescheiden door komma
+            of nieuwe regel. Een beroep kan alleen verwijderd worden als er
+            geen klussen of trefwoorden meer aan gekoppeld zijn.
           </p>
-          <form onSubmit={voegBeroepToe} className="flex gap-2 mb-4">
-            <input
-              type="text"
-              value={nieuwBeroep}
-              onChange={(e) => setNieuwBeroep(e.target.value)}
-              placeholder="Bijv: Dakdekker"
-              maxLength={60}
-              className="flex-1 px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
+          <form onSubmit={voegBeroepToe} className="space-y-3 mb-4">
+            <textarea
+              value={beroepenInput}
+              onChange={(e) => setBeroepenInput(e.target.value)}
+              rows={2}
+              placeholder="Bijv: Dakdekker, Stukadoor, Glaszetter"
+              className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm resize-none"
             />
+            {beroepenLijst.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {beroepenLijst.map((b) => (
+                  <span
+                    key={b}
+                    className="inline-flex items-center px-2 py-0.5 bg-orange-50 border border-orange-200 rounded text-xs text-orange-700"
+                  >
+                    {b}
+                  </span>
+                ))}
+                <span className="text-xs text-slate-400 self-center ml-1">
+                  ({beroepenLijst.length} beroep
+                  {beroepenLijst.length === 1 ? "" : "en"})
+                </span>
+              </div>
+            )}
             <button
               type="submit"
-              disabled={beroepBezig || !nieuwBeroep.trim()}
+              disabled={beroepBezig || beroepenLijst.length === 0}
               className="bg-orange-600 hover:bg-orange-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors"
             >
-              {beroepBezig ? "Bezig..." : "Toevoegen"}
+              {beroepBezig
+                ? "Bezig..."
+                : `Toevoegen${
+                    beroepenLijst.length > 1 ? ` (${beroepenLijst.length}×)` : ""
+                  }`}
             </button>
           </form>
           {beroepFout && (

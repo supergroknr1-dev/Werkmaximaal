@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-05-02 (kantoor — beroepen beheerbaar + WISSEN-bevestiging)
-**Laatste commit op main:** Beroepen-tabel beheerbaar via /beheer + WISSEN-bevestiging
+**Laatst bijgewerkt:** 2026-05-02 (kantoor — bulk-add voor beroepen)
+**Laatste commit op main:** Bulk-add voor beroepen op /beheer
 **Live op:** https://werkmaximaal.vercel.app/
 
 > **Database is leeg gewist op 2026-04-29.** Alleen admin-account (`s.ozkara09@gmail.com`)
@@ -92,6 +92,8 @@ Sessie 2026-05-02 (kantoor, beroepen beheerbaar):
 - **Nieuw paneel "Beroepen beheren"** bovenaan `/beheer`: input + "Toevoegen"-knop, lijst met oranje pills die de WISSEN-modal hergebruiken (één modal-component werkt voor zowel beroep- als trefwoord-delete via een `kind`-discriminator).
 - **Homepage** (`src/app/page.js`) leest nu de beroepen via `/api/categorieen` (met fallback op de oude hard-coded array voor het allereerste paint vóór fetch klaar is). Beide selects (smart-input + form-stap-2 datalist) gebruiken dezelfde live lijst.
 - **Sidebar-link "Beroepen"** (Briefcase-icoon) toegevoegd aan admin-sidebar onder "Instellingen". De oude "Snelkoppelingen"-tegel met "Trefwoorden voor categorie-detectie beheren"-link is weg uit `/admin/instellingen`. Note: `/beheer` zit nog steeds buiten de `(gated)`-layout, dus de admin-sidebar valt weg op die pagina — eventueel later verhuizen naar `/admin/(gated)/beroepen`.
+- **Alle trefwoorden gewist** op verzoek (241 → 0). Backup eerst gemaakt: `backups/2026-05-02T00-31-50-165Z/`. Smart-input op homepage en Test-modus op /beheer geven nu altijd "geen match" tot er weer trefwoorden worden toegevoegd. Bewuste keuze: vers beginnen i.p.v. de oude lijst.
+- **Bulk-add voor beroepen** op /beheer. Single-input vervangen door textarea met komma/newline-split, preview-pills met case-insensitive dedupe, en idempotente bulk-call (POST `/api/categorieen` accepteert nu `{namen: []}`-array naast single `{naam}`). Status-melding "X toegevoegd · Y bestonden al" — zelfde patroon als bij trefwoorden. WISSEN-bevestiging blijft onveranderd op individuele delete.
 
 ## 🟡 Waar je was gebleven
 

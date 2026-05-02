@@ -536,20 +536,26 @@ export default function Home() {
                 onClick={async () => {
                   if (!zoekTekst.trim() && !zoekCategorie) return;
                   let categorieResult = zoekCategorie;
-                  // Als gebruiker een tekst heeft maar nog geen handmatige
-                  // beroep-keuze: zoek de juiste vakman via semantic search.
+                  // Multi-klus ontleding: als gebruiker een tekst heeft, vraag
+                  // de LLM om 1+ klussen te identificeren — dezelfde flow als
+                  // op stap-1 form. Resultaat: meerdere klussen zichtbaar
+                  // wanneer dat gepast is.
                   if (zoekTekst.trim() && !zoekCategorie) {
                     setZoekt(true);
                     try {
-                      const res = await fetch("/api/zoek-categorie", {
+                      const res = await fetch("/api/ontleed-klus", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ tekst: zoekTekst }),
                       });
                       if (res.ok) {
                         const data = await res.json();
-                        if (data.match && data.match.score >= 60) {
-                          categorieResult = data.match.categorie;
+                        if (
+                          Array.isArray(data.klussen) &&
+                          data.klussen.length > 0
+                        ) {
+                          setKlusLijst(data.klussen);
+                          categorieResult = data.klussen[0].beroep;
                           setZoekCategorie(categorieResult);
                         }
                       }

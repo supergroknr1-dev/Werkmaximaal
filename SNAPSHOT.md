@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-05-02 (kantoor — auto-ontleding tijdens typen)
-**Laatste commit op main:** Multi-klus ontleding draait automatisch tijdens typen
+**Laatst bijgewerkt:** 2026-05-02 (kantoor — top smart-input ook multi-klus)
+**Laatste commit op main:** Top smart-input gebruikt ook multi-klus ontleding
 **Live op:** https://werkmaximaal.vercel.app/
 
 > **Database is leeg gewist op 2026-04-29.** Alleen admin-account (`s.ozkara09@gmail.com`)

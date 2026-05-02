@@ -416,9 +416,6 @@ export default function Home() {
               <h3 className="text-sm font-semibold">Wat is uw klus?</h3>
             </div>
             <div className="p-5 md:p-6">
-              <label className="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-2">
-                Beschrijf uw probleem
-              </label>
               <textarea
                 value={zoekTekst}
                 onChange={(e) => setZoekTekst(e.target.value)}
@@ -431,11 +428,6 @@ export default function Home() {
                 <label className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1.5 flex items-center gap-1.5">
                   <Wrench size={12} className="text-orange-600" />
                   Beroepen
-                  {zoekCategorie && !zoekCategorieAangeraakt && (
-                    <span className="text-[10px] normal-case font-normal text-orange-600 tracking-normal">
-                      (automatisch herkend, mag aangepast worden)
-                    </span>
-                  )}
                 </label>
                 <select
                   value={zoekCategorie}
@@ -444,7 +436,9 @@ export default function Home() {
                     setZoekCategorieAangeraakt(true);
                   }}
                   className={`w-full px-3 py-2.5 border-2 rounded-md text-sm focus:outline-none bg-white transition-colors ${
-                    zoekCategorie
+                    zoekCategorie && !zoekCategorieAangeraakt
+                      ? "border-orange-500 focus:border-orange-600 bg-orange-50 ring-2 ring-orange-200"
+                      : zoekCategorie
                       ? "border-orange-300 focus:border-orange-600"
                       : "border-slate-300 focus:border-slate-900"
                   }`}
@@ -456,6 +450,26 @@ export default function Home() {
                     </option>
                   ))}
                 </select>
+                {zoekCategorie && !zoekCategorieAangeraakt && (
+                  <div className="mt-3 px-4 py-3 bg-gradient-to-r from-orange-100 to-orange-50 border-2 border-orange-400 border-l-[6px] rounded-md shadow-md ring-2 ring-orange-200/60 flex items-start gap-3">
+                    <Sparkles
+                      size={20}
+                      className="text-orange-600 shrink-0 mt-0.5"
+                      strokeWidth={2.5}
+                    />
+                    <div>
+                      <p className="text-base font-bold text-orange-900 leading-tight">
+                        Voor uw klus heeft u een {zoekCategorie} nodig.
+                      </p>
+                      <p className="text-sm text-orange-800 mt-1 leading-snug">
+                        Klopt dit niet?{" "}
+                        <span className="font-semibold underline">
+                          Kies zelf de juiste vakman hierboven.
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <button

@@ -554,9 +554,22 @@ export default function Home() {
                   }, 50);
                 }}
                 disabled={zoekt || (!zoekTekst.trim() && !zoekCategorie)}
-                className="mt-5 w-full bg-orange-600 hover:bg-orange-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-sm font-semibold py-2.5 rounded-md transition-colors"
+                className="mt-5 w-full bg-orange-600 hover:bg-orange-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-sm font-semibold py-2.5 rounded-md transition-colors relative overflow-hidden"
               >
-                {zoekt ? "Bezig met zoeken..." : "Volgende"}
+                {/* Progress-bar overlay tijdens LLM-call (~2-3s).
+                    Animeert van 0% naar 95% breed in 3 sec; blijft daar
+                    hangen totdat de response binnen is en de knop snapt
+                    weer terug naar normale state. */}
+                <span
+                  className="absolute inset-y-0 left-0 bg-orange-300/60 transition-[width] ease-out"
+                  style={{
+                    width: zoekt ? "95%" : "0%",
+                    transitionDuration: zoekt ? "3000ms" : "200ms",
+                  }}
+                />
+                <span className="relative">
+                  {zoekt ? "Bezig met zoeken..." : "Volgende"}
+                </span>
               </button>
             </div>
           </section>

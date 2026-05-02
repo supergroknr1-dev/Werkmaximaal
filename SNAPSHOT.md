@@ -5,8 +5,8 @@
 > en meegestuurd in de commit, dus: thuis `git pull` → dit bestand
 > openen → direct verder.
 
-**Laatst bijgewerkt:** 2026-05-02 (kantoor — homepage performance-optimalisaties)
-**Laatste commit op main:** Homepage perf: /api/init bundle + skip embedding kolom
+**Laatst bijgewerkt:** 2026-05-02 (kantoor — progress-bar op Volgende-knop)
+**Laatste commit op main:** Progress-bar overlay op smart-input Volgende-knop
 **Live op:** https://werkmaximaal.vercel.app/
 
 > **Database is leeg gewist op 2026-04-29.** Alleen admin-account (`s.ozkara09@gmail.com`)
@@ -97,6 +97,7 @@ Sessie 2026-05-02 (kantoor, beroepen beheerbaar):
 - **Merken & Materialen-laag** op trefwoorden. Migratie `add_trefwoord_type` voegt `type String @default("zoekterm")` toe (waarden: `"zoekterm"` of `"merk"`). POST `/api/trefwoorden` accepteert nu `type` (default zoekterm). Tweede paneel "Merken & Materialen toevoegen" op /beheer naast bestaande zoektermen-blok — blauwe styling i.p.v. oranje voor visueel onderscheid. De gegroepeerde lijst onder "Bestaande trefwoorden" toont nu 2 sub-secties per beroep: ZOEKTERMEN (grijs) en MERKEN & MATERIALEN (blauw).
 - **Match-priority logica** in `detectCategorie()`. Drie passes in volgorde: (1) beroepsnaam in tekst, (2) zoekterm-substring, (3) merk-substring. Eerste hit wint. Nieuwe `detectMetBron()`-helper geeft ook de match-bron terug (`"beroep"|"zoekterm"|"merk"`) zodat de Test-modus op /beheer expliciet toont *waarom* iets matcht ("Match: Elektricien (via merk: 'hager')"). Homepage gebruikt nog steeds de oude `detectCategorie` maar geeft nu ook `categorieen` mee zodat beroepsnaam-match ook daar werkt.
 - **Categorie-tabel werd leeggeresend** door `prisma migrate dev` (Prisma vond drift en deed silent reset). Opnieuw geseed via `node scripts/seed-categorieen.mjs` (8 beroepen). Bewust niet onderzocht; gebeurt vrijwel altijd 1× per nieuwe migratie als er manuele data-load is geweest. Backup van vóór de migratie staat nog op `backups/2026-05-02T00-31-50-165Z/`.
+- **Progress-bar overlay** op de smart-input Volgende-knop. Tijdens de LLM-call (`zoekt=true`) animeert een lichtere oranje balk binnen de knop van 0% naar 95% breed in 3 seconden via `transition-[width]`. Geeft visuele feedback dat er iets gebeurt — voorkomt dat gebruikers denken dat de knop niets doet. Snel terug naar 0% (200ms) zodra response binnen is. Geen extra dependency nodig — pure Tailwind + inline style.
 - **Homepage performance-optimalisaties** (4 wins):
   - **Bundled `/api/init`-endpoint** — `me + stats + instellingen + categorieen` in 1 parallel `Promise.all`-query (~252ms response, 1 round-trip i.p.v. 4).
   - **`/api/trefwoorden` skipt nu `embedding`-kolom** via Prisma `select` — was 13 MB DB→server transfer (2208 × 1536 floats), nu klein. Endpoint nog steeds in gebruik door /beheer.

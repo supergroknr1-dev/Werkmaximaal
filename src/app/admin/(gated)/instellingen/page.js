@@ -2,6 +2,7 @@ import { getInstellingen } from "../../../../lib/instellingen";
 import { getLeadPrijs } from "../../../../lib/lead-prijs";
 import InstellingToggle from "../InstellingToggle";
 import PrijsForm from "./PrijsForm";
+import StatsForm from "./StatsForm";
 import WachtwoordForm from "./WachtwoordForm";
 
 export default async function AdminInstellingenPage() {
@@ -56,6 +57,26 @@ export default async function AdminInstellingenPage() {
           </div>
           <div className="p-5">
             <PrijsForm basisCenten={prijzen.pro} />
+          </div>
+        </section>
+
+        <section className="bg-white border border-slate-200 rounded-lg shadow-sm">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <h2 className="text-base font-semibold text-slate-900">
+              Statkaarten op homepage
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              De &quot;Vakmannen&quot;- en &quot;Klussen in database&quot;-tegels
+              op de homepage. Schakel handmatig in om eigen waarden te tonen
+              i.p.v. de echte counts uit de DB.
+            </p>
+          </div>
+          <div className="p-5">
+            <StatsForm
+              beginHandmatig={instellingen.statsHandmatig === true}
+              beginVakmannen={instellingen.statsVakmannenWaarde ?? 0}
+              beginKlussen={instellingen.statsKlussenWaarde ?? 0}
+            />
           </div>
         </section>
 

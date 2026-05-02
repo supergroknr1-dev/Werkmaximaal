@@ -3,6 +3,13 @@ import { prisma } from "./prisma";
 const DEFAULTS = {
   hobbyistInschakeld: true,
   leadPrijsCenten: 1000,
+  // Stat-kaarten op homepage. Default = live tellen uit DB.
+  // Bij `statsHandmatig=true` toont homepage de ingestelde waarden i.p.v.
+  // de echte counts — handig in early stage om de site niet kaal te
+  // laten lijken (of demonstratie-doeleinden).
+  statsHandmatig: false,
+  statsVakmannenWaarde: 0,
+  statsKlussenWaarde: 0,
 };
 
 function parseValue(raw) {

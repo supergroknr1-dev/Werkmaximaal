@@ -11,34 +11,45 @@ import { getInstellingen } from "../../../lib/instellingen";
 export async function GET() {
   const session = await getSession();
 
-  // 4 queries parallel — Prisma deelt connection-pool, dus dit is
-  // dramatisch sneller dan sequentiëel of 4 separate API-calls.
-  const [user, vakmannen, klussen, categorieen, instellingen] =
-    await Promise.all([
-      session.userId
-        ? prisma.user.findUnique({
-            where: { id: session.userId },
-            select: {
-              id: true,
-              email: true,
-              naam: true,
-              rol: true,
-              isAdmin: true,
-              vakmanType: true,
-              regioPostcode: true,
-              regioPlaats: true,
-              _count: { select: { werkgebiedenExtra: true } },
-            },
-          })
-        : Promise.resolve(null),
-      prisma.user.count({ where: { rol: "vakman" } }),
-      prisma.klus.count(),
-      prisma.categorie.findMany({
-        orderBy: [{ volgorde: "asc" }, { naam: "asc" }],
-        select: { id: true, naam: true, volgorde: true },
-      }),
-      getInstellingen(),
-    ]);
+  // Eerst instellingen ophalen — bepaalt of we de stats-counts überhaupt
+  // moeten draaien (bij handmatige modus zijn ze overbodig).
+  const instellingen = await getInstellingen();
+
+  const [user, vakmannenLive, klussenLive, categorieen] = await Promise.all([
+    session.userId
+      ? prisma.user.findUnique({
+          where: { id: session.userId },
+          select: {
+            id: true,
+            email: true,
+            naam: true,
+            rol: true,
+            isAdmin: true,
+            vakmanType: true,
+            regioPostcode: true,
+            regioPlaats: true,
+            _count: { select: { werkgebiedenExtra: true } },
+          },
+        })
+      : Promise.resolve(null),
+    instellingen.statsHandmatig
+      ? Promise.resolve(0)
+      : prisma.user.count({ where: { rol: "vakman" } }),
+    instellingen.statsHandmatig
+      ? Promise.resolve(0)
+      : prisma.klus.count(),
+    prisma.categorie.findMany({
+      orderBy: [{ volgorde: "asc" }, { naam: "asc" }],
+      select: { id: true, naam: true, volgorde: true },
+    }),
+  ]);
+
+  const vakmannen = instellingen.statsHandmatig
+    ? instellingen.statsVakmannenWaarde ?? 0
+    : vakmannenLive;
+  const klussen = instellingen.statsHandmatig
+    ? instellingen.statsKlussenWaarde ?? 0
+    : klussenLive;
 
   let userPayload = null;
   if (user) {

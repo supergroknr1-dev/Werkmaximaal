@@ -32,5 +32,34 @@ export async function PUT(request) {
     updates.leadPrijsCenten = centen;
   }
 
+  if (typeof data.statsHandmatig === "boolean") {
+    await setInstelling("statsHandmatig", data.statsHandmatig);
+    updates.statsHandmatig = data.statsHandmatig;
+  }
+
+  if (data.statsVakmannenWaarde !== undefined) {
+    const n = parseInt(data.statsVakmannenWaarde, 10);
+    if (!Number.isFinite(n) || n < 0 || n > 1_000_000) {
+      return Response.json(
+        { error: "Vakmannen-waarde moet tussen 0 en 1.000.000 zijn." },
+        { status: 400 }
+      );
+    }
+    await setInstelling("statsVakmannenWaarde", n);
+    updates.statsVakmannenWaarde = n;
+  }
+
+  if (data.statsKlussenWaarde !== undefined) {
+    const n = parseInt(data.statsKlussenWaarde, 10);
+    if (!Number.isFinite(n) || n < 0 || n > 1_000_000) {
+      return Response.json(
+        { error: "Klussen-waarde moet tussen 0 en 1.000.000 zijn." },
+        { status: 400 }
+      );
+    }
+    await setInstelling("statsKlussenWaarde", n);
+    updates.statsKlussenWaarde = n;
+  }
+
   return Response.json(updates);
 }

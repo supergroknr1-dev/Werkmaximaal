@@ -66,6 +66,59 @@ function bestFuzzyScore(input, target) {
 
 const TYPE_RANK = { beroep: 3, zoekterm: 2, merk: 1 };
 
+// Nederlandse functie-woorden die we willen overslaan bij woord-overlap.
+// Houden we klein — significante woorden ("huis", "kraan", etc.) blijven.
+const STOPWOORDEN = new Set([
+  "de","het","een","dat","die","dit","deze","en","of","maar","want","ook","wel",
+  "in","op","aan","voor","naar","met","van","om","uit","tot","bij","over","door","tegen","zonder",
+  "ik","je","jij","u","hij","zij","wij","ze","mij","jou","hem","haar","ons","mijn","jouw","uw","zijn","hun","hen",
+  "wil","wilt","willen","ga","gaat","gaan","kan","kunnen","moet","moeten","laat","laten","heb","heeft","hebben",
+  "is","was","waren","ben","bent","wordt","worden","word","werd",
+  "niet","geen","heel","hele","graag","misschien",
+  "wat","hoe","wie","waar","wanneer","waarom","welke","welk",
+]);
+
+// Woord-overlap match: hoeveel input-woorden komen voor in een trefwoord
+// (als geheel woord of substring van een woord). Bedoeld voor zinnen
+// waar de woordvolgorde of vervoeging anders is dan in het trefwoord
+// (bv. "damwand zetten" → trefwoord "damwand plaatsen": "damwand" matcht).
+//
+// Specificiteit telt: lange woorden ("damwand", 7 chars) zijn rarer en
+// duiden meer op een specifiek beroep dan generieke korte woorden
+// ("huis", 4 chars). Daarom geven we per match meer punten op basis
+// van de woordlengte. 1 generieke match (4 chars) blijft net onder
+// de standaard-drempel; 1 specifieke match (7+ chars) komt erover.
+function woordOverlapScore(inputWoorden, target) {
+  if (inputWoorden.length === 0) return 0;
+  const targetWoorden = target.split(/\s+/);
+  let totalPts = 0;
+  for (const iw of inputWoorden) {
+    const hit = targetWoorden.find(
+      (tw) =>
+        tw === iw ||
+        (iw.length >= 4 && tw.includes(iw)) ||
+        (tw.length >= 4 && iw.includes(tw))
+    );
+    if (hit) {
+      const len = Math.min(iw.length, hit.length);
+      // 4 chars=1 pt, 5=2, 6=3, 7+=5
+      const pts = len >= 7 ? 5 : len >= 6 ? 3 : len >= 5 ? 2 : 1;
+      totalPts += pts;
+    }
+  }
+  if (totalPts === 0) return 0;
+  // Score: 60 + 4 punten per specificiteit-eenheid. 1 zwak woord = 64,
+  // 1 sterk woord = 80, meerdere woorden stapelen tot 100.
+  return Math.min(100, 60 + totalPts * 4);
+}
+
+function tokeniseer(tekst) {
+  return tekst
+    .toLowerCase()
+    .split(/[^a-zà-ÿ0-9]+/i)
+    .filter((w) => w.length >= 4 && !STOPWOORDEN.has(w));
+}
+
 // ─── Public API ────────────────────────────────────────────────────
 
 /**
@@ -80,6 +133,10 @@ export function getZoekSuggesties(tekst, trefwoorden, categorieen = [], opties =
   const lager = tekst.trim().toLowerCase();
   if (lager.length < 2) return [];
 
+  // Tokeniseer eenmalig — vangt zinnen waar woordvolgorde of vervoeging
+  // afwijkt van het trefwoord ("damwand zetten" → "damwand plaatsen").
+  const inputWoorden = tokeniseer(lager);
+
   const items = [];
 
   for (const c of categorieen) {
@@ -89,7 +146,15 @@ export function getZoekSuggesties(tekst, trefwoorden, categorieen = [], opties =
     const inputBevatTarget = lager.includes(naamLow);
     const targetBevatInput = lager.length >= 3 && naamLow.includes(lager);
     const exact = inputBevatTarget || targetBevatInput;
-    const score = exact ? 100 : bestFuzzyScore(lager, naamLow);
+    let score;
+    if (exact) {
+      score = 100;
+    } else {
+      score = Math.max(
+        bestFuzzyScore(lager, naamLow),
+        woordOverlapScore(inputWoorden, naamLow)
+      );
+    }
     if (score >= drempel) {
       items.push({
         type: "beroep",
@@ -111,7 +176,18 @@ export function getZoekSuggesties(tekst, trefwoorden, categorieen = [], opties =
     const inputBevatTarget = lager.includes(woord);
     const targetBevatInput = lager.length >= 3 && woord.includes(lager);
     const exact = inputBevatTarget || targetBevatInput;
-    const score = exact ? 100 : bestFuzzyScore(lager, woord);
+    let score;
+    if (exact) {
+      score = 100;
+    } else {
+      // Fallback: fuzzy OF woord-overlap. Woord-overlap helpt bij
+      // synoniemen en andere vervoegingen ("damwand zetten" matcht
+      // "damwand plaatsen" omdat "damwand" overlapt).
+      score = Math.max(
+        bestFuzzyScore(lager, woord),
+        woordOverlapScore(inputWoorden, woord)
+      );
+    }
     if (score >= drempel) {
       items.push({
         type: t.type === "merk" ? "merk" : "zoekterm",

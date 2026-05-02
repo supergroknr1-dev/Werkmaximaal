@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { detectMetBron } from "@/lib/categorie-detect";
+import { detectMetBron, getZoekSuggesties } from "@/lib/categorie-detect";
 
 export default function BeheerPaneel() {
   const [categorieen, setCategorieen] = useState([]);
@@ -290,6 +290,14 @@ export default function BeheerPaneel() {
     return detectMetBron(testTekst, trefwoorden, categorieen);
   }, [testTekst, trefwoorden, categorieen]);
 
+  // Autocomplete + ranked-results: top-8 suggesties, drempel 65% similarity.
+  const testSuggesties = useMemo(() => {
+    return getZoekSuggesties(testTekst, trefwoorden, categorieen, {
+      drempel: 65,
+      max: 8,
+    });
+  }, [testTekst, trefwoorden, categorieen]);
+
   // Telt per categorie hoeveel trefwoorden er zijn (voor info-tekst bij delete)
   const trefwoordenTeller = useMemo(() => {
     const tel = {};
@@ -452,34 +460,107 @@ export default function BeheerPaneel() {
 
         <section className="bg-white border border-slate-200 rounded-md shadow-sm p-6 mb-6">
           <h2 className="text-base font-semibold text-slate-900 mb-1">
-            Test-modus
+            Test je zoekopdracht
           </h2>
           <p className="text-xs text-slate-500 mb-3">
-            Typ een klusbeschrijving en zie direct welke categorie het systeem
-            koppelt — handig om je trefwoordenlijst te verifiëren.
+            Typ een klusbeschrijving en zie hoe de zoekmachine reageert —
+            inclusief typo-tolerantie, suggesties en match-percentage. Dit is
+            exact wat consumenten op de homepage ervaren.
           </p>
-          <textarea
+          <input
+            type="text"
             value={testTekst}
             onChange={(e) => setTestTekst(e.target.value)}
-            rows={2}
-            placeholder="Bijv: mijn aardlekschakelaar klapt eruit"
-            className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm resize-none"
+            placeholder="Bijv: ik wil een Haager schakelaar"
+            className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-md text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors text-sm"
           />
-          <div className="mt-2 text-sm">
+
+          <div className="mt-4">
+            <p className="text-[11px] uppercase tracking-wide text-slate-500 font-semibold mb-2">
+              Live resultaten
+            </p>
             {testTekst.trim() === "" ? (
-              <span className="text-slate-400">Geen invoer</span>
+              <p className="text-sm text-slate-400">
+                Begin te typen om de zoekmachine te testen.
+              </p>
             ) : testMatch ? (
-              <span className="inline-flex items-center gap-1.5 text-orange-700">
-                <span className="w-2 h-2 rounded-full bg-orange-600" />
-                Match: <strong>{testMatch.categorie}</strong>{" "}
-                <span className="text-xs text-slate-500">
-                  (via {testMatch.bron === "beroep" ? "beroepsnaam" : testMatch.bron}: &quot;{testMatch.treffer}&quot;)
-                </span>
-              </span>
+              <>
+                <div className="bg-orange-50 border border-orange-200 rounded-md px-4 py-3 mb-2">
+                  <div className="text-xs uppercase tracking-wide text-orange-700 font-semibold">
+                    Beste match
+                  </div>
+                  <div className="text-base font-semibold text-slate-900 mt-0.5">
+                    {testMatch.categorie}
+                  </div>
+                  <div className="text-xs text-slate-600 mt-1">
+                    via{" "}
+                    {testMatch.bron === "beroep"
+                      ? "beroepsnaam"
+                      : testMatch.bron}
+                    : &quot;<strong>{testMatch.treffer}</strong>&quot; ·{" "}
+                    {testMatch.exact ? (
+                      <span className="text-emerald-700 font-medium">
+                        exact 100%
+                      </span>
+                    ) : (
+                      <span className="text-amber-700 font-medium">
+                        fuzzy {testMatch.score}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {testSuggesties.length > 1 && (
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-slate-500 font-semibold mb-1.5">
+                      Andere suggesties ({testSuggesties.length - 1})
+                    </p>
+                    <div className="space-y-1">
+                      {testSuggesties.slice(1).map((s, i) => (
+                        <div
+                          key={`${s.type}-${s.treffer}-${i}`}
+                          className="flex items-center justify-between gap-2 text-xs px-3 py-1.5 bg-slate-50 border border-slate-200 rounded"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`inline-block px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wide font-semibold ${
+                                s.type === "beroep"
+                                  ? "bg-purple-100 text-purple-700"
+                                  : s.type === "merk"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : "bg-slate-200 text-slate-700"
+                              }`}
+                            >
+                              {s.type}
+                            </span>
+                            <span className="text-slate-900 font-medium">
+                              {s.treffer}
+                            </span>
+                            <span className="text-slate-400">
+                              → {s.categorie}
+                            </span>
+                          </div>
+                          <span
+                            className={`font-medium ${
+                              s.exact
+                                ? "text-emerald-700"
+                                : s.score >= 85
+                                ? "text-amber-700"
+                                : "text-slate-500"
+                            }`}
+                          >
+                            {s.score}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             ) : (
-              <span className="text-slate-500">
-                Geen match — geen trefwoord gevonden in deze tekst.
-              </span>
+              <p className="text-sm text-slate-500">
+                Geen match — geen trefwoord, beroep of merk dat dichtbij
+                genoeg ligt.
+              </p>
             )}
           </div>
         </section>
